@@ -1,0 +1,262 @@
+.center{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#playerControls{
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    width: 100%;
+}
+
+.name{
+    font-size: 1.7em;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.money{
+    margin-bottom: 30px;
+    font-size: 1.3em;
+}
+
+.isMyTurn{
+    margin-bottom: 30px;
+    font-size: 1.1em;
+    padding: 7px;
+}
+
+.going{
+    background-color: rgba(0,255,0,0.7);
+}
+
+.not-going{
+    background-color: rgba(255,0,0,0.7);
+}
+
+.actions{
+    width: 100%;
+}
+
+.moneyBtns>*{
+    color: white;
+    font-size: 1.3em;
+    padding: 5px 7px;
+}
+
+.moneyBtns{
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 30px;
+}
+
+button{
+    border: none;
+    color: black;
+}
+
+#minus{
+    background-color: #D72323;
+}
+
+.actions input{
+    width: 100%;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.endTurnBtns{
+    display: flex;
+    justify-content: space-between;
+}
+
+.endTurnBtns *{
+    padding: 10px;
+}
+
+#nextPlayer{
+    background-color: #FFFfff;
+    border: 1px solid black;
+}
+
+#gotCircle{
+    background-color: #5950FF;
+    color: #fff;
+}
+
+#pick-player-to-pay{
+    height: 60%;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.title{
+    font-size: 1.7em;
+}
+
+#pick-player-to-pay .player{
+    font-size: 1.7em;
+    padding: 10px;
+}
+
+#bank{
+    border: 1px black dashed;
+}
+
+.bg-cont {
+    width: 100%;
+    height: 100%;
+    display: none;
+    position: absolute;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.6);
+    text-align: center;
+}
+
+.player{
+    cursor: pointer;
+    min-width: 205px;
+}
+
+.title{
+    font-size: 1.8em;
+}
+
+#changePlayer{
+    position: absolute;
+    left: 30px;
+    top: 30px;
+    font-size: 2em;
+    cursor: pointer;
+}
+
+#shareGame{
+    font-size: 2em;
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    cursor: pointer;
+}
+
+#urlLink{
+    display: none;
+}
+
+.options{
+    display: flex;
+    list-style-type: none;
+    width: 100%;
+    justify-content: space-around;
+    padding: 0;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.option{
+    display: flex;
+    align-items: center;
+    text-align: center;
+    padding: 5px 20px;
+    border-right: 1px solid black;
+    box-sizing: border-box;
+}
+
+.option:last-child{
+    border-right: none;
+}
+
+.option:hover{
+    background-color: #d3d3d3;
+    cursor: pointer;
+}
+
+.active{
+    background-color: #d3d3d3;
+}
+
+#playersMoney,
+#moveLog{
+    display: none;
+    flex-direction: column;
+}
+
+.playerInfo{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    cursor: pointer;
+    margin: 5px 0;
+}
+
+#playersMoney{
+    flex-direction: column;
+    align-items: center;
+}
+
+.waiting{
+    background-color: #f5ff91;
+}
+
+.newMoney{
+    text-align: right;
+}
+
+form{
+    width: 100%;
+}
+
+.btnCont{
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    margin: 10px 0 5px 0;
+    flex-direction: row-reverse;
+}
+
+.btnCont > *{
+    padding: 5px 8px;
+    background-color: transparent;
+}
+
+.back{
+    background-color: rgba(255,0,0,0.7);
+}
+
+.confirm{
+    background-color: rgba(0,255,0,0.7);
+}
+
+.workArea{
+    height: 444px;
+}
+
+.playerMove{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.sndMoveRow{
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    margin-bottom: 15px;
+}
+
+.count{
+    position: absolute;
+    display: none;
+    padding-left: 5px;
+}
+
+.movesCount{
+    cursor: pointer;
+    margin-right: 30px
+}

@@ -1,0 +1,37 @@
+doctype html
+html(data-isbanker=isBanker.toString() data-gameId=gameId data-playerId=user.id data-mpc= moneyPerCircle )
+    head
+        title= user.name
+        meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
+        link(
+            rel="stylesheet"
+            href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+            integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+            crossorigin="anonymous"
+        )
+        link(
+            rel="stylesheet"
+            href="../public/playerPage/player.css"
+        )
+    body
+        .container.center
+            .userContent.col-lg-4.col-sm-12.col-md-6
+                if(isBanker)
+                    header
+                        ul.options
+                            li#yourControlsBtn.option.active   Your controls
+                            li#otherPlayersBtn.option   Players money
+                            li#moveLogBtn.option   Move logs
+                include includes/playerControls
+                include includes/playersMoney
+                include includes/movesLog
+            .bg-cont
+                #pick-player-to-pay.col-lg-3.col-md-6.col-sm-12
+                    .title For who?
+                    .player(id= "bank") Bank
+            #changePlayer(class="fas fa-sign-out-alt")
+            input#urlLink
+    script(src="https://kit.fontawesome.com/9ef32952ff.js")
+    script(src="https://unpkg.com/axios/dist/axios.min.js")
+    script(src="../public/playerPage/player.js")
+    script(src="../public/ravnyator.js")

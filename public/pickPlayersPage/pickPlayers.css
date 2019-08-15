@@ -1,0 +1,31 @@
+.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+#url{
+    font-size: 1.4em;
+    margin-bottom: 20px;
+}
+
+#players-cont{
+    display: inline;
+    margin-top: 30px;
+}
+
+.title{
+    font-size: 2em;
+}
+
+.player{
+    padding: 15px;
+    font-size: 1.5em;
+    cursor: pointer;
+}
+
+.row{
+    display: flex;
+    flex-direction: column;
+}

@@ -1,0 +1,14 @@
+#playerControls.workArea
+    .name.title= user.name
+    .data
+        .isMyTurn(class= isGoing ? "going" : "not-going" )= !isGoing ? "Not my turn" : "My turn"
+        .money= "Money = "
+            span#money= user.money
+    .actions
+        .moneyInput
+            input(type="number" placeholder="Сумма" disabled= !isGoing )#input
+        .moneyBtns
+            button( disabled= !isGoing )#minus Передать деньги
+        .endTurnBtns
+            button( disabled= !isGoing )#gotCircle Прошел круг
+            button( disabled= !isGoing )#nextPlayer Передать ход

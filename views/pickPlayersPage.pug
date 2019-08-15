@@ -1,0 +1,27 @@
+doctype html
+html
+    head
+        title Pick players
+        meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
+        link(
+            rel="stylesheet"
+            href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+            integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+            crossorigin="anonymous"
+        )
+        link(
+            rel="stylesheet"
+            href="../public/pickPlayersPage/pickPlayers.css"
+        )
+    body
+        .container.center
+            #url
+            .row.center
+                if !allPicked
+                    .title Pick your name
+                    .col-lg-6.col-md-8.col-sm-12#players-cont
+                else
+                    .title All players is picked
+        script(src="https://unpkg.com/axios/dist/axios.min.js")
+        script(src="../public/pickPlayersPage/pickPlayers.js")
+        script(src="../public/ravnyator.js")
