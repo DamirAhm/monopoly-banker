@@ -9,7 +9,7 @@ btn.style.width = textWidth+"px";
 btn.addEventListener("click",()=>{
    axios.post(document.location.href).then(res=>{
        if (res.data.error) {
-           throw new Error(res.data.error);
+           throw res.data.error;
        }
        document.location.replace(`${document.location.href}${res.data}/starter-settings`);
    })

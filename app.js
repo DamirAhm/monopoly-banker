@@ -71,7 +71,8 @@ app.post("/", (req, res) => {
     });
     newGame.save(err => {
         if (err) {
-            res.json({error: "Error while saving game"});
+            res.json({error: err});
+            throw err
         }
         res.json(newGame._id);
     });
