@@ -119,12 +119,13 @@ app.get("/:gameId/starter-settings/new-player", (req, res) => {
         newPlayer.save(err => {
             if (err) {
                 res.json({error: "Error while saving player in new player"});
-                
             }
             res.send(newPlayer._id);
         });
         game.save(err => {
-            if (err) 
+            if (err) {
+                console.log(err.message);
+            }
         });
     });
 }); //create new player
