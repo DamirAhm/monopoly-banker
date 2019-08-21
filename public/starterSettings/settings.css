@@ -144,6 +144,7 @@ h3 {
     display: flex;
     align-items: center;
     flex-direction: column;
+    min-height: 390px;
 }
 
 .player {
@@ -255,7 +256,6 @@ h5 > * {
 
 .buttons button {
     padding: 7px;
-    margin-left: 20px
 }
 
 .settings-buttons {
@@ -313,4 +313,42 @@ h5 > * {
 #reset {
     background-color: #D72323;
     border: none;
+}
+
+@media screen and (max-width: 768px) {
+    .grid-container{
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr 1fr;
+        grid-row-gap: 20px;
+        margin: auto;
+        box-sizing: border-box;
+        height: 710px;
+    }
+    .container{
+        display: flex;
+        align-self: center;
+    }
+    .players-cont{
+        height: 50vh;
+    }
+    .container{
+        padding: 20px auto;
+        box-sizing: border-box;
+    }
+    .bg-cont{
+        height: 100%;
+    }
+    .settings-buttons{
+        grid-template-rows: 250px 40px;
+    }
+}
+
+@media screen and (max-width: 285px){
+    .setting {
+        display: flex;
+        flex-direction: column;
+    }
+    .settings-buttons{
+        grid-template-rows: 280px 40px;
+    }
 }

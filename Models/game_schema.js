@@ -53,6 +53,10 @@ let gameSchema = mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now()
+    },
+    isGameOver: {
+        type: Boolean,
+        default: false
     }
 });
 

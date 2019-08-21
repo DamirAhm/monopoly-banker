@@ -2,7 +2,7 @@
     let playerId = document.getElementsByTagName("html")[0].dataset.playerid;
     let gameId = document.getElementsByTagName("html")[0].dataset.gameid;
     let host = document.location.host.split("/")[0];
-
+    let isPicked = false;
     let socket = new WebSocket(`ws://${host}/${gameId}`);
 
 //array with players in game to give them money
@@ -18,7 +18,7 @@
 //money input
     let input = document.getElementById("input");
 
-//plus minus btns
+//minus btns
     let [minusBtn] = document.getElementsByClassName("moneyBtns")[0].children;
 
     minusBtn.addEventListener("click", (e) => {
@@ -69,84 +69,196 @@
 
 //add new player move container to control their moves to make money control easier
     let newMoveCont = (playerData) => {
+        let player = createPlayer(playerData._id);
+        let fstRow = createFstRow(playerData.name);
+        let sndRow = createSndRow(playerData.moves[playerData.moves.length - 1], playerData.moves.length);
+        player.appendChild(fstRow);
+        player.appendChild(sndRow);
+
+        document.getElementById("moveLog").appendChild(player);
+    };
+
+//functions to make a player moves
+    let createPlayer = (playerId) => {
         let player = document.createElement("div");
         player.classList.add("playerMove");
-        player.dataset.id = playerData._id;
+        player.dataset.id = playerId;
+        return player;
+    };
+    let createFstRow = (playerName) => {
         let fstRow = document.createElement("div");
         fstRow.classList.add("fstMoveRow");
+        //create name span
         let name = document.createElement("span");
-        name.innerText = playerData.name;
+        name.innerText = playerName;
         fstRow.appendChild(name);
+        return fstRow;
+    };
+    let createSndRow = (lastMove, movesCount) => {
+        //create parent element
         let sndRow = document.createElement("div");
         sndRow.classList.add("sndMoveRow");
-        let movesCount = document.createElement("span");
-        movesCount.classList.add("movesCount");
-        movesCount.innerText = "?";
-        let count = document.createElement("span");
-        count.innerText = `${playerData.moves.length} moves more`;
-        count.classList.add("count");
-        movesCount.appendChild(count);
-        movesCount.addEventListener("mouseover", (e) => {
-            hoverCount(e);
-        });
-        movesCount.addEventListener("mouseout", (e) => {
-            hoverCount(e);
-        });
+
+        //create container with move
         let moveCont = document.createElement("div");
         moveCont.classList.add("moveCont");
+
+        //create characteristics of move
         let type = document.createElement("span");
         let total = document.createElement("span");
         let target = document.createElement("span");
+        target.style.fontWeight = "bolder";
+        target.style.color = "white";
+
         moveCont.appendChild(type);
         moveCont.appendChild(total);
         moveCont.appendChild(target);
-        if (playerData.moves.length !== 0) {
-            updateMove(moveCont, playerData.moves[playerData.moves.length - 1]);
-        }
+
+        //create delete button
+        let deleteBtn = createDeleteBtn(+movesCount === 0 ? 0 : +movesCount - 1);
+
         sndRow.appendChild(moveCont);
-        sndRow.appendChild(movesCount);
-        player.appendChild(fstRow);
-        player.appendChild(sndRow);
-        document.getElementById("moveLog").appendChild(player)
+        sndRow.appendChild(deleteBtn);
+
+        //fill move container
+        if (lastMove) {
+            updateMove(moveCont, lastMove);
+            //add there because it must be mounted
+            deleteBtn.onclick = () => {
+                redoMove(lastMove, deleteBtn.previousSibling);
+            };
+        } else {
+            //if player moves are clear
+            moveCont.children[0].innerText = "Player dont do anything";
+            moveCont.children[1].innerText = "";
+            moveCont.children[2].innerText = "";
+            moveCont.nextSibling.style.display = "none";
+        }
+        return sndRow;
+    };
+    let createDeleteBtn = (movesCount) => {
+        //create delete button
+        let deleteBtn = document.createElement("span");
+        deleteBtn.classList.add("delete");
+        deleteBtn.innerText = "x";
+
+        //create span with moves count
+        let count = document.createElement("span");
+        count.innerText = movesCount === 0 ?  "No more moves" : (`${movesCount} moves more`);
+        count.classList.add("count");
+        deleteBtn.appendChild(count);
+
+        //add events to show moves count
+        deleteBtn.addEventListener("mouseover", (e) => {
+            hoverCount(e);
+        });
+        deleteBtn.addEventListener("mouseout", (e) => {
+            hoverCount(e);
+        });
+        return deleteBtn;
+    };
+
+//redo move and replace with previous
+    let redoMove = (move, moveCont) => {
+        if (move) {
+            axios.put(`http://${host}/${gameId}/moneyActions?playerId=${playerId}`, {...move, redo: true})
+                .then(res => {
+                    updateMove(moveCont, res.data);
+                    changeMovesCount(moveCont);
+                });
+            socket.send(JSON.stringify({...move, redo: true}));
+        }
+    };
+
+//change moves count in given move container
+    let changeMovesCount = (moveCont) => {
+        if (moveCont && moveCont.nextSibling) {
+            let id = moveCont.parentElement.parentElement.dataset.id;
+            let countElement = moveCont.nextSibling.children[0];
+            if (id) {
+                axios.get(`http://${host}/${gameId}/movesLeft?playerId=${id}`)
+                    .then(res => {
+                        if (!res.data.error) {
+                            let count = res.data - 1;
+                            countElement.innerText = count > 0 ? (count + (count === 1 ? " move more" : " moves more")) : "No more moves";
+                        } else {
+                            throw new Error(res.data.error);
+                        }
+                    });
+            } else {
+                console.log("Error at mvC");
+            }
+        }
     };
 
 //update player last move
     let updateMove = (playerMoveCont, move) => {
-        switch (move.type) {
-            case "giveMoney": {
-                let playerName = move.for !== "bank" ? players.find(e => e._id === move.for).name : "Bank";
-                playerMoveCont.children[0].innerText = "Gave ";
-                playerMoveCont.children[1].innerText = move.total + (move.total === 1 ? " thousand for " : " thousand for ");
-                playerMoveCont.children[2].innerText = playerName;
-                break;
+        if (!move.error) {
+            switch (move.type) {
+                case "giveMoney": {
+                    playerMoveCont.nextSibling.style.display = "block";
+                    playerMoveCont.nextSibling.onclick = () => {
+                        redoMove(move, playerMoveCont);
+                    };
+                    let playerName = move.for !== "bank" ? players.find(e => e._id === move.for).name : "Bank";
+                    playerMoveCont.children[0].innerText = "Gave ";
+                    playerMoveCont.children[1].innerText = move.total + (move.total === 1 ? " thousand for " : " thousands for ");
+                    playerMoveCont.children[2].innerText = playerName;
+                    playerMoveCont.parentElement.classList.add("not-going");
+                    if (playerMoveCont.parentElement.classList.contains("going")) {
+                        playerMoveCont.parentElement.classList.remove("going");
+                    }
+                    break;
+                }
+                case "gotCircle": {
+                    playerMoveCont.nextSibling.style.display = "block";
+                    playerMoveCont.nextSibling.onclick = () => {
+                        redoMove(move, playerMoveCont);
+                    };
+                    playerMoveCont.children[0].innerText = "Went a circle + ";
+                    playerMoveCont.children[1].innerText = html.dataset.mpc;
+                    playerMoveCont.children[2].innerText = "";
+                    playerMoveCont.parentElement.classList.add("going");
+                    if (playerMoveCont.parentElement.classList.contains("not-going")) {
+                        playerMoveCont.parentElement.classList.remove("not-going");
+                    }
+                    break;
+                }
+                default: {
+                    playerMoveCont.nextSibling.style.display = "none";
+                    playerMoveCont.nextSibling.children.innerText = "0 moves more";
+                    playerMoveCont.children[0].innerText = "Player dont do anything";
+                    playerMoveCont.children[1].innerText = "";
+                    playerMoveCont.children[2].innerText = "";
+                    if (playerMoveCont.parentElement.classList.contains("going")) {
+                        playerMoveCont.parentElement.classList.remove("going");
+                    } else if (playerMoveCont.parentElement.classList.contains("not-going")) {
+                        playerMoveCont.parentElement.classList.remove("not-going");
+                    }
+                }
             }
-            case "gotCircle": {
-                let player = players.find(e => e._id === playerId);
-                playerMoveCont.children[0].innerText = "Went a circle";
-                playerMoveCont.children[1].innerText = html.dataset.mpc;
-                playerMoveCont.children[2].innerText = player.name;
-                break;
-            }
+        } else {
+            throw new Error(move.error);
         }
     };
 
-//check how many moves more
+//check how many moves more on  hover
     let hoverCount = (e) => {
         if (e.target.children[0]) {
             if (e.type === "mouseover") {
                 e.target.children[0].style.display = "inline";
-                let conts = document.getElementsByClassName("movesCount");
+                let conts = document.getElementsByClassName("delete");
                 for (let i = 0; i < conts.length; i++) {
                     if (conts[i] !== e.target) {
-                        conts[i].style.visibility = "hidden"
+                        conts[i].style.visibility = "hidden";
                     }
                 }
             } else if (e.type === "mouseout") {
                 e.target.children[0].style.display = "none";
-                let conts = document.getElementsByClassName("movesCount");
+                let conts = document.getElementsByClassName("delete");
                 for (let i = 0; i < conts.length; i++) {
                     if (conts[i] !== e.target) {
-                        conts[i].style.visibility = "visible"
+                        conts[i].style.visibility = "visible";
                     }
                 }
             }
@@ -172,7 +284,7 @@
         confirmBtn.classList.add("confirm");
         confirmBtn.innerText = "Update";
         confirmBtn.addEventListener("click", (e) => {
-            confirmUpdate(e, oldMoney, newMoney);
+            confirmUpdate(e, oldMoney);
         });
         let backBtn = document.createElement("button");
         backBtn.classList.add("back");
@@ -206,12 +318,18 @@
         socket.send(JSON.stringify({
             type: "giveMoney",
             for: oldMoney.id.split("money")[0],
-            total: +delta
+            total: +delta,
+            from: playerId,
+            redo: false,
+            bankerMove: true
         }));
         axios.put(`http://${host}/${gameId}/moneyActions?playerId=${playerId}`, {
             type: "receive",
             total: +delta,
-            for: oldMoney.id.split("money")[0]
+            for: oldMoney.id.split("money")[0],
+            from: playerId,
+            redo: false,
+            bankerMove: true
         });
     };
 
@@ -231,45 +349,54 @@
     axios.get(`http://${host}/${gameId}/players`).then(res => {
         players = res.data;
         res.data.forEach(e => {
+            //add to pay list(opens in minusMoney)
             newPayListPlayer(e);
-            newPlayerInfo(e);
-            newMoveCont(e);
+            if (html.dataset.isbanker === "true") {
+                //add to players money page
+                newPlayerInfo(e);
+                //add to move log page
+                newMoveCont(e);
+            }
         });
     });
 
-//give money to other player
+//works on click on player in pay list
     let onPlayerPick = (e) => {
         let moneyCount = input.value;
         document.getElementsByClassName("bg-cont")[0].style.display = "none";
         input.value = "";
-        let moneySpan = document.getElementById(playerId + "money");
-        moneySpan.innerText = (+moneySpan.innerText - +moneyCount).toString();
         axios.put(`http://${host}/${gameId}/moneyActions?playerId=${playerId}`, {
             type: "giveMoney",
             total: +moneyCount,
-            for: e.target.id
+            for: e.target.id,
+            redo: false,
+            from: playerId
         }).then(res => {
-            money.innerText = res.data;
+            if (!res.data.error) {
+                socket.send(JSON.stringify({
+                    type: "giveMoney",
+                    for: e.target.id,
+                    total: +moneyCount,
+                    from: playerId,
+                    redo: false
+                }));
+                money.innerText = res.data;
+            } else {
+                throw new Error(res.data.error);
+            }
         });
-        if (e.target.id !== "bank") {
-            socket.send(JSON.stringify({
-                type: "giveMoney",
-                for: e.target.id,
-                total: +moneyCount
-            }));
-        }
     };
 
 //opens a choose player monitor
     let minusMoney = () => {
-        if (input.value) {
+        if (+input.value > 0) {
             if (+money.innerText > +input.value) {
                 document.getElementsByClassName("bg-cont")[0].style.display = "flex";
             } else {
                 alert("Not enough money");
             }
         } else {
-            alert("Enter money total");
+            alert("Enter not negative money total");
         }
     };
 
@@ -284,16 +411,21 @@
 //func while you got circle
     let gotCircle = (e) => {
         e.preventDefault();
-        axios.put(`http://${host}/${gameId}/moneyActions?playerId=${html.dataset.playerid}`, {
-            type: "gotCircle"
-        }).then(res => {
-            if (res.data.error) {
-                alert(res.data.error);
-            } else {
-                money.innerText = res.data;
-            }
-        });
-        giveTurn(e);
+        let action = {
+            type: "gotCircle",
+            from: playerId,
+            redo: false
+        };
+        axios.put(`http://${host}/${gameId}/moneyActions?playerId=${html.dataset.playerid}`, action)
+            .then(res => {
+                if (res.data.error) {
+                    alert(res.data.error);
+                } else {
+                    money.innerText = res.data;
+                    socket.send(JSON.stringify(action));
+                    giveTurn(e);
+                }
+            });
     };
 
     document.getElementById("gotCircle").addEventListener("click", (e) => {
@@ -316,12 +448,16 @@
     let giveTurn = (e) => {
         e.preventDefault();
         axios.get(`http://${host}/${gameId}/giveTurn?playerId=${html.dataset.playerid}`).then(res => {
-            socket.send(JSON.stringify({
-                type: "giveTurn",
-                nextPlayerId: res.data
-            }));
+            if (!res.data.error) {
+                socket.send(JSON.stringify({
+                    type: "giveTurn",
+                    nextPlayerId: res.data
+                }));
+                changeIsGoing(false);
+            } else {
+                throw new Error(res.data.error);
+            }
         });
-        changeIsGoing(false);
     };
 
 //give next player btn action
@@ -364,13 +500,27 @@
 
 //works when web socket opens connection
     socket.onopen = () => {
-        console.log("open");
+        socket.send(JSON.stringify({
+            type: "sendId",
+            id: playerId,
+            game: gameId
+        }));
+        axios.get(`http://${host}/${gameId}/pick-player?id=${playerId}`)
+            .then(err => {
+                if (err.data.error) {
+                    console.log(err.data);
+                    document.getElementsByClassName("container")[0].innerHTML = err.data.error;
+                    isPicked = true;
+                }
+            });
     };
 
 //works when web socket close connection
-    socket.onclose = () => {
-        console.log("closed");
-    };
+    if (!isPicked) {
+        socket.onclose = () => {
+            alert("Please reload the page");
+        };
+    }
 
 //works when web socket receive a message / action
     socket.onmessage = res => {
@@ -382,6 +532,7 @@
                 }
                 if (html.dataset.isbanker === "true") {
                     let infos = document.getElementsByClassName("playerInfo");
+                    //change going player in players money page
                     for (let i = 0; i < infos.length; i++) {
                         if (infos[i].classList.contains("going")) {
                             infos[i].classList.remove("going");
@@ -408,13 +559,61 @@
                 break;
             }
             case "giveMoney": {
-                if (data.id === playerId) {
-                    money.innerText = +money.innerText + data.moneyTotal;
+                if (!data.redo) {
+                    if (data.for === playerId) {
+                        money.innerText = +money.innerText + data.total;
+                    }
+                } else {
+                    if (data.for === playerId) {
+                        money.innerText = (+money.innerText - data.total).toString();
+                    } else if (data.from === playerId) {
+                        money.innerText = +money.innerText + data.total;
+                    }
                 }
                 if (html.dataset.isbanker === "true") {
-                    let moneySpan = document.getElementById(data.id + "money");
-                    moneySpan.innerText = +moneySpan.innerText + data.moneyTotal;
+                    if (data.for !== "bank") {
+                        let moneySpan = document.getElementById(data.for + "money");
+                        moneySpan.innerText = (+moneySpan.innerText + (data.redo ? -data.total : +data.total)).toString();
+                    }
+                    if (!data.bankerMove) {
+                        let moneySpan = document.getElementById(data.from + "money");
+                        moneySpan.innerText = (+moneySpan.innerText + (data.redo ? +data.total : -data.total)).toString();
+                    }
+                    if (!data.bankerMove) {
+                        let playerMoves = document.getElementsByClassName("playerMove");
+                        for (let i = 0; i < playerMoves.length; i++) {
+                            if (playerMoves[i].dataset.id === data.from) {
+                                updateMove(playerMoves[i].children[1].children[0], data, true);
+                                if (!data.redo) {
+                                    changeMovesCount(playerMoves[i].children[1].children[0]);
+                                }
+                            }
+                        }
+                    }
                 }
+                break;
+            }
+            case "gotCircle": {
+                if (html.dataset.isbanker === "true") {
+                    let moneySpan = document.getElementById(data.from + "money");
+                    moneySpan.innerText = (+moneySpan.innerText + (data.redo ? -parseInt(html.dataset.mpc) : +parseInt(html.dataset.mpc))).toString();
+                    let playerMoves = document.getElementsByClassName("moveCont");
+                    for (let i = 0; i < playerMoves.length; i++) {
+                        if (playerMoves[i].parentElement.parentElement.dataset.id === data.from) {
+                            updateMove(playerMoves[i], data, true);
+                            if (!data.redo) {
+                                changeMovesCount(playerMoves[i].children[1].children[0]);
+                            }
+                        }
+                    }
+                }
+                if ( data.redo && data.from === playerId ) {
+                    money.innerText = (+money.innerText + (data.redo ? -parseInt(html.dataset.mpc) : +parseInt(html.dataset.mpc))).toString();
+                }
+                break;
+            }
+            case "timeOver": {
+                alert("Game time is over");
             }
         }
     };

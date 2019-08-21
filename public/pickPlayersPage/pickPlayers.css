@@ -29,3 +29,15 @@
     display: flex;
     flex-direction: column;
 }
+
+@media screen and (max-width: 768px){
+    #url{
+        margin-bottom: 50px;
+    }
+}
+
+@media screen and (max-width: 300px){
+    #url{
+        font-size: 0.8em;
+    }
+}

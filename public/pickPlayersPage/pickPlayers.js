@@ -2,7 +2,12 @@ let playersCont = document.getElementById("players-cont");
 
 let ids = [];
 
-document.getElementById("url").innerText = "Ссылка на игру - " + document.location.href;
+if (document.documentElement.clientWidth >= 540) {
+    document.getElementById("url").innerText = "Ссылка на игру - " + document.location.href;
+} else {
+    document.getElementById("url").innerText = "Id игры - " + document.location.pathname.split("/")[1];
+
+}
 
 let newPlayer = (playerData) => {
     let player = document.createElement("div");

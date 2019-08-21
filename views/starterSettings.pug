@@ -15,7 +15,7 @@ html
         )
     body
         .container.center
-            .col-lg-9.col-sm-12.grid-container
+            .col-lg-10.grid-container
                 .players
                     .players-cont Players
                         if players
@@ -34,7 +34,7 @@ html
                                 div
                     if !isStartSettingsDone
                         .end-line
-                            p.maxP.center Max 5 players*
+                            p.maxP.center Max 6 players*
                             button#change-sequence-btn Change sequence
                 .settings-buttons
                     .settings
@@ -51,24 +51,12 @@ html
                             div.input
                                 input.texti(value= startSettings.moneyForCircle || "2000" type="number" disabled = isStartSettingsDone)#circleMoney
                                 p= " k"
-                        if !isStartSettingsDone
-                            .setting.time-on
-                                p Turn on maximal time
-                                label.switch
-                                   input(type="checkbox" checked= startSettings.isMaxTimeOn)#turn-on
-                                   span.slider.round
-                        div(class= startSettings.isMaxTimeOn ? "" : "blocked").setting.time#timeOnCont
-                            p Max time
-                            p.equal= "="
-                            div.input
-                                input.texti(value= startSettings.maxTime type="number" disabled)#maxTime
-                                p min
                     if !isStartSettingsDone
                         .buttons.center
                             button#reset Standard settings
                             button#next Create
             .bg-cont
-                .col-lg-2.col-sm-12.col-md-4.change-sequence-cont
+                .col-lg-4.col-sm-12.col-md-8.change-sequence-cont
                     div.title Choose players by circle
                     div.change-sequence-players
         if !isStartSettingsDone

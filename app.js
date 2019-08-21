@@ -11,6 +11,8 @@ mongoose.connect("mongodb://localhost:27017/monopoly_app", {useFindAndModify: fa
     console.log("Successfully connected");
 });
 
+let connections = {};
+
 let app = express();
 app.use(bodyParser.json());
 app.use("/public", express.static("public"));
@@ -19,6 +21,46 @@ app.set("views", "./views");
 
 let server = http.createServer(app);
 let wss = expressWs(app, server);
+
+let pickPlayer = (id) => {
+    Player.findById(id, (err, player) => {
+        if (err) {
+            console.log("Error while finding player in pick-player");
+            throw err;
+        }
+        if (player.isPicked) {
+            return "Player is already picked";
+        } else {
+            player.isPicked = true;
+            player.save(err => {
+                if (err) {
+                    console.log("Error while saving player in pick-player");
+                    throw err;
+                }
+            });
+        }
+    });
+};
+
+let unpickPlayer = (id) => {
+    Player.findById(id, (err, player) => {
+        if (err) {
+            console.log("Error while finding player in unpick player");
+            throw err;
+        }
+        if (!player.isPicked) {
+            return "Player isn`t picked";
+        } else {
+            player.isPicked = false;
+            player.save(err => {
+                if (err) {
+                    console.log("Error while saving player in unpick player");
+                    throw err;
+                }
+            });
+        }
+    });
+};
 
 app.get("/", (req, res) => {
     res.render("starterPage");
@@ -192,6 +234,25 @@ app.get("/:gameId/players", (req, res) => {
         }
     });
 }); //return game room players
+app.get("/:gameId/movesLeft", (req, res) => {
+    Game.findById(req.params.gameId, (err) => {
+        if (err) {
+            console.log("Error while finding the game in movesLeft");
+            throw err;
+        }
+        if (req.query.playerId) {
+            Player.findById(req.query.playerId, (err, player) => {
+                if (err) {
+                    console.log("Error while finding the player in movesLeft");
+                    throw err;
+                }
+                res.send(player.moves.length.toString());
+            });
+        } else {
+            res.json({error: "Player not Found"});
+        }
+    });
+});
 app.post("/:gameId/players/change-sequence", req => {
     Game.findById(req.params.gameId, (err, game) => {
         if (err) {
@@ -259,23 +320,10 @@ app.get("/:gameId/unpick-player", (req, res) => {
             console.log("Error while finding game in unpick player");
             throw err;
         }
-        Player.findById(req.params.id, (err, player) => {
-            if (err) {
-                console.log("Error while finding player in unpick player");
-                throw err;
-            }
-            if (!player.isPicked) {
-                res.json({error: "Player isn`t picked"});
-            } else {
-                player.isPicked = false;
-                player.save(err => {
-                    if (err) {
-                        console.log("Error while saving player in unpick player");
-                        throw err;
-                    }
-                });
-            }
-        });
+        let error = unpickPlayer(req.query.id);
+        if (error) {
+            res.json({error: error});
+        }
     });
 });//change isPicked parameter of player to false
 
@@ -295,12 +343,6 @@ app.get("/:gameId", (req, res) => {
                     res.send("Confirm your starter settings");
                 }
             } else {
-                Player.findByIdAndUpdate(req.query.playerId, {isPicked: true}, err => {
-                    if (err) {
-                        console.log("Error while updating player in render game");
-                        throw err;
-                    }
-                });
                 Player.findById(req.query.playerId, (err, player) => {
                     if (err) {
                         console.log("Error while finding the player in render game");
@@ -359,77 +401,110 @@ app.put("/:gameId/moneyActions", (req, res) => {
             console.log("Error while finding the game in money actions");
             throw err;
         }
-        Player.findById(req.query.playerId, (err, player) => {
-            if (err) {
-                console.log("Error while finding the player in money actions");
-                throw err;
-            }
-            if (player.isGoing) {
-                switch (req.body.type) {
-                    case "giveMoney": {
-                        Player.findById(req.query.playerId, (err, player) => {
-                            if (err) {
-                                console.log("Error while finding the player");
-                                throw err;
-                            }
-                            player.moves.push(req.body);
-                            player.money -= +req.body.total;
-                            if (req.body.for !== "bank") {
-                                Player.findById(req.body.for, (err, receiver) => {
-                                    if (err) {
-                                        console.log("Error while finding the receiver");
-                                        throw err;
-                                    }
-                                    receiver.money += +req.body.total;
-                                    receiver.save(err => {
+        Player.findById(req.body.from, (err, player) => {
+                if (err) {
+                    console.log("Error while finding the player in money actions");
+                    throw err;
+                }
+                if (player.isGoing || req.body.redo || req.body.bankerMove) {
+                    switch (req.body.type) {
+                        case "giveMoney": {
+                            if (!req.body.redo) {
+                                if (!req.body.bankerMove) {
+                                    player.moves.push(req.body);
+                                    player.money -= +req.body.total;
+                                }
+                                if (req.body.for !== "bank") {
+                                    Player.findById(req.body.for, (err, receiver) => {
                                         if (err) {
-                                            console.log("Error while saving the player");
+                                            console.log("Error while finding the receiver");
                                             throw err;
                                         }
-                                        player.save(err => {
+                                        receiver.money += +req.body.total;
+                                        receiver.save(err => {
                                             if (err) {
                                                 console.log("Error while saving the player");
                                                 throw err;
                                             }
-                                            res.send(player.money.toString());
+                                            player.save(err => {
+                                                if (err) {
+                                                    console.log("Error while saving the player");
+                                                    throw err;
+                                                }
+                                                res.send(player.money.toString());
+                                            });
                                         });
                                     });
-                                });
+                                } else {
+                                    player.save(err => {
+                                        if (err) {
+                                            console.log("Error while saving the player");
+                                            throw err;
+                                        }
+                                        res.send(player.money.toString());
+                                    });
+                                }
                             } else {
+                                player.moves.splice(player.moves.length - 1, 1);
+                                player.money += req.body.total;
+                                if (req.body.for !== "bank") {
+                                    Player.findById(req.body.for, (err, receiver) => {
+                                        if (err) {
+                                            console.log("Error while finding the receiver");
+                                            throw err;
+                                        }
+                                        receiver.money -= +req.body.total;
+                                        receiver.save(err => {
+                                            if (err) {
+                                                console.log("Error while saving the player");
+                                                throw err;
+                                            }
+                                        });
+                                    });
+                                }
                                 player.save(err => {
                                     if (err) {
                                         console.log("Error while saving the player");
                                         throw err;
                                     }
-                                    res.send(player.money.toString());
                                 });
+                                if (player.moves.length === 0) {
+                                    res.json({type: "Filler type"});
+                                } else {
+                                    res.json(player.moves[player.moves.length - 1]);
+                                }
                             }
-                        });
-                        break;
-                    }
-                    case "gotCircle": {
-                        Player.findById(req.query.playerId, (err, player) => {
-                            if (err) {
-                                console.log("Error while finding the player in money actions");
-                                throw err;
-                            }
-                            if (player.moves.length === 0 || player.moves[player.moves.length - 1].type !== "gotCircle") {
-                                player.moves.push(req.body);
-                                player.money += +game.startSettings.moneyForCircle;
+                            break;
+                        }
+                        case "gotCircle": {
+                            if (req.body.redo) {
+                                player.moves.splice(player.moves.length - 1, 1);
+                                player.money -= +game.startSettings.moneyForCircle;
                                 player.save(err => {
                                     if (err) {
                                         console.log("Error while saving the player in money actions");
                                         throw err;
                                     }
-                                    res.send(player.money.toString());
+                                    res.json(player.moves[player.moves.length - 1]);
                                 });
                             } else {
-                                res.json({error: "Dont do it so often"});
+                                if (player.moves.length === 0 || player.moves[player.moves.length - 1].type !== "gotCircle") {
+                                    player.moves.push(req.body);
+                                    player.money += +game.startSettings.moneyForCircle;
+                                    player.save(err => {
+                                        if (err) {
+                                            console.log("Error while saving the player in money actions");
+                                            throw err;
+                                        }
+                                        res.send(player.money.toString());
+                                    });
+                                } else {
+                                    res.json({error: "Dont do it so often"});
+                                }
                             }
-                        });
-                        break;
-                    }
-                    case "receive": {
+                            break;
+                        }
+                        case "receive": {
                             Player.findById(req.body.for, (err, receiver) => {
                                 if (err) {
                                     console.log("Error while finding the receiver");
@@ -445,8 +520,7 @@ app.put("/:gameId/moneyActions", (req, res) => {
                             });
                             break;
                         }
-                    default:
-                        {
+                        default: {
                             Player.findById(req.query.playerId, (err, player) => {
                                 if (err) {
                                     console.log("Error while finding the player in money actions");
@@ -456,9 +530,7 @@ app.put("/:gameId/moneyActions", (req, res) => {
                             });
                         }
                     }
-                }
-            else
-                {
+                } else {
                     res.json({error: "It`s not your turn"});
                 }
             }
@@ -468,8 +540,16 @@ app.put("/:gameId/moneyActions", (req, res) => {
 
 
 app.ws("/:gameId", ws => {
+    for(let key in connections){
+        if(connections.hasOwnProperty(key)){
+            if ( connections[key] === ws ) {
+                pickPlayer(key);
+            }
+        }
+    }
     ws.on("message", msg => {
         let data = JSON.parse(msg);
+        debugger;
         if (data) {
             switch (data.type) {
                 case "giveTurn": {
@@ -485,22 +565,31 @@ app.ws("/:gameId", ws => {
                     break;
                 }
                 case "giveMoney": {
-                    if (data.for) {
-                        wss.getWss().clients.forEach(e => {
-                            let action = {
-                                type: "giveMoney",
-                                id: data.for,
-                                moneyTotal: data.total
-                            };
-                            e.send(JSON.stringify(action));
-                        });
-                    }
+                    wss.getWss().clients.forEach(e => {
+                        e.send(JSON.stringify(data));
+                    });
+                    break;
+                }
+                case "gotCircle": {
+                    wss.getWss().clients.forEach(e => {
+                        e.send(JSON.stringify(data));
+                    });
+                    break;
+                }
+                case "sendId": {
+                    connections[data.id] = ws;
                 }
             }
         }
     });
-    ws.on("close", err => {
-        console.log(err);
+    ws.on("close", () => {
+        for(let key in connections){
+            if(connections.hasOwnProperty(key)){
+                if ( connections[key] === ws ) {
+                    unpickPlayer(key);
+                }
+            }
+         }
     });
     ws.on("error", err => {
         console.log(err);

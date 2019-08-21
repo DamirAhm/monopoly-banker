@@ -1,21 +1,8 @@
-//change the isMaxTimeOn statement
-let turnBtn = document.getElementById("turn-on");
-let timeOnCont = document.getElementById("timeOnCont");
-let toggleOn = (bool) => {
-    if(bool) {
-        if (timeOnCont.classList.contains("blocked")) {
-            timeOnCont.classList.remove("blocked");
-            timeOnCont.children[2].children[0].disabled = false;
-        } else {
-            timeOnCont.children[2].children[0].disabled = true;
-            timeOnCont.classList.add("blocked");
-        }
-    }else{
-        timeOnCont.children[2].children[0].disabled = true;
-        timeOnCont.classList.add("blocked");
-    }
-};
-turnBtn.addEventListener("click", toggleOn);
+let bankerId;
+
+if (document.getElementsByClassName("player-cont").length){
+    bankerId = document.getElementsByClassName("player-cont")[0].id;
+}
 
 //get player and player container elements
 let players = document.getElementsByClassName("player");
@@ -113,12 +100,16 @@ let playerAction = (player, text) => {
                 checkbox.addEventListener("click", () => {
                     makeBanker(checkbox);
                 });
-                checkbox.checked = document.getElementsByClassName("player-cont").length === 0;
+                if (document.getElementsByClassName("player-cont").length === 0) {
+                    checkbox.checked = true;
+                    bankerId = player.id;
+                }else {
+                    checkbox.checked = false;
+                }
                 player.parentNode.replaceChild(checkbox, player.previousSibling);
                 if (playersCont.children.length < 6) {
                     playersCont.appendChild(addPlayerBtnCont);
                 }
-
                 //change add-player button to player button
                 player.classList.remove("add-player");
                 player.parentNode.classList.remove("add-player-cont");
@@ -225,6 +216,7 @@ let changeSequence = () => {
             for (let i = 0; i < players.length; i++) {
                 players[i].children[1].innerText = newSequence[i].innerText;
                 players[i].id = newSequence[i].id;
+                players[i].children[0].checked = players[i].id === bankerId;
                 newSequenceData.push({
                     id: newSequence[i].id,
                     name: newSequence[i].innerText
@@ -271,7 +263,7 @@ document.getElementById("reset").addEventListener("click", reset);
 let create = () => {
     if (document.getElementsByClassName("player-cont").length >= 2) {
         if (document.getElementById("startMoneyIn").value) {
-            if(+document.getElementById("startMoneyIn").value >= 0 && +document.getElementById("maxTime").value >= 0 && +document.getElementById("circleMoney").value >= 0) {
+            if(+document.getElementById("startMoneyIn").value >= 0 && +document.getElementById("circleMoney").value >= 0) {
                 let players = document.getElementsByClassName("player-cont");
                 let bankerId;
                 for (let i = 0; i < players.length; i++) {
@@ -281,8 +273,6 @@ let create = () => {
                 }
                 axios.post(`${document.location.href}`, {
                     startMoney: +document.getElementById("startMoneyIn").value,
-                    maxTime: +document.getElementById("maxTime").value,
-                    isMaxTimeOn: document.getElementById("turn-on").checked,
                     moneyForCircle: +document.getElementById("circleMoney").value,
                     bankerId: bankerId
                 }).then(() => {
@@ -310,6 +300,7 @@ let makeBanker = (playerCheckbox) => {
         checkBoxes[i].checked = false;
     }
     playerCheckbox.checked = true;
+    bankerId = playerCheckbox.parentElement.id;
 };
 
 //give action to checkboxes
