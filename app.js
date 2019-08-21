@@ -6,7 +6,7 @@ const express = require("express"),
     Player = require("./Models/player_schema"),
     Game = require("./Models/game_schema");
 
-mongoose.connect("mongodb://localhost:27017/monopoly_app", {useFindAndModify: false, useNewUrlParser: true}, err => {
+mongoose.connect("mongodb+srv://banker666:8NHK9PFuv7bJmmIa@firstapp-x1lka.mongodb.net/test?retryWrites=true&w=majority", {useFindAndModify: false, useNewUrlParser: true}, err => {
     if (err) throw err;
     console.log("Successfully connected");
 });
