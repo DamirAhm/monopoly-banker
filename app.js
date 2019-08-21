@@ -7,7 +7,7 @@ const express = require("express"),
     Game = require("./Models/game_schema");
 
 mongoose.connect("mongodb+srv://banker666:8NHK9PFuv7bJmmIa@firstapp-x1lka.mongodb.net/test?retryWrites=true&w=majority", {useFindAndModify: false, useNewUrlParser: true}, err => {
-    if (err) throw err;
+    if (err) 
     console.log("Successfully connected");
 });
 
@@ -26,7 +26,7 @@ let pickPlayer = (id) => {
     Player.findById(id, (err, player) => {
         if (err) {
             console.log("Error while finding player in pick-player");
-            throw err;
+            
         }
         if (player.isPicked) {
             return "Player is already picked";
@@ -35,7 +35,7 @@ let pickPlayer = (id) => {
             player.save(err => {
                 if (err) {
                     console.log("Error while saving player in pick-player");
-                    throw err;
+                    
                 }
             });
         }
@@ -46,7 +46,7 @@ let unpickPlayer = (id) => {
     Player.findById(id, (err, player) => {
         if (err) {
             console.log("Error while finding player in unpick player");
-            throw err;
+            
         }
         if (!player.isPicked) {
             return "Player isn`t picked";
@@ -55,7 +55,7 @@ let unpickPlayer = (id) => {
             player.save(err => {
                 if (err) {
                     console.log("Error while saving player in unpick player");
-                    throw err;
+                    
                 }
             });
         }
@@ -72,7 +72,7 @@ app.post("/", (req, res) => {
     newGame.save(err => {
         if (err) {
             res.json({error: "Error while saving game"});
-            throw err;
+            
         }
         res.json(newGame._id);
     });
@@ -83,7 +83,7 @@ app.get("/:gameId/starter-settings", (req, res) => {
         if (err) {
             console.log("Error while finding the game in starter-settings");
             res.send("404 Game not found");
-            throw err;
+            
         }
         Player.find({gameId: game._id}, (err, players) => {
             players.sort((a, b) => game.players.indexOf(a._id) - game.players.indexOf(b._id));
@@ -100,7 +100,7 @@ app.get("/:gameId/starter-settings/change-name/:_id", req => {
     Player.findByIdAndUpdate(req.params._id, {name: req.query.name}, err => {
         if (err) {
             console.log("Error while updating player in change name");
-            throw err;
+            
         }
     });
 }); //change player name by _id
@@ -108,7 +108,7 @@ app.get("/:gameId/starter-settings/new-player", (req, res) => {
     Game.findById(req.params.gameId, (err, game) => {
         if (err) {
             console.log("Error while finding game in new player");
-            throw err;
+            
         }
         let newPlayer = new Player({
             _id: new mongoose.Types.ObjectId(),
@@ -119,12 +119,12 @@ app.get("/:gameId/starter-settings/new-player", (req, res) => {
         newPlayer.save(err => {
             if (err) {
                 res.json({error: "Error while saving player in new player"});
-                throw err;
+                
             }
             res.send(newPlayer._id);
         });
         game.save(err => {
-            if (err) throw err;
+            if (err) 
         });
     });
 }); //create new player
@@ -132,25 +132,25 @@ app.get("/:gameId/starter-settings/delete-player", req => {
     Game.findById(req.params.gameId, (err, game) => {
         if (err) {
             console.log("Error while find game in delete player");
-            throw err;
+            
         }
         Player.findById(req.query.id, (err, player) => {
             if (err) {
                 console.log("Error while finding player in delete ");
-                throw err;
+                
             }
             game.players.splice(game.players.indexOf(player._id), 1);
             game.save(err => {
                 if (err) {
                     console.log("Error while saving game in delete");
-                    throw err;
+                    
                 }
             });
         });
         Player.findByIdAndDelete(req.query.id, err => {
             if (err) {
                 console.log("Error while deleting player");
-                throw err;
+                
             }
         });
     });
@@ -159,19 +159,19 @@ app.post("/:gameId/starter-settings", (req, res) => {
     Game.findById(req.params.gameId, (err, game) => {
         if (err) {
             console.log("Error while finding the game in post starter-settings");
-            throw err;
+            
         }
         Player.find({gameId: game._id}, (err, players) => {
             if (err) {
                 console.log("Error while finding players in post starter-settings");
-                throw err;
+                
             }
             for (let i = 0; i < players.length; i++) {
                 players[i].money = req.body.startMoney;
                 players[i].save(err => {
                     if (err) {
                         console.log("Error while saving player in post starter-settings");
-                        throw err;
+                        
                     }
                 });
             }
@@ -179,7 +179,7 @@ app.post("/:gameId/starter-settings", (req, res) => {
         Player.findById(req.body.bankerId, (err, player) => {
             if (err) {
                 console.log("Error while finding the player there");
-                throw err;
+                
             }
             game.startSettings = {
                 ...req.body,
@@ -189,7 +189,7 @@ app.post("/:gameId/starter-settings", (req, res) => {
             game.save(err => {
                 if (err) {
                     console.log("Error while saving the game");
-                    throw err;
+                    
                 }
             });
             res.send();
@@ -197,7 +197,7 @@ app.post("/:gameId/starter-settings", (req, res) => {
         Player.findByIdAndUpdate(game.players[0], {isGoing: true}, err => {
             if (err) {
                 console.log("Error while updating ");
-                throw err;
+                
             }
         });
     });
@@ -207,13 +207,13 @@ app.get("/:gameId/players", (req, res) => {
     Game.findById(req.params.gameId, (err, game) => {
         if (err) {
             console.log("Error while finding game in players");
-            throw err;
+            
         }
         if (req.query.id) {
             Player.findById(req.query.id, (err, player) => {
                 if (err) {
                     console.log("Error while finding game in players");
-                    throw err;
+                    
                 }
                 res.json(player);
             });
@@ -221,7 +221,7 @@ app.get("/:gameId/players", (req, res) => {
             Player.find({gameId: game._id}, (err, players) => {
                 if (err) {
                     console.log("Error while finding game in players");
-                    throw err;
+                    
                 }
                 if (players.length === game.players.length) {
                     players.sort((a, b) => game.players.indexOf(a._id) - game.players.indexOf(b._id));
@@ -238,13 +238,13 @@ app.get("/:gameId/movesLeft", (req, res) => {
     Game.findById(req.params.gameId, (err) => {
         if (err) {
             console.log("Error while finding the game in movesLeft");
-            throw err;
+            
         }
         if (req.query.playerId) {
             Player.findById(req.query.playerId, (err, player) => {
                 if (err) {
                     console.log("Error while finding the player in movesLeft");
-                    throw err;
+                    
                 }
                 res.send(player.moves.length.toString());
             });
@@ -257,7 +257,7 @@ app.post("/:gameId/players/change-sequence", req => {
     Game.findById(req.params.gameId, (err, game) => {
         if (err) {
             console.log("Error while finding game in change sequence");
-            throw err;
+            
         }
         if (game.players.length === req.body.length) {
             let newPlayerList = [];
@@ -266,7 +266,7 @@ app.post("/:gameId/players/change-sequence", req => {
                     Player.findById(req.body[i].id, (err, player) => {
                         if (err) {
                             console.log("Error while finding player in change sequence");
-                            throw err;
+                            
                         }
                         newPlayerList[i] = player._id;
                         if (i === req.body.length - 1) {
@@ -280,7 +280,7 @@ app.post("/:gameId/players/change-sequence", req => {
                 game.save(err => {
                     if (err) {
                         console.log("Error while saving game in change sequence");
-                        throw err;
+                        
                     }
                 });
             });
@@ -293,12 +293,12 @@ app.get("/:gameId/pick-player", (req, res) => {
     Game.findById(req.params.gameId, (err, game) => {
         if (err) {
             console.log("Error while finding game in pick-player");
-            throw err;
+            
         }
         Player.findById(req.query.id, (err, player) => {
             if (err) {
                 console.log("Error while finding player in pick-player");
-                throw err;
+                
             }
             if (player.isPicked) {
                 res.json({error: "Player is already picked"});
@@ -307,7 +307,7 @@ app.get("/:gameId/pick-player", (req, res) => {
                 player.save(err => {
                     if (err) {
                         console.log("Error while saving player in pick-player");
-                        throw err;
+                        
                     }
                 });
             }
@@ -318,7 +318,7 @@ app.get("/:gameId/unpick-player", (req, res) => {
     Game.findById(req.params.gameId, (err, game) => {
         if (err) {
             console.log("Error while finding game in unpick player");
-            throw err;
+            
         }
         let error = unpickPlayer(req.query.id);
         if (error) {
@@ -332,7 +332,7 @@ app.get("/:gameId", (req, res) => {
         Game.findById(req.params.gameId, (err, game) => {
             if (err) {
                 console.log("Error while finding the game in render game");
-                throw err;
+                
             }
             if (!req.query.playerId) {
                 if (game.isStartSettingsDone) {
@@ -346,7 +346,7 @@ app.get("/:gameId", (req, res) => {
                 Player.findById(req.query.playerId, (err, player) => {
                     if (err) {
                         console.log("Error while finding the player in render game");
-                        throw err;
+                        
                     }
                     let bankerId = game.startSettings.bankerId;
                     res.render("playerPage", {
@@ -365,18 +365,18 @@ app.get("/:gameId/giveTurn", (req, res) => {
     Game.findById(req.params.gameId, (err, game) => {
         if (err) {
             console.log("Error while finding the game in give turn");
-            throw err;
+            
         }
         Player.findByIdAndUpdate(req.query.playerId, {isGoing: false}, (err, player) => {
             if (err) {
                 console.log("Error while updating player in give turn");
-                throw err;
+                
             }
             if (game.players.indexOf(player._id) === game.players.length - 1) {
                 Player.findByIdAndUpdate(game.players[0]._id, {isGoing: true}, (err, player) => {
                     if (err) {
                         console.log("Error while updating player in give turn");
-                        throw err;
+                        
                     }
                     res.send(player._id);
                 });
@@ -385,7 +385,7 @@ app.get("/:gameId/giveTurn", (req, res) => {
                 Player.findByIdAndUpdate(game.players[game.players.indexOf(player._id) + 1]._id, {isGoing: true}, (err, player) => {
                     if (err) {
                         console.log("Error while updating player in give turn");
-                        throw err;
+                        
                     }
                     res.send(player._id);
                 });
@@ -399,12 +399,12 @@ app.put("/:gameId/moneyActions", (req, res) => {
     Game.findById(req.params.gameId, (err, game) => {
         if (err) {
             console.log("Error while finding the game in money actions");
-            throw err;
+            
         }
         Player.findById(req.body.from, (err, player) => {
                 if (err) {
                     console.log("Error while finding the player in money actions");
-                    throw err;
+                    
                 }
                 if (player.isGoing || req.body.redo || req.body.bankerMove) {
                     switch (req.body.type) {
@@ -418,18 +418,18 @@ app.put("/:gameId/moneyActions", (req, res) => {
                                     Player.findById(req.body.for, (err, receiver) => {
                                         if (err) {
                                             console.log("Error while finding the receiver");
-                                            throw err;
+                                            
                                         }
                                         receiver.money += +req.body.total;
                                         receiver.save(err => {
                                             if (err) {
                                                 console.log("Error while saving the player");
-                                                throw err;
+                                                
                                             }
                                             player.save(err => {
                                                 if (err) {
                                                     console.log("Error while saving the player");
-                                                    throw err;
+                                                    
                                                 }
                                                 res.send(player.money.toString());
                                             });
@@ -439,7 +439,7 @@ app.put("/:gameId/moneyActions", (req, res) => {
                                     player.save(err => {
                                         if (err) {
                                             console.log("Error while saving the player");
-                                            throw err;
+                                            
                                         }
                                         res.send(player.money.toString());
                                     });
@@ -451,13 +451,13 @@ app.put("/:gameId/moneyActions", (req, res) => {
                                     Player.findById(req.body.for, (err, receiver) => {
                                         if (err) {
                                             console.log("Error while finding the receiver");
-                                            throw err;
+                                            
                                         }
                                         receiver.money -= +req.body.total;
                                         receiver.save(err => {
                                             if (err) {
                                                 console.log("Error while saving the player");
-                                                throw err;
+                                                
                                             }
                                         });
                                     });
@@ -465,7 +465,7 @@ app.put("/:gameId/moneyActions", (req, res) => {
                                 player.save(err => {
                                     if (err) {
                                         console.log("Error while saving the player");
-                                        throw err;
+                                        
                                     }
                                 });
                                 if (player.moves.length === 0) {
@@ -483,7 +483,7 @@ app.put("/:gameId/moneyActions", (req, res) => {
                                 player.save(err => {
                                     if (err) {
                                         console.log("Error while saving the player in money actions");
-                                        throw err;
+                                        
                                     }
                                     res.json(player.moves[player.moves.length - 1]);
                                 });
@@ -494,7 +494,7 @@ app.put("/:gameId/moneyActions", (req, res) => {
                                     player.save(err => {
                                         if (err) {
                                             console.log("Error while saving the player in money actions");
-                                            throw err;
+                                            
                                         }
                                         res.send(player.money.toString());
                                     });
@@ -508,13 +508,13 @@ app.put("/:gameId/moneyActions", (req, res) => {
                             Player.findById(req.body.for, (err, receiver) => {
                                 if (err) {
                                     console.log("Error while finding the receiver");
-                                    throw err;
+                                    
                                 }
                                 receiver.money += +req.body.total;
                                 receiver.save(err => {
                                     if (err) {
                                         console.log("Error while saving the player");
-                                        throw err;
+                                        
                                     }
                                 });
                             });
@@ -524,7 +524,7 @@ app.put("/:gameId/moneyActions", (req, res) => {
                             Player.findById(req.query.playerId, (err, player) => {
                                 if (err) {
                                     console.log("Error while finding the player in money actions");
-                                    throw err;
+                                    
                                 }
                                 res.send(player.money.toString());
                             });

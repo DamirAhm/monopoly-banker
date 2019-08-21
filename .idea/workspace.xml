@@ -2,7 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ade3c54a-3866-4c0d-a3e9-18091cfc06ce" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/views/includes/iconLink.pug" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/app.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/pickPlayersPage.pug" beforeDir="false" afterPath="$PROJECT_DIR$/views/pickPlayersPage.pug" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/playerPage.pug" beforeDir="false" afterPath="$PROJECT_DIR$/views/playerPage.pug" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/starterPage.pug" beforeDir="false" afterPath="$PROJECT_DIR$/views/starterPage.pug" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/starterSettings.pug" beforeDir="false" afterPath="$PROJECT_DIR$/views/starterSettings.pug" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -18,11 +24,14 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="264">
-              <caret line="11" column="3" lean-forward="true" selection-start-line="11" selection-start-column="3" selection-end-line="11" selection-end-column="3" />
+            <state relative-caret-position="10390">
+              <caret line="527" column="19" selection-start-line="527" selection-start-column="19" selection-end-line="527" selection-end-column="19" />
               <folding>
-                <element signature="e#739#1258#0" />
-                <element signature="e#1288#1808#0" />
+                <element signature="e#791#1290#0" />
+                <element signature="e#1320#1820#0" />
+                <element signature="e#1850#1884#0" />
+                <element signature="e#1936#2184#0" />
+                <element signature="e#2257#2933#0" />
               </folding>
             </state>
           </provider>
@@ -50,7 +59,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>type</find>
       <find>html</find>
       <find>console</find>
       <find>name</find>
@@ -80,6 +88,7 @@
       <find>md</find>
       <find>settings</find>
       <find>players</find>
+      <find>throw err;</find>
     </findStrings>
     <replaceStrings>
       <replace>_id</replace>
@@ -124,7 +133,6 @@
         <option value="$PROJECT_DIR$/views/player.pug" />
         <option value="$PROJECT_DIR$/db/games.json" />
         <option value="$PROJECT_DIR$/node_modules/socket.io-client/dist/socket.io.js" />
-        <option value="$PROJECT_DIR$/views/starterPage.pug" />
         <option value="$PROJECT_DIR$/Models/player_schema.js" />
         <option value="$PROJECT_DIR$/config.js" />
         <option value="$PROJECT_DIR$/public/starterPage/starter.js" />
@@ -133,17 +141,19 @@
         <option value="$PROJECT_DIR$/views/includes/otherPlayers.pug" />
         <option value="$PROJECT_DIR$/views/includes/movesLog.pug" />
         <option value="$PROJECT_DIR$/views/includes/playersMoney.pug" />
-        <option value="$PROJECT_DIR$/views/playerPage.pug" />
         <option value="$PROJECT_DIR$/public/playerPage/player.css" />
         <option value="$PROJECT_DIR$/Models/game_schema.js" />
-        <option value="$PROJECT_DIR$/views/starterSettings.pug" />
         <option value="$PROJECT_DIR$/public/starterSettings/settings.css" />
         <option value="$PROJECT_DIR$/public/starterSettings/settings.js" />
         <option value="$PROJECT_DIR$/public/ravnyator.js" />
-        <option value="$PROJECT_DIR$/views/pickPlayersPage.pug" />
         <option value="$PROJECT_DIR$/public/pickPlayersPage/pickPlayers.css" />
         <option value="$PROJECT_DIR$/public/pickPlayersPage/pickPlayers.js" />
         <option value="$PROJECT_DIR$/public/playerPage/player.js" />
+        <option value="$PROJECT_DIR$/views/includes/iconLink.pug" />
+        <option value="$PROJECT_DIR$/views/starterPage.pug" />
+        <option value="$PROJECT_DIR$/views/starterSettings.pug" />
+        <option value="$PROJECT_DIR$/views/playerPage.pug" />
+        <option value="$PROJECT_DIR$/views/pickPlayersPage.pug" />
         <option value="$PROJECT_DIR$/app.js" />
       </list>
     </option>
@@ -176,12 +186,6 @@
               <item name="Monopoly app" type="b2602c69:ProjectViewProjectNode" />
               <item name="Monopoly app" type="462c0819:PsiDirectoryNode" />
               <item name="views" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Monopoly app" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Monopoly app" type="462c0819:PsiDirectoryNode" />
-              <item name="views" type="462c0819:PsiDirectoryNode" />
-              <item name="includes" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="Monopoly app" type="b2602c69:ProjectViewProjectNode" />
@@ -278,18 +282,18 @@
       <workItem from="1566145286136" duration="6604000" />
       <workItem from="1566279820191" duration="649000" />
       <workItem from="1566281354138" duration="16169000" />
-      <workItem from="1566382676101" duration="832000" />
+      <workItem from="1566382676101" duration="1764000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="209557000" />
+    <option name="totallyTimeSpent" value="210489000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" weight="0.18249734" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.18220116" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info id="npm" order="3" side_tool="true" weight="0.32964718" />
@@ -415,13 +419,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/views/starterPage.pug">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="456">
-          <caret line="19" column="46" selection-start-line="19" selection-start-column="46" selection-end-line="19" selection-end-column="46" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/db/games.json" />
     <entry file="file://$PROJECT_DIR$/Models/player_schema.js">
       <provider selected="true" editor-type-id="text-editor">
@@ -483,13 +480,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/views/playerPage.pug">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="24">
-          <caret line="1" column="88" selection-start-line="1" selection-start-column="88" selection-end-line="1" selection-end-column="88" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/public/starterPage/starter.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="312">
@@ -516,13 +506,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/views/starterSettings.pug">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="744">
-          <caret line="58" column="44" selection-start-line="58" selection-start-column="44" selection-end-line="58" selection-end-column="44" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/public/starterSettings/settings.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-342">
@@ -542,13 +525,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="569">
           <caret line="351" column="30" selection-start-line="351" selection-start-column="30" selection-end-line="351" selection-end-column="30" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/views/pickPlayersPage.pug">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="432">
-          <caret line="18" column="12" selection-start-line="18" selection-start-column="12" selection-end-line="18" selection-end-column="12" />
         </state>
       </provider>
     </entry>
@@ -583,6 +559,41 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/views/starterPage.pug">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="15" column="33" selection-start-line="15" selection-start-column="33" selection-end-line="15" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/views/starterSettings.pug">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="15" column="33" selection-start-line="15" selection-start-column="33" selection-end-line="15" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/views/includes/iconLink.pug">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="24">
+          <caret line="1" column="113" lean-forward="true" selection-start-line="1" selection-start-column="113" selection-end-line="1" selection-end-column="113" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/views/playerPage.pug">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="15" column="33" selection-start-line="15" selection-start-column="33" selection-end-line="15" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/views/pickPlayersPage.pug">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="15" column="33" selection-start-line="15" selection-start-column="33" selection-end-line="15" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/public/playerPage/player.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="12096">
@@ -592,11 +603,14 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="264">
-          <caret line="11" column="3" lean-forward="true" selection-start-line="11" selection-start-column="3" selection-end-line="11" selection-end-column="3" />
+        <state relative-caret-position="10390">
+          <caret line="527" column="19" selection-start-line="527" selection-start-column="19" selection-end-line="527" selection-end-column="19" />
           <folding>
-            <element signature="e#739#1258#0" />
-            <element signature="e#1288#1808#0" />
+            <element signature="e#791#1290#0" />
+            <element signature="e#1320#1820#0" />
+            <element signature="e#1850#1884#0" />
+            <element signature="e#1936#2184#0" />
+            <element signature="e#2257#2933#0" />
           </folding>
         </state>
       </provider>
