@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ade3c54a-3866-4c0d-a3e9-18091cfc06ce" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/app.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/views/includes/iconLink.pug" beforeDir="false" afterPath="$PROJECT_DIR$/views/includes/iconLink.pug" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -15,18 +16,28 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="406">
+            <state relative-caret-position="1222">
               <caret line="120" column="77" selection-start-line="120" selection-start-column="77" selection-end-line="120" selection-end-column="77" />
               <folding>
+                <element signature="e#451#511#0" />
                 <element signature="e#791#1290#0" />
                 <element signature="e#1320#1820#0" />
                 <element signature="e#1850#1884#0" />
                 <element signature="e#1936#2184#0" />
                 <element signature="e#2257#2933#0" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/views/includes/iconLink.pug">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="48">
+              <caret line="2" lean-forward="true" selection-start-line="2" selection-end-line="2" />
             </state>
           </provider>
         </entry>
@@ -102,7 +113,6 @@
       <list>
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/.eslintrc" />
-        <option value="$PROJECT_DIR$/package.json" />
         <option value="$PROJECT_DIR$/Dev/package.json" />
         <option value="$PROJECT_DIR$/Dev/Modules/header.pug" />
         <option value="$PROJECT_DIR$/Dev/Modules/nav.pug" />
@@ -143,12 +153,13 @@
         <option value="$PROJECT_DIR$/public/pickPlayersPage/pickPlayers.css" />
         <option value="$PROJECT_DIR$/public/pickPlayersPage/pickPlayers.js" />
         <option value="$PROJECT_DIR$/public/playerPage/player.js" />
-        <option value="$PROJECT_DIR$/views/includes/iconLink.pug" />
         <option value="$PROJECT_DIR$/views/starterPage.pug" />
         <option value="$PROJECT_DIR$/views/starterSettings.pug" />
         <option value="$PROJECT_DIR$/views/playerPage.pug" />
         <option value="$PROJECT_DIR$/views/pickPlayersPage.pug" />
         <option value="$PROJECT_DIR$/app.js" />
+        <option value="$PROJECT_DIR$/package.json" />
+        <option value="$PROJECT_DIR$/views/includes/iconLink.pug" />
       </list>
     </option>
   </component>
@@ -174,18 +185,13 @@
             <path>
               <item name="Monopoly app" type="b2602c69:ProjectViewProjectNode" />
               <item name="Monopoly app" type="462c0819:PsiDirectoryNode" />
-              <item name="public" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="Monopoly app" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Monopoly app" type="462c0819:PsiDirectoryNode" />
               <item name="views" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="Monopoly app" type="b2602c69:ProjectViewProjectNode" />
               <item name="Monopoly app" type="462c0819:PsiDirectoryNode" />
               <item name="views" type="462c0819:PsiDirectoryNode" />
-              <item name="starterSettings.pug" type="620a8d5e:NestingTreeNode" />
+              <item name="includes" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -276,18 +282,18 @@
       <workItem from="1566145286136" duration="6604000" />
       <workItem from="1566279820191" duration="649000" />
       <workItem from="1566281354138" duration="16169000" />
-      <workItem from="1566382676101" duration="2081000" />
+      <workItem from="1566382676101" duration="2421000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="210806000" />
+    <option name="totallyTimeSpent" value="211146000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.18220116" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.18220116" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info id="npm" order="3" side_tool="true" weight="0.32964718" />
@@ -302,7 +308,7 @@
       <window_info anchor="bottom" id="GraphQL" order="8" />
       <window_info anchor="bottom" id="Version Control" order="9" />
       <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5013165" side_tool="true" weight="0.19555555" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="11" sideWeight="0.4986835" visible="true" weight="0.19444445" />
+      <window_info anchor="bottom" id="Terminal" order="11" sideWeight="0.4986835" visible="true" weight="0.19444445" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -453,13 +459,6 @@
     <entry file="file://$PROJECT_DIR$/../server/index.js">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/package.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="168">
-          <caret line="7" column="31" lean-forward="true" selection-start-line="7" selection-start-column="31" selection-end-line="7" selection-end-column="31" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/views/includes/playersMoney.pug">
       <provider selected="true" editor-type-id="text-editor">
         <state>
@@ -567,13 +566,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/views/includes/iconLink.pug">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="24">
-          <caret line="1" column="113" lean-forward="true" selection-start-line="1" selection-start-column="113" selection-end-line="1" selection-end-column="113" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/views/playerPage.pug">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="360">
@@ -595,17 +587,32 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/package.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="120">
+          <caret line="5" column="14" lean-forward="true" selection-start-line="5" selection-start-column="14" selection-end-line="5" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/app.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="406">
+        <state relative-caret-position="1222">
           <caret line="120" column="77" selection-start-line="120" selection-start-column="77" selection-end-line="120" selection-end-column="77" />
           <folding>
+            <element signature="e#451#511#0" />
             <element signature="e#791#1290#0" />
             <element signature="e#1320#1820#0" />
             <element signature="e#1850#1884#0" />
             <element signature="e#1936#2184#0" />
             <element signature="e#2257#2933#0" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/views/includes/iconLink.pug">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="48">
+          <caret line="2" lean-forward="true" selection-start-line="2" selection-end-line="2" />
         </state>
       </provider>
     </entry>
