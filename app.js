@@ -66,13 +66,13 @@ app.get("/", (req, res) => {
     res.render("starterPage");
 }); //return starterPage
 app.post("/", (req, res) => {
+    console.log("create game");
     let newGame = new Game({
         _id: new mongoose.Types.ObjectId()
     });
     newGame.save(err => {
         if (err) {
             res.json({error: "Error while saving game"});
-            
         }
         res.json(newGame._id);
     });
