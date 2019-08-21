@@ -7,8 +7,8 @@ let textWidth = document.getElementsByTagName("p")[0].offsetWidth;
 let btn = document.getElementById("createNewRoomBtn");
 btn.style.width = textWidth+"px";
 btn.addEventListener("click",()=>{
-   axios.post("/").then(res=>{
-       document.location.replace(`/${res.data}/starter-settings`);
+   axios.post(document.location.href).then(res=>{
+       document.location.replace(`${document.location.href}${res.data}/starter-settings`);
    })
 });
 
