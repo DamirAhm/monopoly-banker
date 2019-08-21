@@ -69,7 +69,6 @@ app.post("/", (req, res) => {
     let newGame = new Game({
         _id: new mongoose.Types.ObjectId()
     });
-    console.log("create game");
     newGame.save(err => {
         if (err) {
             res.json({error: "Error while saving game"});
