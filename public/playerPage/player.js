@@ -162,7 +162,7 @@
 //redo move and replace with previous
     let redoMove = (move, moveCont) => {
         if (move) {
-            axios.put(`httpss://${host}/${gameId}/moneyActions?playerId=${playerId}`, {...move, redo: true})
+            axios.put(`https://${host}/${gameId}/moneyActions?playerId=${playerId}`, {...move, redo: true})
                 .then(res => {
                     updateMove(moveCont, res.data);
                     changeMovesCount(moveCont);
