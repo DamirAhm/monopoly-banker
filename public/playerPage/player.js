@@ -3,7 +3,7 @@
     let gameId = document.getElementsByTagName("html")[0].dataset.gameid;
     let host = document.location.host.split("/")[0];
     let isPicked = false;
-    let wsName = document.location.protocol === "https:" ? "wss:" : "ws:";
+    let wsName = document.location.protocol === "httpss:" ? "wss:" : "ws:";
     let socket = new WebSocket(`${wsName}//${host}/${gameId}`);
 
 //array with players in game to give them money
@@ -162,7 +162,7 @@
 //redo move and replace with previous
     let redoMove = (move, moveCont) => {
         if (move) {
-            axios.put(`http://${host}/${gameId}/moneyActions?playerId=${playerId}`, {...move, redo: true})
+            axios.put(`httpss://${host}/${gameId}/moneyActions?playerId=${playerId}`, {...move, redo: true})
                 .then(res => {
                     updateMove(moveCont, res.data);
                     changeMovesCount(moveCont);
@@ -177,7 +177,7 @@
             let id = moveCont.parentElement.parentElement.dataset.id;
             let countElement = moveCont.nextSibling.children[0];
             if (id) {
-                axios.get(`http://${host}/${gameId}/movesLeft?playerId=${id}`)
+                axios.get(`https://${host}/${gameId}/movesLeft?playerId=${id}`)
                     .then(res => {
                         if (!res.data.error) {
                             let count = res.data - 1;
@@ -324,7 +324,7 @@
             redo: false,
             bankerMove: true
         }));
-        axios.put(`http://${host}/${gameId}/moneyActions?playerId=${playerId}`, {
+        axios.put(`https://${host}/${gameId}/moneyActions?playerId=${playerId}`, {
             type: "receive",
             total: +delta,
             for: oldMoney.id.split("money")[0],
@@ -347,7 +347,7 @@
     };
 
 //get players
-    axios.get(`http://${host}/${gameId}/players`).then(res => {
+    axios.get(`https://${host}/${gameId}/players`).then(res => {
         players = res.data;
         res.data.forEach(e => {
             //add to pay list(opens in minusMoney)
@@ -366,7 +366,7 @@
         let moneyCount = input.value;
         document.getElementsByClassName("bg-cont")[0].style.display = "none";
         input.value = "";
-        axios.put(`http://${host}/${gameId}/moneyActions?playerId=${playerId}`, {
+        axios.put(`https://${host}/${gameId}/moneyActions?playerId=${playerId}`, {
             type: "giveMoney",
             total: +moneyCount,
             for: e.target.id,
@@ -403,8 +403,8 @@
 
 //go to choose player monitor
     let signOut = () => {
-        document.location.replace(`http://${host}/${gameId}`);
-        axios.get(`http://${host}/${gameId}/unpick-player?id=${document.location.search.split("=")[1]}`);
+        document.location.replace(`https://${host}/${gameId}`);
+        axios.get(`https://${host}/${gameId}/unpick-player?id=${document.location.search.split("=")[1]}`);
     };
 
     document.getElementById("changePlayer").addEventListener("click", signOut);
@@ -417,7 +417,7 @@
             from: playerId,
             redo: false
         };
-        axios.put(`http://${host}/${gameId}/moneyActions?playerId=${html.dataset.playerid}`, action)
+        axios.put(`https://${host}/${gameId}/moneyActions?playerId=${html.dataset.playerid}`, action)
             .then(res => {
                 if (res.data.error) {
                     alert(res.data.error);
@@ -448,7 +448,7 @@
 //give turn to next player
     let giveTurn = (e) => {
         e.preventDefault();
-        axios.get(`http://${host}/${gameId}/giveTurn?playerId=${html.dataset.playerid}`).then(res => {
+        axios.get(`https://${host}/${gameId}/giveTurn?playerId=${html.dataset.playerid}`).then(res => {
             if (!res.data.error) {
                 socket.send(JSON.stringify({
                     type: "giveTurn",
@@ -506,7 +506,7 @@
             id: playerId,
             game: gameId
         }));
-        axios.get(`http://${host}/${gameId}/pick-player?id=${playerId}`)
+        axios.get(`https://${host}/${gameId}/pick-player?id=${playerId}`)
             .then(err => {
                 if (err.data.error) {
                     console.log(err.data);
