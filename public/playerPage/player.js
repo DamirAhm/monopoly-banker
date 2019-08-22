@@ -3,7 +3,7 @@
     let gameId = document.getElementsByTagName("html")[0].dataset.gameid;
     let host = document.location.host.split("/")[0];
     let isPicked = false;
-    let wsName = document.location.protocol === "https:" ? "wss" : "ws";
+    let wsName = document.location.protocol === "https:" ? "wss:" : "ws:";
     let socket = new WebSocket(`${wsName}//${host}/${gameId}`);
 
 //array with players in game to give them money
