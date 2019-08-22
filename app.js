@@ -4,9 +4,10 @@ const express = require("express"),
     expressWs = require("express-ws"),
     mongoose = require("mongoose"),
     Player = require("./Models/player_schema"),
-    Game = require("./Models/game_schema");
+    Game = require("./Models/game_schema"),
+    config = require("./config");
 
-mongoose.connect("mongodb+srv://banker666:8NHK9PFuv7bJmmIa@firstapp-x1lka.mongodb.net/test?retryWrites=true&w=majority", {useFindAndModify: false, useNewUrlParser: true}, err => {
+mongoose.connect(config.MONGO_URL, {useFindAndModify: false, useNewUrlParser: true}, err => {
     if (err) 
     console.log("Successfully connected");
 });
@@ -69,7 +70,6 @@ app.post("/", (req, res) => {
     let newGame = new Game({
         _id: new mongoose.Types.ObjectId()
     });
-    console.log(newGame);
     newGame.save(err => {
         if (err) {
             res.json({error: err});
