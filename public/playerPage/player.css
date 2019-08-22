@@ -267,3 +267,12 @@ form{
 .delete>*{
     color: black;
 }
+
+@media screen and (max-height: 330px) {
+    #changePlayer{
+        left: 10px;
+        top: 10px;
+        font-size: 1.7em;
+        cursor: pointer;
+    }
+}
