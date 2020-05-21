@@ -102,8 +102,8 @@ app.get( "/:gameId/starter-settings/change-name/:_id", req => {
     Player.findByIdAndUpdate( req.params._id, { name: req.query.name }, err => {
         if ( err ) {
             console.log( "Error while updating player in change name" );
-
         }
+        res.end();
     } );
 } ); //change player name by _id
 app.get( "/:gameId/starter-settings/new-player", ( req, res ) => {
@@ -149,6 +149,7 @@ app.get( "/:gameId/starter-settings/delete-player", req => {
 
                 }
             } );
+            res.end();
         } );
         Player.findByIdAndDelete( req.query.id, err => {
             if ( err ) {
@@ -247,7 +248,6 @@ app.get( "/:gameId/movesLeft", ( req, res ) => {
             Player.findById( req.query.playerId, ( err, player ) => {
                 if ( err ) {
                     console.log( "Error while finding the player in movesLeft" );
-
                 }
                 res.send( player.moves.length.toString() );
             } );
@@ -284,6 +284,7 @@ app.post( "/:gameId/players/change-sequence", req => {
                     if ( err ) {
                         console.log( "Error while saving game in change sequence" );
                     }
+                    res.end();
                 } );
             } );
         } else {
@@ -309,8 +310,8 @@ app.get( "/:gameId/pick-player", ( req, res ) => {
                 player.save( err => {
                     if ( err ) {
                         console.log( "Error while saving player in pick-player" );
-
                     }
+                    res.end();
                 } );
             }
         } );
@@ -333,32 +334,34 @@ app.get( "/:gameId", ( req, res ) => {
     if ( req.params.gameId !== "favicon.ico" ) {
         Game.findById( req.params.gameId, ( err, game ) => {
             if ( err ) {
-                console.log( "Error while finding the game in render game" );
-
+                console.log( "Error while finding the game in render game", err );
             }
-            if ( !req.query.playerId ) {
-                if ( game.isStartSettingsDone ) {
-                    res.render( "pickPlayersPage", {
-                        allPicked: game.players.find( e => !e.isPicked ) === undefined
-                    } );
+            if ( game ) {
+                if ( !req.query.playerId ) {
+                    if ( game.isStartSettingsDone ) {
+                        res.render( "pickPlayersPage", {
+                            allPicked: game.players.every( e => e.isPicked )
+                        } );
+                    } else {
+                        res.send( "Confirm your starter settings" );
+                    }
                 } else {
-                    res.send( "Confirm your starter settings" );
+                    Player.findById( req.query.playerId, ( err, player ) => {
+                        if ( err ) {
+                            console.log( "Error while finding the player in render game" );
+                        }
+                        let bankerId = game.startSettings.bankerId;
+                        res.render( "playerPage", {
+                            user: player,
+                            isBanker: player._id.toString() === bankerId.toString(),
+                            gameId: player.gameId,
+                            isGoing: player.isGoing,
+                            moneyPerCircle: game.startSettings.moneyForCircle
+                        } );
+                    } );
                 }
             } else {
-                Player.findById( req.query.playerId, ( err, player ) => {
-                    if ( err ) {
-                        console.log( "Error while finding the player in render game" );
-
-                    }
-                    let bankerId = game.startSettings.bankerId;
-                    res.render( "playerPage", {
-                        user: player,
-                        isBanker: player._id.toString() === bankerId.toString(),
-                        gameId: player.gameId,
-                        isGoing: player.isGoing,
-                        moneyPerCircle: game.startSettings.moneyForCircle
-                    } );
-                } );
+                console.error( "Can't find game" );
             }
         } );
     }
