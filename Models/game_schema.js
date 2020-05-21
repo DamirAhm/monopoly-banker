@@ -1,6 +1,7 @@
-let mongoose = require("mongoose");
+// @ts-nocheck
+let mongoose = require( "mongoose" );
 
-let gameSchema = mongoose.Schema({
+let gameSchema = mongoose.Schema( {
     _id: mongoose.Schema.Types.ObjectId,
     players: {
         type: Array,
@@ -14,7 +15,7 @@ let gameSchema = mongoose.Schema({
         startMoney: {
             type: Number,
             validate: {
-                validator: (number) => {
+                validator: ( number ) => {
                     return +number >= 0
                 },
                 message: "Money can`t be negative"
@@ -24,7 +25,7 @@ let gameSchema = mongoose.Schema({
         maxTime: {
             type: Number,
             validate: {
-                validator: (number) => {
+                validator: ( number ) => {
                     return +number >= 0
                 },
                 message: "Time can`t be negative"
@@ -38,7 +39,7 @@ let gameSchema = mongoose.Schema({
         moneyForCircle: {
             type: Number,
             validate: {
-                validator: (number) => {
+                validator: ( number ) => {
                     return +number >= 0
                 },
                 message: "Money can`t be negative"
@@ -58,6 +59,6 @@ let gameSchema = mongoose.Schema({
         type: Boolean,
         default: false
     }
-});
+} );
 
-module.exports = mongoose.model("Game", gameSchema);
+module.exports = mongoose.model( "Game", gameSchema );

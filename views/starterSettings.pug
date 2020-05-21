@@ -48,14 +48,14 @@ html
                             p Start money
                             p.equal= "="
                             div.input
-                                input.texti(value=startSettings.startMoney || "15000" type="number" disabled = isStartSettingsDone)#startMoneyIn
-                                p= " k"
+                                input.texti(value=startSettings.startMoney || "15000" type="number" min="0" disabled = isStartSettingsDone)#startMoneyIn
+                                pre= " k"
                         .setting.moneyFS
                             p Money for circle
                             p.equal= "="
                             div.input
-                                input.texti(value= startSettings.moneyForCircle || "2000" type="number" disabled = isStartSettingsDone)#circleMoney
-                                p= " k"
+                                input.texti(value= startSettings.moneyForCircle || "2000" type="number" min="0" disabled = isStartSettingsDone)#circleMoney
+                                pre= " k"
                     if !isStartSettingsDone
                         .buttons.center
                             button#reset Standard settings

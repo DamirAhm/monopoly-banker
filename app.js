@@ -264,7 +264,7 @@ app.post( "/:gameId/players/change-sequence", req => {
         }
         if ( game.players.length === req.body.length ) {
             let newPlayerList = [];
-            let promise = new Promise( ( res, rej ) => {
+            let promise = new Promise( ( res ) => {
                 for ( let i = 0; i < req.body.length; i++ ) {
                     Player.findById( req.body[ i ].id, ( err, player ) => {
                         if ( err ) {
@@ -283,7 +283,6 @@ app.post( "/:gameId/players/change-sequence", req => {
                 game.save( err => {
                     if ( err ) {
                         console.log( "Error while saving game in change sequence" );
-
                     }
                 } );
             } );

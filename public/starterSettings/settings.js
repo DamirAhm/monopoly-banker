@@ -1,13 +1,19 @@
 let bankerId;
 
-if ( document.getElementsByClassName( "player-cont" ).length ) {
-    bankerId = document.getElementsByClassName( "player-cont" )[ 0 ].id;
+if ( document.getElementsByClassName( "player-cont" ).length > 1 ) {
+    bankerId = document.getElementsByClassName( "player-cont" )[ 1 ].id;
 }
 
+//* Global elements
 //get player and player container elements
 let players = document.getElementsByClassName( "player" );
 let playersCont = document.getElementsByClassName( "players-cont" )[ 0 ];
+//set change sequence func
+let changeSequenceBtn = document.getElementById( "change-sequence-btn" );
+//button for change player sequence and her bg
+let bgCont = document.getElementsByClassName( "bg-cont" )[ 0 ];
 
+//* Event listeners
 //create new add player btn
 let createAddPlayerBtn = () => {
     let addPlayerBtn = document.createElement( "div" );
@@ -26,7 +32,6 @@ let createAddPlayerBtn = () => {
     addPlayerBtnCont.appendChild( divx );
     return addPlayerBtnCont;
 };
-
 //delete player by id
 function deleteName ( deleter, e ) {
     let addPlayerBtnCont = createAddPlayerBtn();
@@ -51,7 +56,6 @@ function deleteName ( deleter, e ) {
     }
     axios.get( `${document.location.href}/delete-player?id=${parent.id}` );
 }
-
 //action for add players or change names
 let playerAction = ( player, text ) => {
     //create new addPlayer button
@@ -178,40 +182,6 @@ let playerAction = ( player, text ) => {
         input.focus();
     }
 };
-
-//set add-player button (да да да костылиииии)
-let addPlayerBtn = document.getElementsByClassName( "add-player" )[ 0 ];
-if ( addPlayerBtn ) {
-    addPlayerBtn.addEventListener( "click", () => {
-        playerAction( addPlayerBtn, "Add player" );
-    } );
-}
-
-//add actions to player buttons
-for ( let i = 0; i < players.length; i++ ) {
-    players[ i ].addEventListener( "click", () => {
-        playerAction( players[ i ], players[ i ].innerText );
-    } );
-    let check = document.getElementsByClassName( "isBanker" );
-    for ( let j = 0; j < check; j++ ) {
-        check[ i ].checked = false;
-    }
-    if ( i === 0 && !players[ i ].classList.contains( "add-player" ) ) {
-        players[ i ].previousSibling.checked = true;
-    }
-    if ( players[ i ].parentNode.classList.contains( "player-cont" ) ) {
-        players[ i ].nextSibling.addEventListener( "click", ( e ) => {
-            deleteName( players[ i ], e );
-        } );
-    }
-}
-
-//set change sequence func
-let changeSequenceBtn = document.getElementById( "change-sequence-btn" );
-
-//button for change player sequence and her bg
-let bgCont = document.getElementsByClassName( "bg-cont" )[ 0 ];
-
 let changeSequence = () => {
     if ( document.getElementsByClassName( "player-cont" ).length > 1 ) {
         let newSequence = [];
@@ -236,31 +206,31 @@ let changeSequence = () => {
                     name: newSequence[ i ].innerText
                 } );
             }
+
             axios.post( "./players/change-sequence", newSequenceData );
             bgCont.style.display = "none";
         };
-        axios.get( `./players` ).then( res => {
-            let players = res.data;
-            let playersElems = [];
-            players.forEach( e => {
-                let elem = document.createElement( "div" );
-                elem.innerText = e.name;
-                elem.id = e._id;
-                elem.classList.add( "player" );
-                elem.addEventListener( "click", () => {
-                    addToQueue( elem );
-                } );
-                playersElems.push( elem );
+
+        //create player pickers from players
+        const players = document.querySelectorAll( ".player-cont:not(.head)" );
+        let playersElems = [];
+        players.forEach( ( { id, children } ) => {
+            let elem = document.createElement( "div" );
+            elem.innerText = children[ 1 ].innerText;
+            elem.id = id;
+            elem.classList.add( "player" );
+            elem.addEventListener( "click", () => {
+                addToQueue( elem );
             } );
-            playersElems.forEach( e => {
-                bgCont.children[ 0 ].children[ 0 ].appendChild( e );
-            } );
+            playersElems.push( elem );
         } );
+        playersElems.forEach( e => {
+            bgCont.children[ 0 ].children[ 0 ].appendChild( e );
+        } );
+
         bgCont.style.display = "flex";
     }
 };
-changeSequenceBtn.addEventListener( "click", changeSequence );
-
 //go to standart settings
 let reset = () => {
     document.getElementById( "maxTime" ).value = "0";
@@ -269,43 +239,31 @@ let reset = () => {
     document.getElementById( "turn-on" ).checked = false;
     toggleOn( false );
 };
-
-//set reset button
-document.getElementById( "reset" ).addEventListener( "click", reset );
-
 //set create game action
 let create = () => {
     if ( document.getElementsByClassName( "player-cont" ).length >= 2 ) {
-        if ( document.getElementById( "startMoneyIn" ).value ) {
-            if ( +document.getElementById( "startMoneyIn" ).value >= 0 && +document.getElementById( "circleMoney" ).value >= 0 ) {
-                let players = document.getElementsByClassName( "player-cont" );
-                let bankerId;
-                for ( let i = 0; i < players.length; i++ ) {
-                    if ( players[ i ].children[ 0 ].checked ) {
-                        bankerId = players[ i ].id;
-                    }
+        if ( bankerId.trim() !== "" && document.querySelectorAll( ".player-cont input:checked" ).length === 1 ) {
+            let players = document.getElementsByClassName( "player-cont" );
+            let bankerId;
+            for ( let i = 0; i < players.length; i++ ) {
+                if ( players[ i ].children[ 0 ].checked ) {
+                    bankerId = players[ i ].id;
                 }
-                axios.post( `${document.location.href}`, {
-                    startMoney: +document.getElementById( "startMoneyIn" ).value,
-                    moneyForCircle: +document.getElementById( "circleMoney" ).value,
-                    bankerId: bankerId
-                } ).then( () => {
-                    document.location.replace( `./` );
-                } )
-            } else {
-                alert( "Values cant be negative" )
             }
+            axios.post( `${document.location.href}`, {
+                startMoney: +document.getElementById( "startMoneyIn" ).value,
+                moneyForCircle: +document.getElementById( "circleMoney" ).value,
+                bankerId: bankerId
+            } ).then( () => {
+                document.location.replace( `./` );
+            } );
         } else {
-            alert( "Enter start money" );
+            alert( "You should pick banker" );
         }
     } else {
         alert( "Minimal players count is 2" );
     }
 };
-
-//set create button
-document.getElementById( "next" ).addEventListener( "click", create );
-
 //change game banker
 let makeBanker = ( playerCheckbox ) => {
     //set isBanker checkbox
@@ -317,6 +275,38 @@ let makeBanker = ( playerCheckbox ) => {
     bankerId = playerCheckbox.parentElement.id;
 };
 
+//* Add event listeners
+//set add-player button (да да да костылиииии)
+let addPlayerBtn = document.getElementsByClassName( "add-player" )[ 0 ];
+if ( addPlayerBtn ) {
+    addPlayerBtn.addEventListener( "click", () => {
+        playerAction( addPlayerBtn, "Add player" );
+    } );
+}
+//add actions to player buttons
+for ( let i = 0; i < players.length; i++ ) {
+    players[ i ].addEventListener( "click", () => {
+        playerAction( players[ i ], players[ i ].innerText );
+    } );
+    let check = document.getElementsByClassName( "isBanker" );
+    for ( let j = 0; j < check; j++ ) {
+        check[ i ].checked = false;
+    }
+    if ( i === 0 && !players[ i ].classList.contains( "add-player" ) ) {
+        players[ i ].previousSibling.checked = true;
+    }
+    if ( players[ i ].parentNode.classList.contains( "player-cont" ) ) {
+        players[ i ].nextSibling.addEventListener( "click", ( e ) => {
+            deleteName( players[ i ], e );
+        } );
+    }
+}
+//add action to change sequence btn
+changeSequenceBtn.addEventListener( "click", changeSequence );
+//set reset button
+document.getElementById( "reset" ).addEventListener( "click", reset );
+//set create button
+document.getElementById( "next" ).addEventListener( "click", create );
 //give action to checkboxes
 let checkBoxes = document.getElementsByClassName( "isBanker" );
 for ( let i = 0; i < checkBoxes.length; i++ ) {
