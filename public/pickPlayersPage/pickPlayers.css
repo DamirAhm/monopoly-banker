@@ -5,13 +5,19 @@
     flex-direction: column;
 }
 
+
+
 #url{
     font-size: 1.4em;
     margin-bottom: 20px;
 }
+#url:hover {
+    color: #54a4ff;
+    cursor: pointer;
+}
 
 #players-cont{
-    display: inline;
+    display: block;
     margin-top: 30px;
 }
 
