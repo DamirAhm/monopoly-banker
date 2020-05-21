@@ -226,7 +226,7 @@ let changeSequence = () => {
         //close change sequnce window
         let close = () => {
             let newSequenceData = [];
-            let players = document.getElementsByClassName( "player-cont" );
+            let players = document.querySelectorAll( ".player-cont:not(.head)" );
             for ( let i = 0; i < players.length; i++ ) {
                 players[ i ].children[ 1 ].innerText = newSequence[ i ].innerText;
                 players[ i ].id = newSequence[ i ].id;
