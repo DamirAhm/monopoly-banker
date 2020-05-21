@@ -18,7 +18,11 @@ html
         .container.center
             .col-lg-10.grid-container
                 .players
-                    .players-cont Players
+                    .players-cont 
+                        div.head.player-cont
+                            span.isBankerSpan Banker
+                            span.title Players
+                            span.deleteSpan Delete
                         if players
                             for i in players
                                 div(id= i.id).player-cont
