@@ -32,6 +32,14 @@ let playerSchema = mongoose.Schema( {
    gameId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "GameModel"
+   },
+   turnsBeforeNewCircle: {
+      type: Number,
+      default: 6,
+      validator: {
+         validate: n => n >= 0,
+         message: "Amt of turns can`t be negative"
+      }
    }
 } );
 

@@ -16,15 +16,16 @@
     "supervisor": "^0.12.0"
   },
   "engines": {
-    "node": ">=7.0.0"
+    "node": ">=14.0.0"
   },
   "dependencies": {
+    "@types/node": "^14.0.5",
     "axios": "^0.19.0",
-    "pug": "^2.0.4",
     "body-parser": "^1.19.0",
     "express": "^4.17.1",
     "express-ws": "^4.0.0",
     "mongoose": "^5.6.4",
+    "pug": "^2.0.4",
     "ws": "^7.1.1"
   }
 }

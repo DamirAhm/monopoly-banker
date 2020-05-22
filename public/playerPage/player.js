@@ -505,7 +505,12 @@ let gotCircle = ( e ) => {
 let giveTurn = ( e ) => {
     e.preventDefault();
     axios.get( `${protocol}//${host}/${gameId}/giveTurn?playerId=${html.dataset.playerid}` ).then( res => {
-        if ( !res.data.error ) {
+        if ( res.data !== undefined ) {
+            if ( res >= 0 ) {
+                document.getElementById( "gotCircle" ).disabled = true;
+            } else {
+                document.getElementById( "gotCircle" ).disabled = false;
+            }
             socket.send( JSON.stringify( {
                 type: "giveTurn",
                 nextPlayerId: res.data

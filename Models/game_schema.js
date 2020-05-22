@@ -4,7 +4,10 @@ let mongoose = require( "mongoose" );
 let gameSchema = mongoose.Schema( {
     _id: mongoose.Schema.Types.ObjectId,
     players: {
-        type: Array,
+        type: [ {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Player"
+        } ],
         default: []
     },
     isStartSettingsDone: {
@@ -49,6 +52,14 @@ let gameSchema = mongoose.Schema( {
         bankerId: {
             type: mongoose.Schema.Types.ObjectId,
             default: null
+        },
+        minTurnsForCircle: {
+            type: Number,
+            validate: {
+                validator: ( number ) => number >= 0,
+                message: "Amt of turns can`t be negative"
+            },
+            default: 6
         }
     },
     createdAt: {

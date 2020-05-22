@@ -8,7 +8,7 @@
         .moneyInput
             input(type="number" placeholder="Сумма" disabled= !isGoing min="0")#input
         .moneyBtns
-            button( disabled = !isGoing )#minus.btn Передать деньги
+            button( disabled = (!isGoing) )#minus.btn Передать деньги
         .endTurnBtns
-            button( disabled = !isGoing )#gotCircle.btn Прошел круг
+            button( disabled = (!isGoing || startSettings.minTurnsForCircle == 0) )#gotCircle.btn Прошел круг
             button( disabled = !isGoing )#nextPlayer.btn Передать ход

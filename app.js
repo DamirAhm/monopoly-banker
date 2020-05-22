@@ -81,24 +81,22 @@ app.post( "/", ( req, res ) => {
 } ); //create new room
 
 app.get( "/:gameId/starter-settings", ( req, res ) => {
-    Game.findById( req.params.gameId, ( err, game ) => {
+    Game.findById( req.params.gameId, async ( err, game ) => {
         if ( err ) {
             console.log( "Error while finding the game in starter-settings" );
             res.send( "404 Game not found" );
 
         }
-        Player.find( { gameId: game._id }, ( err, players ) => {
-            players.sort( ( a, b ) => game.players.indexOf( a._id ) - game.players.indexOf( b._id ) );
-            res.render( "starterSettings", {
-                players: players.length ? players : null,
-                isStartSettingsDone: game.isStartSettingsDone,
-                maxPlayers: players.length === 6,
-                startSettings: game.startSettings
-            } );
+        const { players } = await game.populate( "players" ).execPopulate();
+        res.render( "starterSettings", {
+            players: players.length ? players : null,
+            isStartSettingsDone: game.isStartSettingsDone,
+            maxPlayers: players.length >= 6,
+            startSettings: game.startSettings
         } );
     } );
 } ); //return game room starter settings
-app.get( "/:gameId/starter-settings/change-name/:_id", req => {
+app.get( "/:gameId/starter-settings/change-name/:_id", ( req, res ) => {
     Player.findByIdAndUpdate( req.params._id, { name: req.query.name }, err => {
         if ( err ) {
             console.log( "Error while updating player in change name" );
@@ -131,31 +129,22 @@ app.get( "/:gameId/starter-settings/new-player", ( req, res ) => {
         } );
     } );
 } ); //create new player
-app.get( "/:gameId/starter-settings/delete-player", req => {
+app.get( "/:gameId/starter-settings/delete-player", ( req, res ) => {
     Game.findById( req.params.gameId, ( err, game ) => {
         if ( err ) {
             console.log( "Error while find game in delete player" );
-
         }
-        Player.findById( req.query.id, ( err, player ) => {
+        game.players = game.players.filter( player => player._id.toString() !== req.query.id.toString() );
+        game.save( err => {
             if ( err ) {
-                console.log( "Error while finding player in delete " );
-
+                console.log( "Error while saving game in delete" );
             }
-            game.players.splice( game.players.indexOf( player._id ), 1 );
-            game.save( err => {
-                if ( err ) {
-                    console.log( "Error while saving game in delete" );
-
-                }
-            } );
-            res.end();
         } );
         Player.findByIdAndDelete( req.query.id, err => {
             if ( err ) {
                 console.log( "Error while deleting player" );
-
             }
+            res.end();
         } );
     } );
 } ); //delete player by _id
@@ -172,10 +161,10 @@ app.post( "/:gameId/starter-settings", ( req, res ) => {
             }
             for ( let i = 0; i < players.length; i++ ) {
                 players[ i ].money = req.body.startMoney;
+                players[ i ].turnsBeforeNewCircle = req.body.minTurnsForCircle;
                 players[ i ].save( err => {
                     if ( err ) {
                         console.log( "Error while saving player in post starter-settings" );
-
                     }
                 } );
             }
@@ -183,8 +172,7 @@ app.post( "/:gameId/starter-settings", ( req, res ) => {
         Player.findById( req.body.bankerId, ( err, player ) => {
             if ( err ) {
                 console.log( "Error while finding the player there" );
-
-            }
+            };
             game.startSettings = {
                 ...req.body,
                 bankerId: player._id
@@ -193,15 +181,13 @@ app.post( "/:gameId/starter-settings", ( req, res ) => {
             game.save( err => {
                 if ( err ) {
                     console.log( "Error while saving the game" );
-
                 }
             } );
-            res.send();
+            res.end();
         } );
         Player.findByIdAndUpdate( game.players[ 0 ], { isGoing: true }, err => {
             if ( err ) {
                 console.log( "Error while updating " );
-
             }
         } );
     } );
@@ -256,7 +242,7 @@ app.get( "/:gameId/movesLeft", ( req, res ) => {
         }
     } );
 } );
-app.post( "/:gameId/players/change-sequence", req => {
+app.post( "/:gameId/players/change-sequence", ( req, res ) => {
     Game.findById( req.params.gameId, ( err, game ) => {
         if ( err ) {
             console.log( "Error while finding game in change sequence" );
@@ -284,10 +270,11 @@ app.post( "/:gameId/players/change-sequence", req => {
                     if ( err ) {
                         console.log( "Error while saving game in change sequence" );
                     }
-                    res.end();
+                    res.send( { error: "" } );
                 } );
             } );
         } else {
+            res.send( { error: "Error in players count" } );
             throw new Error( "Error in players count" );
         }
     } );
@@ -372,31 +359,32 @@ app.get( "/:gameId/giveTurn", ( req, res ) => {
             console.log( "Error while finding the game in give turn" );
 
         }
-        Player.findByIdAndUpdate( req.query.playerId, { isGoing: false }, ( err, player ) => {
+        Player.findById( req.query.playerId, ( err, player ) => {
             if ( err ) {
                 console.log( "Error while updating player in give turn" );
-
             }
-            if ( game.players.indexOf( player._id ) === game.players.length - 1 ) {
-                Player.findByIdAndUpdate( game.players[ 0 ]._id, { isGoing: true }, ( err, player ) => {
-                    if ( err ) {
-                        console.log( "Error while updating player in give turn" );
+            player.isGoing = false;
+            player.turnsBeforeNewCircle = Math.max( 0, player.turnsBeforeNewCircle - 1 );
+            player.save( err => {
+                if ( err ) { throw err };
+                if ( game.players.indexOf( player._id ) === game.players.length - 1 ) {
+                    Player.findByIdAndUpdate( game.players[ 0 ]._id, { isGoing: true }, ( err, player ) => {
+                        if ( err ) {
+                            console.log( "Error while updating player in give turn" );
+                        }
+                        res.send( player._id );
+                    } );
 
-                    }
-                    res.send( player._id );
-                } );
-
-            } else {
-                Player.findByIdAndUpdate( game.players[ game.players.indexOf( player._id ) + 1 ]._id, { isGoing: true }, ( err, player ) => {
-                    if ( err ) {
-                        console.log( "Error while updating player in give turn" );
-
-                    }
-                    res.send( player._id );
-                } );
-            }
+                } else {
+                    Player.findByIdAndUpdate( game.players[ game.players.indexOf( player._id ) + 1 ]._id, { isGoing: true }, ( err, player ) => {
+                        if ( err ) {
+                            console.log( "Error while updating player in give turn" );
+                        }
+                        res.send( player.turnsBeforeNewCircle );
+                    } );
+                }
+            } );
         } );
-
     } );
 } );//give turn to next player
 
@@ -485,6 +473,7 @@ app.put( "/:gameId/moneyActions", ( req, res ) => {
                         if ( req.body.redo ) {
                             player.moves.splice( player.moves.length - 1, 1 );
                             player.money -= +game.startSettings.moneyForCircle;
+                            player.turnsBeforeNewCircle = 0;
                             player.save( err => {
                                 if ( err ) {
                                     console.log( "Error while saving the player in money actions" );
@@ -493,9 +482,10 @@ app.put( "/:gameId/moneyActions", ( req, res ) => {
                                 res.json( player.moves[ player.moves.length - 1 ] );
                             } );
                         } else {
-                            if ( player.moves.length === 0 || player.moves[ player.moves.length - 1 ].type !== "gotCircle" ) {
+                            if ( player.turnsBeforeNewCircle === 0 ) {
                                 player.moves.push( req.body );
                                 player.money += +game.startSettings.moneyForCircle;
+                                player.turnsBeforeNewCircle = game.startSettings.minTurnsForCircle;
                                 player.save( err => {
                                     if ( err ) {
                                         console.log( "Error while saving the player in money actions" );
@@ -558,15 +548,16 @@ app.ws( "/:gameId", ws => {
         if ( data ) {
             switch ( data.type ) {
                 case "giveTurn": {
-                    if ( data.nextPlayerId ) {
+                    Player.findOne( { isGoing: true }, ( err, player ) => {
+                        if ( err ) throw err;
                         wss.getWss().clients.forEach( e => {
                             let action = {
                                 type: "giveTurn",
-                                id: data.nextPlayerId,
+                                id: player._id,
                             };
                             e.send( JSON.stringify( action ) );
                         } );
-                    }
+                    } )
                     break;
                 }
                 case "giveMoney": {

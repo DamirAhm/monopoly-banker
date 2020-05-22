@@ -37,50 +37,29 @@ function deleteName ( deleter, e ) {
     let addPlayerBtnCont = createAddPlayerBtn();
     let parent = deleter.parentNode;
     let playerId = parent.id;
-    parent.remove();
-    if ( document.getElementsByClassName( "player-cont" ).length === 5 ) {
-        playersCont.appendChild( addPlayerBtnCont );
-    }
-    if ( deleter.parentNode.children[ 0 ].checked === true || playersCont.children.length > 1 ) {
-        playersCont.children[ 0 ].children[ 0 ].checked = true;
-    }
+    axios.get( `${document.location.origin + document.location.pathname}/delete-player?id=${parent.id}` )
+        .then( () => {
+            const wasBanker = parent.children[ 0 ].checked;
+            parent.remove();
+            if ( document.getElementById( playerId ) ) {
+                deleteName( document.getElementById( playerId ), e );
+            }
+            if ( wasBanker && document.querySelectorAll( ".player-cont:not(.head)" ).length > 0 ) {
+                const newBankerElement = document.querySelectorAll( ".player-cont:not(.head)" )[ 0 ];
+                newBankerElement.children[ 0 ].checked = true;
+                newBankerElement.id;
+            }
+            if ( document.querySelectorAll( ".player-cont:not(.head)" ).length <= 6 && document.getElementsByClassName( "add-player" ).length === 0 ) {
+                playersCont.appendChild( addPlayerBtnCont );
+            }
+        } );
     e.stopPropagation();
-    if ( document.getElementById( playerId ) ) {
-        document.getElementById( playerId ).remove();
-    }
-    if ( document.getElementsByClassName( "add-player" ).length === 0 ) {
-        playersCont.appendChild( addPlayerBtnCont );
-    }
-    if ( document.getElementById( playerId ) ) {
-        deleteName( document.getElementById( playerId ), e );
-    }
-    axios.get( `${document.location.origin + document.location.pathname}/delete-player?id=${parent.id}` );
+
 }
 //action for add players or change names
 let playerAction = ( player, text ) => {
     //create new addPlayer button
     let addPlayerBtnCont = createAddPlayerBtn();
-
-    //func for delete players
-    let deleteName = ( deleter, e ) => {
-        let parent = deleter.parentNode;
-        let playerId = parent.id;
-        parent.remove();
-        if ( document.getElementsByClassName( "player-cont" ).length === 5 ) {
-            playersCont.appendChild( addPlayerBtnCont );
-        }
-        if ( deleter.parentNode.children[ 0 ].checked === true || playersCont.children.length > 1 ) {
-            playersCont.children[ 0 ].children[ 0 ].checked = true;
-        }
-        e.stopPropagation();
-        if ( document.getElementsByClassName( "add-player" ).length === 0 ) {
-            playersCont.appendChild( addPlayerBtnCont );
-        }
-        if ( document.getElementById( playerId ) ) {
-            deleteName( document.getElementById( playerId ), e );
-        }
-        axios.get( `${document.location.origin + document.location.pathname}/delete-player?id=${parent.id}` );
-    };
 
     //return old name or dont create new player
     let back = ( player, text, e ) => {
@@ -105,14 +84,14 @@ let playerAction = ( player, text ) => {
                 checkbox.addEventListener( "click", () => {
                     makeBanker( checkbox );
                 } );
-                if ( document.getElementsByClassName( "player-cont" ).length === 0 ) {
+                if ( document.querySelectorAll( ".player-cont:not(.head)" ).length === 0 ) {
                     checkbox.checked = true;
                     bankerId = player.id;
                 } else {
                     checkbox.checked = false;
                 }
                 player.parentNode.replaceChild( checkbox, player.previousSibling );
-                if ( playersCont.children.length < 6 ) {
+                if ( document.querySelectorAll( ".player-cont:not(.head)" ).length < 5 && document.getElementsByClassName( "add-player" ).length !== 0 ) {
                     playersCont.appendChild( addPlayerBtnCont );
                 }
                 //change add-player button to player button
@@ -182,8 +161,9 @@ let playerAction = ( player, text ) => {
         input.focus();
     }
 };
+//change sequence of players' turns
 let changeSequence = () => {
-    if ( document.getElementsByClassName( "player-cont" ).length > 1 ) {
+    if ( document.querySelectorAll( ".player-cont:not(.head)" ).length > 1 ) {
         let newSequence = [];
         let addToQueue = ( elem ) => {
             newSequence.push( elem );
@@ -253,6 +233,7 @@ let create = () => {
             axios.post( `${document.location.origin + document.location.pathname}`, {
                 startMoney: +document.getElementById( "startMoneyIn" ).value,
                 moneyForCircle: +document.getElementById( "circleMoney" ).value,
+                minTurnsForCircle: +document.getElementById( "minTurns" ).value,
                 bankerId: bankerId
             } ).then( () => {
                 document.location.replace( `./` );

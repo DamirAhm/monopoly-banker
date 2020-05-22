@@ -11,7 +11,7 @@ btn.addEventListener( "click", () => {
         if ( res.data.error ) {
             throw res.data.error;
         }
-        document.location.replace( `${document.location.origin + document.location.pathname}/${res.data}/starter-settings` );
+        document.location.replace( `${document.location.origin + document.location.pathname}${res.data}/starter-settings` );
     } )
 } );
 

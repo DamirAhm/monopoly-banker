@@ -25,8 +25,8 @@ html
                             span.deleteSpan Delete
                         if players
                             for i in players
-                                div(id= i.id).player-cont
-                                    input(disabled= isStartSettingsDone type= "checkbox" checked = startSettings.bankerId === i.id).isBanker
+                                div(id = i.id).player-cont
+                                    input(disabled = isStartSettingsDone type = "checkbox" checked = startSettings.bankerId == i.id data-bankerId=startSettings.bankerId data-id=i.id).isBanker
                                     .player= i.name
                                     if !isStartSettingsDone
                                         .delete x
@@ -46,16 +46,19 @@ html
                         h3 Settings
                         .setting.money
                             p Start money
-                            p.equal= "="
                             div.input
                                 input.texti(value=startSettings.startMoney || "15000" type="number" min="0" disabled = isStartSettingsDone)#startMoneyIn
                                 pre= " k"
                         .setting.moneyFS
                             p Money for circle
-                            p.equal= "="
                             div.input
                                 input.texti(value= startSettings.moneyForCircle || "2000" type="number" min="0" disabled = isStartSettingsDone)#circleMoney
                                 pre= " k"
+                        .setting.minTurnsForCircle
+                            p Min turns for circle
+                            div.input
+                                input.texti(value= startSettings.minTurnsForCircle || "6" type="number" min="0" disabled = isStartSettingsDone)#minTurns
+                                pre= " turns"
                     if !isStartSettingsDone
                         .buttons.center
                             button#reset Standard settings
