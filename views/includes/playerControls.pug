@@ -10,5 +10,6 @@
         .moneyBtns
             button( disabled = (!isGoing) )#minus.btn Передать деньги
         .endTurnBtns
-            button( disabled = (!isGoing || startSettings.minTurnsForCircle == 0) )#gotCircle.btn Прошел круг
+            button( disabled = (!isGoing || turnsBeforeCircle != 0) )#gotCircle.btn Прошел круг
             button( disabled = !isGoing )#nextPlayer.btn Передать ход
+    script= `let turnsBeforeNewCircle = ${turnsBeforeCircle};`         

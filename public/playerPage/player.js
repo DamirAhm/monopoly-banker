@@ -349,14 +349,14 @@ let minusMoney = () => {
 
 //change player controls page while (not) going
 let changeIsGoing = ( isGoing ) => {
-    isGoing = !isGoing;
-    document.getElementsByClassName( "isMyTurn" )[ 0 ].classList.remove( isGoing ? "going" : "not-going" );
-    document.getElementsByClassName( "isMyTurn" )[ 0 ].classList.add( isGoing ? "not-going" : "going" );
-    document.getElementsByClassName( "isMyTurn" )[ 0 ].innerText = isGoing ? "Not your turn" : "Your turn";
-    document.getElementById( "minus" ).disabled = isGoing;
-    document.getElementById( "gotCircle" ).disabled = isGoing;
-    document.getElementById( "nextPlayer" ).disabled = isGoing;
-    document.getElementById( "input" ).disabled = isGoing;
+    const turnLabel = document.getElementsByClassName( "isMyTurn" )[ 0 ];
+    turnLabel.classList.remove( isGoing ? "not-going" : "going" );
+    turnLabel.classList.add( isGoing ? "going" : "not-going" );
+    turnLabel.innerText = isGoing ? "Your turn" : "Not your turn";
+    document.getElementById( "minus" ).disabled = !isGoing;
+    document.getElementById( "gotCircle" ).disabled = !isGoing || turnsBeforeNewCircle > 0;
+    document.getElementById( "nextPlayer" ).disabled = !isGoing;
+    document.getElementById( "input" ).disabled = !isGoing;
 };
 
 //* Socket
@@ -485,35 +485,41 @@ let signOut = () => {
 //func while you got circle
 let gotCircle = ( e ) => {
     e.preventDefault();
-    let action = {
-        type: "gotCircle",
-        from: playerId,
-        redo: false
-    };
-    axios.put( `${protocol}//${host}/${gameId}/moneyActions?playerId=${html.dataset.playerid}`, action )
-        .then( res => {
-            if ( res.data.error ) {
-                alert( res.data.error );
-            } else {
-                money.innerText = res.data;
-                socket.send( JSON.stringify( action ) );
-                giveTurn( e );
-            }
-        } );
+    if ( turnsBeforeNewCircle === 0 ) {
+        let action = {
+            type: "gotCircle",
+            from: playerId,
+            redo: false
+        };
+        axios.put( `${protocol}//${host}/${gameId}/moneyActions?playerId=${html.dataset.playerid}`, action )
+            .then( res => {
+                if ( res.data.error ) {
+                    alert( res.data.error );
+                } else {
+                    money.innerText = res.data;
+                    socket.send( JSON.stringify( action ) );
+                    turnsBeforeNewCircle = 1;
+                    giveTurn( e );
+                }
+            } );
+    } else {
+        alert( "Calm down you get circles too fast" );
+    }
 };
 //give turn to next player
 let giveTurn = ( e ) => {
     e.preventDefault();
     axios.get( `${protocol}//${host}/${gameId}/giveTurn?playerId=${html.dataset.playerid}` ).then( res => {
-        if ( res.data !== undefined ) {
-            if ( res >= 0 ) {
+        if ( !res.data.error ) {
+            console.log( res );
+            turnsBeforeNewCircle = res.data.turns;
+            if ( turnsBeforeNewCircle >= 0 ) {
                 document.getElementById( "gotCircle" ).disabled = true;
             } else {
                 document.getElementById( "gotCircle" ).disabled = false;
             }
             socket.send( JSON.stringify( {
-                type: "giveTurn",
-                nextPlayerId: res.data
+                type: "giveTurn"
             } ) );
             changeIsGoing( false );
         } else {

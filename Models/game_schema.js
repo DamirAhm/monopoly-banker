@@ -59,7 +59,7 @@ let gameSchema = mongoose.Schema( {
                 validator: ( number ) => number >= 0,
                 message: "Amt of turns can`t be negative"
             },
-            default: 6
+            default: 4
         }
     },
     createdAt: {

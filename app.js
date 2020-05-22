@@ -343,7 +343,8 @@ app.get( "/:gameId", ( req, res ) => {
                             isBanker: player._id.toString() === bankerId.toString(),
                             gameId: player.gameId,
                             isGoing: player.isGoing,
-                            moneyPerCircle: game.startSettings.moneyForCircle
+                            moneyPerCircle: game.startSettings.moneyForCircle,
+                            turnsBeforeCircle: player.turnsBeforeNewCircle
                         } );
                     } );
                 }
@@ -368,19 +369,19 @@ app.get( "/:gameId/giveTurn", ( req, res ) => {
             player.save( err => {
                 if ( err ) { throw err };
                 if ( game.players.indexOf( player._id ) === game.players.length - 1 ) {
-                    Player.findByIdAndUpdate( game.players[ 0 ]._id, { isGoing: true }, ( err, player ) => {
+                    Player.findByIdAndUpdate( game.players[ 0 ]._id, { isGoing: true }, ( err, nextPlayer ) => {
                         if ( err ) {
                             console.log( "Error while updating player in give turn" );
                         }
-                        res.send( player._id );
+                        res.send( { turns: player.turnsBeforeNewCircle } );
                     } );
 
                 } else {
-                    Player.findByIdAndUpdate( game.players[ game.players.indexOf( player._id ) + 1 ]._id, { isGoing: true }, ( err, player ) => {
+                    Player.findByIdAndUpdate( game.players[ game.players.indexOf( player._id ) + 1 ]._id, { isGoing: true }, ( err, nextPlayer ) => {
                         if ( err ) {
                             console.log( "Error while updating player in give turn" );
                         }
-                        res.send( player.turnsBeforeNewCircle );
+                        res.send( { turns: player.turnsBeforeNewCircle } );
                     } );
                 }
             } );
