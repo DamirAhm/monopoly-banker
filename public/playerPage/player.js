@@ -29,7 +29,7 @@ let newPayListPlayer = ( playerData ) => {
         player.innerText = playerData.name;
         player.id = playerData._id;
         player.addEventListener( "click", ( e ) => {
-            onPlayerPick( e );
+            onReceiverPick( e );
         } );
         pickPlayer.appendChild( player );
     }
@@ -119,7 +119,7 @@ let createSndRow = ( lastMove, movesCount ) => {
         };
     } else {
         //if player moves are clear
-        moveCont.children[ 0 ].innerText = "Player dont do anything";
+        moveCont.children[ 0 ].innerText = "Player didn't do anything";
         moveCont.children[ 1 ].innerText = "";
         moveCont.children[ 2 ].innerText = "";
         moveCont.nextSibling.style.display = "none";
@@ -190,7 +190,7 @@ let updateMove = ( playerMoveCont, move ) => {
                 };
                 let playerName = move.for !== "bank" ? players.find( e => e._id === move.for ).name : "Bank";
                 playerMoveCont.children[ 0 ].innerText = "Gave ";
-                playerMoveCont.children[ 1 ].innerText = move.total + ( move.total === 1 ? " thousand for " : " thousands for " );
+                playerMoveCont.children[ 1 ].innerText = move.total + ( move.total === 1 ? " thousand for " : "k for " );
                 playerMoveCont.children[ 2 ].innerText = playerName;
                 playerMoveCont.parentElement.classList.add( "not-going" );
                 if ( playerMoveCont.parentElement.classList.contains( "going" ) ) {
@@ -215,7 +215,7 @@ let updateMove = ( playerMoveCont, move ) => {
             default: {
                 playerMoveCont.nextSibling.style.display = "none";
                 playerMoveCont.nextSibling.children.innerText = "0 moves more";
-                playerMoveCont.children[ 0 ].innerText = "Player dont do anything";
+                playerMoveCont.children[ 0 ].innerText = "Player didn't do anything";
                 playerMoveCont.children[ 1 ].innerText = "";
                 playerMoveCont.children[ 2 ].innerText = "";
                 if ( playerMoveCont.parentElement.classList.contains( "going" ) ) {
@@ -255,41 +255,43 @@ let hoverCount = ( e ) => {
 
 //change players money in players money page
 let changePlayerMoney = ( e ) => {
-    let oldMoney = e.target.children[ 1 ];
-    let width = oldMoney.offsetWidth;
-    let playerCont = e.target;
-    let newMoney = document.createElement( "input" );
-    newMoney.type = "number";
-    newMoney.autofocus = true;
-    newMoney.style.display = "inline";
-    newMoney.style.width = ( width + 20 ) + "px";
-    newMoney.defaultValue = oldMoney.innerText;
-    newMoney.classList.add( "newMoney" );
-    playerCont.replaceChild( newMoney, oldMoney );
-    let btnCont = document.createElement( "div" );
-    btnCont.classList.add( "btnCont" );
-    let confirmBtn = document.createElement( "button" );
-    confirmBtn.classList.add( "confirm" );
-    confirmBtn.innerText = "Update";
-    confirmBtn.addEventListener( "click", ( e ) => {
-        confirmUpdate( e, oldMoney );
-    } );
-    let backBtn = document.createElement( "button" );
-    backBtn.classList.add( "back" );
-    backBtn.innerText = "Back";
-    backBtn.addEventListener( "click", ( e ) => {
-        backFromUpdate( e, oldMoney );
-    } );
-    btnCont.appendChild( confirmBtn );
-    btnCont.appendChild( backBtn );
-    let newPlayerCont = document.createElement( "form" );
-    newPlayerCont.classList.add( "changeMoneyForm" );
-    newPlayerCont.appendChild( playerCont.cloneNode( true ) );
-    newPlayerCont.appendChild( btnCont );
-    newPlayerCont.onsubmit = ( e ) => {
-        confirmUpdate( e, oldMoney );
-    };
-    playerCont.parentElement.replaceChild( newPlayerCont, playerCont );
+    if ( e.target.children.length > 0 ) {
+        let oldMoney = e.target.children[ 1 ];
+        let width = oldMoney.offsetWidth;
+        let playerCont = e.target;
+        let newMoney = document.createElement( "input" );
+        newMoney.type = "number";
+        newMoney.autofocus = true;
+        newMoney.style.display = "inline";
+        newMoney.style.width = ( width + 20 ) + "px";
+        newMoney.defaultValue = oldMoney.innerText;
+        newMoney.classList.add( "newMoney" );
+        playerCont.replaceChild( newMoney, oldMoney );
+        let btnCont = document.createElement( "div" );
+        btnCont.classList.add( "btnCont" );
+        let confirmBtn = document.createElement( "button" );
+        confirmBtn.classList.add( "confirm" );
+        confirmBtn.innerText = "Update";
+        confirmBtn.addEventListener( "click", ( e ) => {
+            confirmUpdate( e, oldMoney );
+        } );
+        let backBtn = document.createElement( "button" );
+        backBtn.classList.add( "back" );
+        backBtn.innerText = "Back";
+        backBtn.addEventListener( "click", ( e ) => {
+            backFromUpdate( e, oldMoney );
+        } );
+        btnCont.appendChild( confirmBtn );
+        btnCont.appendChild( backBtn );
+        let newPlayerCont = document.createElement( "form" );
+        newPlayerCont.classList.add( "changeMoneyForm" );
+        newPlayerCont.appendChild( playerCont.cloneNode( true ) );
+        newPlayerCont.appendChild( btnCont );
+        newPlayerCont.onsubmit = ( e ) => {
+            confirmUpdate( e, oldMoney );
+        };
+        playerCont.parentElement.replaceChild( newPlayerCont, playerCont );
+    }
 };
 
 //confirms money update
@@ -572,7 +574,7 @@ document.getElementById( "nextPlayer" ).addEventListener( "click", ( e ) => {
     giveTurn( e );
 } );
 document.getElementById( "bank" ).addEventListener( "click", ( e ) => {
-    onPlayerPick( e );
+    onReceiverPick( e );
 } );
 minusBtn.addEventListener( "click", ( e ) => {
     minusMoney( e );
