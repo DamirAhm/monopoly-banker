@@ -45,5 +45,12 @@
 @media screen and (max-width: 300px){
     #url{
         font-size: 0.8em;
+    } 
+    .title{
+        font-size: 1.4em;
+    }
+    .player{
+        padding: 9px;
+        font-size: 1em;
     }
 }

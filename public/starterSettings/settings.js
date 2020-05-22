@@ -54,7 +54,7 @@ function deleteName ( deleter, e ) {
     if ( document.getElementById( playerId ) ) {
         deleteName( document.getElementById( playerId ), e );
     }
-    axios.get( `${document.location.href}/delete-player?id=${parent.id}` );
+    axios.get( `${document.location.origin + document.location.pathname}/delete-player?id=${parent.id}` );
 }
 //action for add players or change names
 let playerAction = ( player, text ) => {
@@ -79,7 +79,7 @@ let playerAction = ( player, text ) => {
         if ( document.getElementById( playerId ) ) {
             deleteName( document.getElementById( playerId ), e );
         }
-        axios.get( `${document.location.href}/delete-player?id=${parent.id}` );
+        axios.get( `${document.location.origin + document.location.pathname}/delete-player?id=${parent.id}` );
     };
 
     //return old name or dont create new player
@@ -94,7 +94,7 @@ let playerAction = ( player, text ) => {
         //action logic
         if ( player.classList.contains( "add-player" ) ) {
             if ( player.children[ 0 ].value ) {
-                axios.get( `${document.location.href}/new-player?name=${player.children[ 0 ].value}` ).then( ( { data: id } ) => {
+                axios.get( `${document.location.origin + document.location.pathname}/new-player?name=${player.children[ 0 ].value}` ).then( ( { data: id } ) => {
                     player.parentNode.id = id;
                 } );
 
@@ -126,7 +126,7 @@ let playerAction = ( player, text ) => {
                 } );
             }
         } else {
-            axios.get( `${document.location.href}/change-name/${player.parentNode.id}?name=${player.children[ 0 ].value}` );
+            axios.get( `${document.location.origin + document.location.pathname}/change-name/${player.parentNode.id}?name=${player.children[ 0 ].value}` );
         }
         player.innerHTML = player.children[ 0 ].value || text;
         player.classList.remove( "changing" );
@@ -250,7 +250,7 @@ let create = () => {
                     bankerId = players[ i ].id;
                 }
             }
-            axios.post( `${document.location.href}`, {
+            axios.post( `${document.location.origin + document.location.pathname}`, {
                 startMoney: +document.getElementById( "startMoneyIn" ).value,
                 moneyForCircle: +document.getElementById( "circleMoney" ).value,
                 bankerId: bankerId

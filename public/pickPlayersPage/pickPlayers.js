@@ -15,7 +15,7 @@ let newPlayer = ( playerData ) => {
 };
 
 if ( playersCont ) {
-    axios.get( `${document.location.href}players` ).then( res => {
+    axios.get( `${document.location.origin + document.location.pathname}/players` ).then( res => {
         res.data.forEach( player => {
             if ( !player.isPicked ) {
                 newPlayer( player );
@@ -32,14 +32,16 @@ let onPlayerPick = ( e ) => {
             id = ids[ i ];
         }
     }
-    axios.get( `${document.location.href}players?id=${id}` ).then( res => {
+    axios.get( `${document.location.origin + document.location.pathname}/players?id=${id}` ).then( res => {
         if ( !res.data.error ) {
             if ( res.data.isPicked ) {
                 e.preventDefault();
                 alert( "This player is already picked" );
             } else {
-                document.location.replace( `?playerId=${id}` );
-                axios.get( `${document.location.href}pick-player?id=${id}` );
+                axios.get( `${document.location.origin + document.location.pathname}/pick-player?id=${id}` )
+                    .then( () => {
+                        document.location.replace( `?playerId=${id}` );
+                    } )
             }
         } else {
             alert( res.data.error );
