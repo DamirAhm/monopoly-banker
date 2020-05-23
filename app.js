@@ -13,7 +13,7 @@ mongoose.connect( config.MONGO_URL, { useFindAndModify: false, useNewUrlParser: 
     console.log( "Successfully connected to: " + config.MONGO_URL );
 } );
 
-let connections = {};
+let connections = new Map();
 
 let app = express();
 app.use( bodyParser.json() );
@@ -28,7 +28,6 @@ let pickPlayer = ( id ) => {
     Player.findById( id, ( err, player ) => {
         if ( err ) {
             console.log( "Error while finding player in pick-player" );
-
         }
         if ( player.isPicked ) {
             return "Player is already picked";
@@ -37,29 +36,31 @@ let pickPlayer = ( id ) => {
             player.save( err => {
                 if ( err ) {
                     console.log( "Error while saving player in pick-player" );
-
+                    return err;
                 }
+                return null;
             } );
         }
     } );
 };
-
 let unpickPlayer = ( id ) => {
     Player.findById( id, ( err, player ) => {
         if ( err ) {
             console.log( "Error while finding player in unpick player" );
-
         }
-        if ( !player.isPicked ) {
-            return "Player isn`t picked";
-        } else {
-            player.isPicked = false;
-            player.save( err => {
-                if ( err ) {
-                    console.log( "Error while saving player in unpick player" );
-
-                }
-            } );
+        if ( player ) {
+            if ( !player.isPicked ) {
+                return "Player isn`t picked";
+            } else {
+                player.isPicked = false;
+                player.save( err => {
+                    if ( err ) {
+                        console.log( "Error while saving player in unpick player" );
+                        return err;
+                    }
+                    return null
+                } );
+            }
         }
     } );
 };
@@ -87,13 +88,17 @@ app.get( "/:gameId/starter-settings", ( req, res ) => {
             res.send( "404 Game not found" );
 
         }
-        const { players } = await game.populate( "players" ).execPopulate();
-        res.render( "starterSettings", {
-            players: players.length ? players : null,
-            isStartSettingsDone: game.isStartSettingsDone,
-            maxPlayers: players.length >= 6,
-            startSettings: game.startSettings
-        } );
+        if ( game ) {
+            const { players } = await game.populate( "players" ).execPopulate();
+            res.render( "starterSettings", {
+                players: players.length ? players : null,
+                isStartSettingsDone: game.isStartSettingsDone,
+                maxPlayers: players.length >= 6,
+                startSettings: game.startSettings
+            } );
+        } else {
+            res.render( "404" );
+        }
     } );
 } ); //return game room starter settings
 app.get( "/:gameId/starter-settings/change-name/:_id", ( req, res ) => {
@@ -308,12 +313,12 @@ app.get( "/:gameId/unpick-player", ( req, res ) => {
     Game.findById( req.params.gameId, ( err, game ) => {
         if ( err ) {
             console.log( "Error while finding game in unpick player" );
-
         }
         let error = unpickPlayer( req.query.id );
-        if ( error ) {
-            res.json( { error: error } );
+        if ( error !== null ) {
+            res.send( { error: error } );
         }
+        res.send( { error: "" } )
     } );
 } );//change isPicked parameter of player to false
 
@@ -337,19 +342,23 @@ app.get( "/:gameId", ( req, res ) => {
                         if ( err ) {
                             console.log( "Error while finding the player in render game" );
                         }
-                        let bankerId = game.startSettings.bankerId;
-                        res.render( "playerPage", {
-                            user: player,
-                            isBanker: player._id.toString() === bankerId.toString(),
-                            gameId: player.gameId,
-                            isGoing: player.isGoing,
-                            moneyPerCircle: game.startSettings.moneyForCircle,
-                            turnsBeforeCircle: player.turnsBeforeNewCircle
-                        } );
+                        if ( player ) {
+                            let bankerId = game.startSettings.bankerId;
+                            res.render( "playerPage", {
+                                user: player,
+                                isBanker: player._id.toString() === bankerId.toString(),
+                                gameId: player.gameId,
+                                isGoing: player.isGoing,
+                                moneyPerCircle: game.startSettings.moneyForCircle,
+                                turnsBeforeCircle: player.turnsBeforeNewCircle
+                            } );
+                        } else {
+                            res.render( "404" );
+                        }
                     } );
                 }
             } else {
-                console.error( "Can't find game" );
+                res.render( "404" );
             }
         } );
     }
@@ -534,15 +543,13 @@ app.put( "/:gameId/moneyActions", ( req, res ) => {
     } );
 } );//operations with money
 
+const toAll = ( sockets, cb ) => {
+    for ( const socket of sockets ) {
+        cb( socket );
+    }
+}
 
 app.ws( "/:gameId", ws => {
-    for ( let key in connections ) {
-        if ( connections.hasOwnProperty( key ) ) {
-            if ( connections[ key ] === ws ) {
-                pickPlayer( key );
-            }
-        }
-    }
     ws.on( "message", msg => {
         let data = JSON.parse( msg );
         debugger;
@@ -551,41 +558,56 @@ app.ws( "/:gameId", ws => {
                 case "giveTurn": {
                     Player.findOne( { isGoing: true }, ( err, player ) => {
                         if ( err ) throw err;
-                        wss.getWss().clients.forEach( e => {
+                        toAll( wss.getWss().clients, el => {
                             let action = {
                                 type: "giveTurn",
                                 id: player._id,
                             };
-                            e.send( JSON.stringify( action ) );
-                        } );
+                            el.send( JSON.stringify( action ) );
+                        } )
                     } )
                     break;
                 }
                 case "giveMoney": {
-                    wss.getWss().clients.forEach( e => {
-                        e.send( JSON.stringify( data ) );
-                    } );
+                    toAll( wss.getWss().clients, el => el.send( JSON.stringify( data ) ) );
                     break;
                 }
                 case "gotCircle": {
-                    wss.getWss().clients.forEach( e => {
-                        e.send( JSON.stringify( data ) );
-                    } );
+                    toAll( wss.getWss().clients, el => el.send( JSON.stringify( data ) ) )
                     break;
                 }
                 case "sendId": {
-                    connections[ data.id ] = ws;
+                    connections[ ws ] = data;
+                    break;
+                }
+                case "closeRoom": {
+                    if ( connections[ ws ] !== undefined ) {
+                        const { gameId } = connections[ ws ];
+                        Game.findByIdAndDelete( gameId, async ( err, game ) => {
+                            if ( err ) {
+                                console.error( err );
+                                throw err
+                            };
+                            try {
+                                const { players } = await game.populate( "players" ).execPopulate();
+                                for ( const player of players ) {
+                                    await player.deleteOne();
+                                }
+                                toAll( wss.getWss().clients, el => el.send( JSON.stringify( data ) ) );
+                            } catch ( err ) {
+                                throw err;
+                            }
+                        } )
+                        toAll( wss.getWss().clients, el => el.send( JSON.stringify( data ) ) );
+                    }
+                    break;
                 }
             }
         }
     } );
     ws.on( "close", () => {
-        for ( let key in connections ) {
-            if ( connections.hasOwnProperty( key ) ) {
-                if ( connections[ key ] === ws ) {
-                    unpickPlayer( key );
-                }
-            }
+        if ( connections[ ws ] !== undefined ) {
+            unpickPlayer( connections[ ws ].id );
         }
     } );
     ws.on( "error", err => {

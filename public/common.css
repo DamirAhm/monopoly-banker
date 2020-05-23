@@ -1,0 +1,10 @@
+* {
+    font-family: "Roboto", sans-serif;
+}
+
+.container,
+.bg-cont {
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
+}

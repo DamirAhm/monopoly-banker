@@ -37,7 +37,7 @@ function deleteName ( deleter, e ) {
     let addPlayerBtnCont = createAddPlayerBtn();
     let parent = deleter.parentNode;
     let playerId = parent.id;
-    axios.get( `${document.location.origin + document.location.pathname}/delete-player?id=${parent.id}` )
+    axios.get( concatURL( document.location.origin, document.location.pathname, "delete-player", `?id=${parent.id}` ) )
         .then( () => {
             const wasBanker = parent.children[ 0 ].checked;
             parent.remove();
@@ -73,9 +73,10 @@ let playerAction = ( player, text ) => {
         //action logic
         if ( player.classList.contains( "add-player" ) ) {
             if ( player.children[ 0 ].value ) {
-                axios.get( `${document.location.origin + document.location.pathname}/new-player?name=${player.children[ 0 ].value}` ).then( ( { data: id } ) => {
-                    player.parentNode.id = id;
-                } );
+                axios.get( concatURL( document.location.origin, document.location.pathname, "new-player", `?name=${player.children[ 0 ].value}` ) )
+                    .then( ( { data: id } ) => {
+                        player.parentNode.id = id;
+                    } );
 
                 //create new checkbox
                 let checkbox = document.createElement( "input" );
@@ -105,7 +106,7 @@ let playerAction = ( player, text ) => {
                 } );
             }
         } else {
-            axios.get( `${document.location.origin + document.location.pathname}/change-name/${player.parentNode.id}?name=${player.children[ 0 ].value}` );
+            axios.get( concatURL( document.location.origin, document.location.pathname, "change-name", `${player.parentNode.id}?name=${player.children[ 0 ].value}` ) );
         }
         player.innerHTML = player.children[ 0 ].value || text;
         player.classList.remove( "changing" );
@@ -230,7 +231,7 @@ let create = () => {
                     bankerId = players[ i ].id;
                 }
             }
-            axios.post( `${document.location.origin + document.location.pathname}`, {
+            axios.post( concatURL( document.location.origin, document.location.pathname ), {
                 startMoney: +document.getElementById( "startMoneyIn" ).value,
                 moneyForCircle: +document.getElementById( "circleMoney" ).value,
                 minTurnsForCircle: +document.getElementById( "minTurns" ).value,

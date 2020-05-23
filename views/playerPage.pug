@@ -14,6 +14,7 @@ html(data-isbanker=isBanker.toString() data-gameId=gameId data-playerId=user.id 
             href="../public/playerPage/player.css"
         )
         include includes/iconLink
+        include includes/linkCommon
     body
         .container.center
             .userContent.col-lg-4.col-sm-12.col-md-6
@@ -31,8 +32,9 @@ html(data-isbanker=isBanker.toString() data-gameId=gameId data-playerId=user.id 
                     .title For who?
                     .player(id= "bank") Bank
             #changePlayer(class="fas fa-sign-out-alt")
+            if (isBanker)
+                #closeRoom(class="far fa-window-close")
             input#urlLink
     script(src="https://kit.fontawesome.com/9ef32952ff.js")
     script(src="https://unpkg.com/axios/dist/axios.min.js")
     script(src="../public/playerPage/player.js")
-    script(src="../public/ravnyator.js")

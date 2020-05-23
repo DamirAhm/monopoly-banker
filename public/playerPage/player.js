@@ -10,6 +10,8 @@ let socket = new WebSocket( `${wsName}//${host}/${gameId}` );
 let players = [];
 
 //* Elements
+//html element
+let html = document.querySelector( "html" );
 //span with money
 let money = document.getElementById( "money" );
 //money input
@@ -68,7 +70,8 @@ let newMoveCont = ( playerData ) => {
 
     document.getElementById( "moveLog" ).appendChild( player );
 };
-//functions to make a player moves
+
+//* functions to make a player controls
 let createPlayer = ( playerId ) => {
     let player = document.createElement( "div" );
     player.classList.add( "playerMove" );
@@ -229,71 +232,6 @@ let updateMove = ( playerMoveCont, move ) => {
         throw new Error( move.error );
     }
 };
-
-//check how many moves more on hover
-let hoverCount = ( e ) => {
-    if ( e.target.children[ 0 ] ) {
-        if ( e.type === "mouseover" ) {
-            e.target.children[ 0 ].style.display = "inline";
-            let conts = document.getElementsByClassName( "delete" );
-            for ( let i = 0; i < conts.length; i++ ) {
-                if ( conts[ i ] !== e.target ) {
-                    conts[ i ].style.visibility = "hidden";
-                }
-            }
-        } else if ( e.type === "mouseout" ) {
-            e.target.children[ 0 ].style.display = "none";
-            let conts = document.getElementsByClassName( "delete" );
-            for ( let i = 0; i < conts.length; i++ ) {
-                if ( conts[ i ] !== e.target ) {
-                    conts[ i ].style.visibility = "visible";
-                }
-            }
-        }
-    }
-};
-
-//change players money in players money page
-let changePlayerMoney = ( e ) => {
-    if ( e.target.children.length > 0 ) {
-        let oldMoney = e.target.children[ 1 ];
-        let width = oldMoney.offsetWidth;
-        let playerCont = e.target;
-        let newMoney = document.createElement( "input" );
-        newMoney.type = "number";
-        newMoney.autofocus = true;
-        newMoney.style.display = "inline";
-        newMoney.style.width = ( width + 20 ) + "px";
-        newMoney.defaultValue = oldMoney.innerText;
-        newMoney.classList.add( "newMoney" );
-        playerCont.replaceChild( newMoney, oldMoney );
-        let btnCont = document.createElement( "div" );
-        btnCont.classList.add( "btnCont" );
-        let confirmBtn = document.createElement( "button" );
-        confirmBtn.classList.add( "confirm" );
-        confirmBtn.innerText = "Update";
-        confirmBtn.addEventListener( "click", ( e ) => {
-            confirmUpdate( e, oldMoney );
-        } );
-        let backBtn = document.createElement( "button" );
-        backBtn.classList.add( "back" );
-        backBtn.innerText = "Back";
-        backBtn.addEventListener( "click", ( e ) => {
-            backFromUpdate( e, oldMoney );
-        } );
-        btnCont.appendChild( confirmBtn );
-        btnCont.appendChild( backBtn );
-        let newPlayerCont = document.createElement( "form" );
-        newPlayerCont.classList.add( "changeMoneyForm" );
-        newPlayerCont.appendChild( playerCont.cloneNode( true ) );
-        newPlayerCont.appendChild( btnCont );
-        newPlayerCont.onsubmit = ( e ) => {
-            confirmUpdate( e, oldMoney );
-        };
-        playerCont.parentElement.replaceChild( newPlayerCont, playerCont );
-    }
-};
-
 //confirms money update
 let confirmUpdate = ( e, oldMoney ) => {
     e.preventDefault();
@@ -333,7 +271,6 @@ let backFromUpdate = ( e, oldMoney ) => {
     } );
     e.target.parentElement.parentElement.replaceWith( playerInfo );
 };
-
 //opens a choose player monitor
 let minusMoney = () => {
     if ( +input.value > 0 ) {
@@ -346,7 +283,6 @@ let minusMoney = () => {
         alert( "Enter not negative money total" );
     }
 };
-
 //change player controls page while (not) going
 let changeIsGoing = ( isGoing ) => {
     const turnLabel = document.getElementsByClassName( "isMyTurn" )[ 0 ];
@@ -358,23 +294,28 @@ let changeIsGoing = ( isGoing ) => {
     document.getElementById( "nextPlayer" ).disabled = !isGoing;
     document.getElementById( "input" ).disabled = !isGoing;
 };
+//show only message on player's screen
+function showMessage ( err ) {
+    console.log( err );
+    document.getElementsByClassName( "container" )[ 0 ].innerHTML = err;
+}
+
 
 //* Socket
 //works when web socket opens connection
 socket.onopen = () => {
-    socket.send( JSON.stringify( {
-        type: "sendId",
-        id: playerId,
-        game: gameId
-    } ) );
     axios.get( `${protocol}//${host}/${gameId}/pick-player?id=${playerId}` )
         .then( err => {
             if ( err.data.error ) {
-                console.log( err.data );
-                document.getElementsByClassName( "container" )[ 0 ].innerHTML = err.data.error;
+                showMessage( err.data.error );
                 isPicked = true;
             }
         } );
+    socket.send( JSON.stringify( {
+        type: "sendId",
+        id: playerId,
+        gameId: gameId
+    } ) );
 };
 //works when web socket receive a message / action
 socket.onmessage = res => {
@@ -469,6 +410,12 @@ socket.onmessage = res => {
         case "timeOver": {
             alert( "Game time is over" );
         }
+        case "closeRoom": {
+            showMessage( "Your game has ended" );
+            setTimeout( () => {
+                document.location.replace( "/" );
+            }, 10000 )
+        }
     }
 };
 //works when web socket close connection
@@ -477,11 +424,20 @@ socket.onclose = () => {
 };
 
 //* Event handlers
-//go to choose player monitor
+//go to "player-pick monitor"
 let signOut = () => {
-    document.location.replace( `${protocol}//${host}/${gameId}` );
-    axios.get( `${protocol}//${host}/${gameId}/unpick-player?id=${document.location.search.split( "=" )[ 1 ]}` );
+    axios.get( concatURL( document.location.origin, document.location.pathname, "unpick-player", `?id=${playerId}` ) )
+        .then( () => {
+            document.location.replace( concatURL( document.location.origin, document.location.pathname ) );
+        } )
 };
+//close room for all players
+let closeRoom = ( e ) => {
+    e.preventDefault();
+    socket.send( JSON.stringify( {
+        type: "closeRoom"
+    } ) )
+}
 //func while you got circle
 let gotCircle = ( e ) => {
     e.preventDefault();
@@ -491,7 +447,7 @@ let gotCircle = ( e ) => {
             from: playerId,
             redo: false
         };
-        axios.put( `${protocol}//${host}/${gameId}/moneyActions?playerId=${html.dataset.playerid}`, action )
+        axios.put( concatURL( document.location.origin, document.location.pathname, "moneyActions", `?playerId=${playerId}` ), action )
             .then( res => {
                 if ( res.data.error ) {
                     alert( res.data.error );
@@ -509,23 +465,24 @@ let gotCircle = ( e ) => {
 //give turn to next player
 let giveTurn = ( e ) => {
     e.preventDefault();
-    axios.get( `${protocol}//${host}/${gameId}/giveTurn?playerId=${html.dataset.playerid}` ).then( res => {
-        if ( !res.data.error ) {
-            console.log( res );
-            turnsBeforeNewCircle = res.data.turns;
-            if ( turnsBeforeNewCircle >= 0 ) {
-                document.getElementById( "gotCircle" ).disabled = true;
+    axios.get( concatURL( document.location.origin, document.location.pathname, "giveTurn", `?playerId=${playerId}` ) )
+        .then( res => {
+            if ( !res.data.error ) {
+                console.log( res );
+                turnsBeforeNewCircle = res.data.turns;
+                if ( turnsBeforeNewCircle >= 0 ) {
+                    document.getElementById( "gotCircle" ).disabled = true;
+                } else {
+                    document.getElementById( "gotCircle" ).disabled = false;
+                }
+                socket.send( JSON.stringify( {
+                    type: "giveTurn"
+                } ) );
+                changeIsGoing( false );
             } else {
-                document.getElementById( "gotCircle" ).disabled = false;
+                throw new Error( res.data.error );
             }
-            socket.send( JSON.stringify( {
-                type: "giveTurn"
-            } ) );
-            changeIsGoing( false );
-        } else {
-            throw new Error( res.data.error );
-        }
-    } );
+        } );
 };
 //switch banker`s pages
 let optionAction = ( e ) => {
@@ -575,9 +532,72 @@ let onReceiverPick = ( e ) => {
         }
     } );
 };
+//check how many moves more on hover
+let hoverCount = ( e ) => {
+    if ( e.target.children[ 0 ] ) {
+        if ( e.type === "mouseover" ) {
+            e.target.children[ 0 ].style.display = "inline";
+            let conts = document.getElementsByClassName( "delete" );
+            for ( let i = 0; i < conts.length; i++ ) {
+                if ( conts[ i ] !== e.target ) {
+                    conts[ i ].style.visibility = "hidden";
+                }
+            }
+        } else if ( e.type === "mouseout" ) {
+            e.target.children[ 0 ].style.display = "none";
+            let conts = document.getElementsByClassName( "delete" );
+            for ( let i = 0; i < conts.length; i++ ) {
+                if ( conts[ i ] !== e.target ) {
+                    conts[ i ].style.visibility = "visible";
+                }
+            }
+        }
+    }
+};
+//change players money in players money page
+let changePlayerMoney = ( e ) => {
+    if ( e.target.children.length > 0 ) {
+        let oldMoney = e.target.children[ 1 ];
+        let width = oldMoney.offsetWidth;
+        let playerCont = e.target;
+        let newMoney = document.createElement( "input" );
+        newMoney.type = "number";
+        newMoney.autofocus = true;
+        newMoney.style.display = "inline";
+        newMoney.style.width = ( width + 20 ) + "px";
+        newMoney.defaultValue = oldMoney.innerText;
+        newMoney.classList.add( "newMoney" );
+        playerCont.replaceChild( newMoney, oldMoney );
+        let btnCont = document.createElement( "div" );
+        btnCont.classList.add( "btnCont" );
+        let confirmBtn = document.createElement( "button" );
+        confirmBtn.classList.add( "confirm" );
+        confirmBtn.innerText = "Update";
+        confirmBtn.addEventListener( "click", ( e ) => {
+            confirmUpdate( e, oldMoney );
+        } );
+        let backBtn = document.createElement( "button" );
+        backBtn.classList.add( "back" );
+        backBtn.innerText = "Back";
+        backBtn.addEventListener( "click", ( e ) => {
+            backFromUpdate( e, oldMoney );
+        } );
+        btnCont.appendChild( confirmBtn );
+        btnCont.appendChild( backBtn );
+        let newPlayerCont = document.createElement( "form" );
+        newPlayerCont.classList.add( "changeMoneyForm" );
+        newPlayerCont.appendChild( playerCont.cloneNode( true ) );
+        newPlayerCont.appendChild( btnCont );
+        newPlayerCont.onsubmit = ( e ) => {
+            confirmUpdate( e, oldMoney );
+        };
+        playerCont.parentElement.replaceChild( newPlayerCont, playerCont );
+    }
+};
 
 //* Apply event listeners
 document.getElementById( "changePlayer" ).addEventListener( "click", signOut );
+document.getElementById( "closeRoom" ).addEventListener( "click", closeRoom );
 document.getElementById( "gotCircle" ).addEventListener( "click", ( e ) => {
     gotCircle( e );
 } );
@@ -599,16 +619,17 @@ for ( let i = 0; i < options.length; i++ ) {
 
 //* Initialize
 //get players
-axios.get( `${protocol}//${host}/${gameId}/players` ).then( res => {
-    players = res.data;
-    res.data.forEach( e => {
-        //add to pay list(opens in minusMoney)
-        newPayListPlayer( e );
-        if ( html.dataset.isbanker === "true" ) {
-            //add to players money page
-            newPlayerInfo( e );
-            //add to move log page
-            newMoveCont( e );
-        }
+axios.get( concatURL( document.location.origin, document.location.pathname, "players" ) )
+    .then( res => {
+        players = res.data;
+        res.data.forEach( e => {
+            //add to pay list(opens in minusMoney)
+            newPayListPlayer( e );
+            if ( html.dataset.isbanker === "true" ) {
+                //add to players money page
+                newPlayerInfo( e );
+                //add to move log page
+                newMoveCont( e );
+            }
+        } );
     } );
-} );

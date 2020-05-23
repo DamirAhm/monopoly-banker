@@ -15,13 +15,15 @@ let newPlayer = ( playerData ) => {
 };
 
 if ( playersCont ) {
-    axios.get( `${document.location.origin + document.location.pathname}players` ).then( res => {
-        res.data.forEach( player => {
-            if ( !player.isPicked ) {
-                newPlayer( player );
-            }
+    axios.get( concatURL( document.location.origin, document.location.pathname, "players" ) )
+        .then( res => {
+            console.log( res.data );
+            res.data.forEach( player => {
+                if ( !player.isPicked ) {
+                    newPlayer( player );
+                }
+            } );
         } );
-    } );
 }
 
 let onPlayerPick = ( e ) => {
@@ -32,21 +34,19 @@ let onPlayerPick = ( e ) => {
             id = ids[ i ];
         }
     }
-    axios.get( `${document.location.origin + document.location.pathname}players?id=${id}` ).then( res => {
-        if ( !res.data.error ) {
-            if ( res.data.isPicked ) {
-                e.preventDefault();
-                alert( "This player is already picked" );
+    axios.get( concatURL( document.location.origin, document.location.pathname, "players", `?id=${id}` ) )
+        .then( res => {
+            if ( !res.data.error ) {
+                if ( res.data.isPicked ) {
+                    e.preventDefault();
+                    alert( "This player is already picked" );
+                } else {
+                    document.location.replace( `?playerId=${id}` );
+                }
             } else {
-                axios.get( `${document.location.origin + document.location.pathname}pick-player?id=${id}` )
-                    .then( () => {
-                        document.location.replace( `?playerId=${id}` );
-                    } )
+                alert( res.data.error );
             }
-        } else {
-            alert( res.data.error );
-        }
-    } )
+        } )
 };
 
 const urlSpan = document.getElementById( "url" );

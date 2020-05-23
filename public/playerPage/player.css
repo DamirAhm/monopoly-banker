@@ -138,9 +138,45 @@ button{
 #changePlayer{
     position: absolute;
     left: 30px;
-    top: 30px;
+    top: 20px;
     font-size: 2em;
     cursor: pointer;
+}
+#changePlayer:hover {
+    color: rgba(255,0,0,0.7);
+}
+#changePlayer:hover::after {
+    content: "Leave room";
+    position: absolute;
+    font-size: 0.7rem;
+    top: -0.7rem;
+    right: 0;
+    font-family: "Roboto", sans-serif;
+    color: initial;
+    font-weight: normal;
+    width: 10em;
+    text-align: right;
+}
+
+#closeRoom {
+    position: absolute;
+    right: 30px;
+    top: 20px;
+    font-size: 2em;
+    cursor: pointer;
+}
+#closeRoom:hover {
+    color: rgba(255,0,0,0.7);
+}
+#closeRoom:hover::after {
+    content: "Close room";
+    position: absolute;
+    font-size: 0.7rem;
+    top: -0.7rem;
+    font-family: "Roboto", sans-serif;
+    color: initial;
+    width: 10em;
+    left: 0;
 }
 
 #shareGame{
