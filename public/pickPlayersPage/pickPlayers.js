@@ -26,7 +26,6 @@ let newPlayer = ( playerData ) => {
 if ( playersCont ) {
     axios.get( concatURL( document.location.origin, document.location.pathname, "players" ) )
         .then( res => {
-            console.log( res.data );
             res.data.forEach( player => {
                 if ( !player.isPicked ) {
                     newPlayer( player );
@@ -36,7 +35,7 @@ if ( playersCont ) {
 }
 
 let onPlayerPick = ( e ) => {
-    let id = null;
+    let id = "";
     let players = document.getElementsByClassName( "player" );
     for ( let i = 0; i < players.length; i++ ) {
         if ( players[ i ] === e.target ) {
@@ -62,3 +61,30 @@ const urlSpan = document.getElementById( "url" );
 urlSpan.addEventListener( "click", () => {
     navigator.clipboard.writeText( document.location.href )
 } )
+
+ws.onmessage = ( msg ) => {
+    const data = JSON.parse( msg.data );
+    switch ( data.type ) {
+        case "pick-player": {
+            const { id } = data;
+            if ( id ) {
+                const index = ids.indexOf( id );
+                ids = ids.filter( e => e !== id );
+
+                let players = document.getElementsByClassName( "player" );
+                for ( let i = 0; i < players.length; i++ ) {
+                    if ( i === index ) {
+                        players[ i ].remove();
+                    }
+                }
+            }
+            break;
+        }
+        case "unpick-player": {
+            const { player } = data;
+            if ( player ) {
+                newPlayer( player );
+            }
+        }
+    }
+}

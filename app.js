@@ -32,8 +32,14 @@ app.set( "views", "./views" );
 let server = http.createServer( app );
 let wss = expressWs( app, server );
 
+const toAll = ( sockets, cb ) => {
+    for ( const socket of sockets ) {
+        cb( socket );
+    }
+}
+
 let pickPlayer = async ( id ) => {
-    await Player.findById( id, ( err, player ) => {
+    return await Player.findById( id, ( err, player ) => {
         if ( err ) {
             console.log( "Error while finding player in pick-player" );
         }
@@ -41,18 +47,22 @@ let pickPlayer = async ( id ) => {
             return "Player is already picked";
         } else {
             player.isPicked = true;
-            player.save( err => {
+            return player.save( err => {
                 if ( err ) {
                     console.log( "Error while saving player in pick-player" );
                     return err;
                 }
+                toAll( wss.getWss().clients, el => el.send( JSON.stringify( {
+                    type: "pick-player",
+                    id
+                } ) ) )
                 return null;
             } );
         }
     } );
 };
-let unpickPlayer = ( id ) => {
-    Player.findById( id, ( err, player ) => {
+let unpickPlayer = async ( id ) => {
+    return await Player.findById( id, ( err, player ) => {
         if ( err ) {
             console.log( "Error while finding player in unpick player" );
         }
@@ -61,11 +71,15 @@ let unpickPlayer = ( id ) => {
                 return "Player isn`t picked";
             } else {
                 player.isPicked = false;
-                player.save( err => {
+                return player.save( err => {
                     if ( err ) {
                         console.log( "Error while saving player in unpick player" );
                         return err;
                     }
+                    toAll( wss.getWss().clients, el => el.send( JSON.stringify( {
+                        type: "unpick-player",
+                        player
+                    } ) ) )
                     return null
                 } );
             }
@@ -290,42 +304,31 @@ app.post( "/:gameId/players/change-sequence", ( req, res ) => {
     } );
 } ); //change game room player sequence
 app.get( "/:gameId/pick-player", ( req, res ) => {
-    Game.findById( req.params.gameId, ( err, game ) => {
+    Game.findById( req.params.gameId, async ( err, game ) => {
         if ( err ) {
             console.log( "Error while finding game in pick-player" );
-
         }
-        Player.findById( req.query.id, ( err, player ) => {
-            if ( err ) {
-                console.log( "Error while finding player in pick-player" );
-
-            }
-            if ( player.isPicked ) {
-                res.json( { error: "Player is already picked" } );
-            } else {
-                player.isPicked = true;
-                player.save( err => {
-                    if ( err ) {
-                        console.log( "Error while saving player in pick-player" );
-                    }
-                    res.end();
-                } );
-            }
-        } );
+        const error = await pickPlayer( req.query.id );
+        if ( err ) {
+            console.log( err );
+            res.send( { error } );
+        } else {
+            res.send( { error: "" } );
+        }
     } );
 } );//change isPicked parameter of player to true
 app.get( "/:gameId/unpick-player", ( req, res ) => {
-    Game.findById( req.params.gameId, ( err, game ) => {
+    Game.findById( req.params.gameId, async ( err, game ) => {
         if ( err ) {
             console.log( "Error while finding game in unpick player" );
         }
-        let error = unpickPlayer( req.query.id );
+        let error = await unpickPlayer( req.query.id );
         if ( error !== null ) {
             console.log( error );
             res.send( { error } );
         }
         else {
-            res.send( { error: "" } )
+            res.send( { error: "" } );
         }
     } );
 } );//change isPicked parameter of player to false
@@ -560,12 +563,6 @@ app.put( "/:gameId/moneyActions", ( req, res ) => {
     } );
 } );//operations with money
 
-const toAll = ( sockets, cb ) => {
-    for ( const socket of sockets ) {
-        cb( socket );
-    }
-}
-
 app.ws( "/*/*", ws => {
     ws.on( "message", msg => {
         let data = JSON.parse( msg );
@@ -630,7 +627,6 @@ app.ws( "/*/*", ws => {
         }
     } );
     ws.on( "close", () => {
-        console.log( playerConnections[ ws ] );
         if ( playerConnections[ ws ] !== undefined ) {
             unpickPlayer( playerConnections[ ws ].id );
             delete playerConnections[ ws ];
