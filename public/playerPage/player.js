@@ -431,6 +431,14 @@ socket.onclose = () => {
 };
 
 //* Event handlers
+
+//go to "player-pick monitor"
+let signOut = () => {
+    axios.get( concatURL( document.location.origin, gameId, "unpick-player", `?id=${playerId}` ) )
+        .then( () => {
+            document.location.replace( concatURL( document.location.origin, gameId ) );
+        } )
+};
 //close room for all players
 let closeRoom = ( e ) => {
     e.preventDefault();
@@ -592,13 +600,6 @@ let changePlayerMoney = ( e ) => {
         };
         playerCont.parentElement.replaceChild( newPlayerCont, playerCont );
     }
-};
-//go to "player-pick monitor"
-let signOut = () => {
-    axios.get( concatURL( document.location.origin, gameId, "unpick-player", `?id=${playerId}` ) )
-        .then( () => {
-            document.location.replace( concatURL( document.location.origin, gameId ) );
-        } )
 };
 //* Apply event listeners
 document.getElementById( "changePlayer" ).addEventListener( "click", signOut );

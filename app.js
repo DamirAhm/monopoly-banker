@@ -20,7 +20,8 @@ Player.find( {}, ( err, players ) => {
     }
 } )
 
-let connections = new Map();
+let pickersConnections = [];
+let playerConnections = new Map();
 
 let app = express();
 app.use( bodyParser.json() );
@@ -355,11 +356,6 @@ app.get( "/:gameId/:playerId", ( req, res, next ) => {
         Game.findById( gameId, ( err, game ) => {
             if ( err ) throw err;
             if ( game ) {
-                for ( const [ key, val ] of connections.entries() ) {
-                    if ( val.id === playerId ) {
-                        console.log( key.readyState );
-                    }
-                }
                 Player.findById( playerId, ( err, player ) => {
                     if ( err ) throw err;
                     if ( player && game.players.includes( player._id ) ) {
@@ -597,8 +593,8 @@ app.ws( "/*/*", ws => {
                     break;
                 }
                 case "sendId": {
-                    if ( Object.values( connections ).find( con => con && con.id === data.id ) === undefined ) {
-                        connections[ ws ] = data;
+                    if ( Object.values( playerConnections ).find( con => con && con.id === data.id ) === undefined ) {
+                        playerConnections[ ws ] = data;
                         pickPlayer( data.id )
                             .then( () => {
                                 ws.send( JSON.stringify( {
@@ -609,8 +605,8 @@ app.ws( "/*/*", ws => {
                     break;
                 }
                 case "closeRoom": {
-                    if ( connections[ ws ] !== undefined && connections[ ws ].gameId ) {
-                        const { gameId } = connections[ ws ];
+                    if ( playerConnections[ ws ] !== undefined && playerConnections[ ws ].gameId ) {
+                        const { gameId } = playerConnections[ ws ];
                         Game.findByIdAndDelete( gameId, async ( err, game ) => {
                             if ( err ) {
                                 console.error( err );
@@ -634,9 +630,10 @@ app.ws( "/*/*", ws => {
         }
     } );
     ws.on( "close", () => {
-        if ( connections[ ws ] !== undefined ) {
-            unpickPlayer( connections[ ws ].id );
-            delete connections[ ws ];
+        console.log( playerConnections[ ws ] );
+        if ( playerConnections[ ws ] !== undefined ) {
+            unpickPlayer( playerConnections[ ws ].id );
+            delete playerConnections[ ws ];
         }
     } );
     ws.on( "error", err => {
@@ -644,11 +641,7 @@ app.ws( "/*/*", ws => {
     } );
 } );
 app.ws( "/:gameId", ws => {
-    ws.on( "connection", msg => {
-        const data = JSON.parse( msg );
-
-        console.log( "CON" );
-    } );
+    pickersConnections.push( ws );
     ws.on( "error", err => console.log( err ) );
 } )
 
