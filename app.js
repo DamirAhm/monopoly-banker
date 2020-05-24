@@ -13,6 +13,13 @@ mongoose.connect( config.MONGO_URL, { useFindAndModify: false, useNewUrlParser: 
     console.log( "Successfully connected to: " + config.MONGO_URL );
 } );
 
+Player.find( {}, ( err, players ) => {
+    for ( const player of players ) {
+        player.isPicked = false;
+        player.save();
+    }
+} )
+
 let connections = new Map();
 
 let app = express();
@@ -24,8 +31,8 @@ app.set( "views", "./views" );
 let server = http.createServer( app );
 let wss = expressWs( app, server );
 
-let pickPlayer = ( id ) => {
-    Player.findById( id, ( err, player ) => {
+let pickPlayer = async ( id ) => {
+    await Player.findById( id, ( err, player ) => {
         if ( err ) {
             console.log( "Error while finding player in pick-player" );
         }
@@ -159,40 +166,37 @@ app.post( "/:gameId/starter-settings", ( req, res ) => {
             console.log( "Error while finding the game in post starter-settings" );
 
         }
-        Player.find( { gameId: game._id }, ( err, players ) => {
-            if ( err ) {
-                console.log( "Error while finding players in post starter-settings" );
-
-            }
-            for ( let i = 0; i < players.length; i++ ) {
-                players[ i ].money = req.body.startMoney;
-                players[ i ].turnsBeforeNewCircle = req.body.minTurnsForCircle;
-                players[ i ].save( err => {
+        Player.find( { gameId: game._id }, async ( err, players ) => {
+            try {
+                if ( err ) {
+                    console.log( "Error while finding players in post starter-settings" );
+                }
+                for ( let i = 0; i < players.length; i++ ) {
+                    if ( i === 0 ) {
+                        players[ i ].isGoing = true;
+                    }
+                    players[ i ].money = req.body.startMoney;
+                    players[ i ].turnsBeforeNewCircle = req.body.minTurnsForCircle;
+                    await players[ i ].save( err => {
+                        if ( err ) {
+                            console.log( "Error while saving player in post starter-settings" );
+                        }
+                    } );
+                }
+                game.startSettings = {
+                    ...req.body,
+                    bankerId: player._id
+                };
+                game.isStartSettingsDone = true;
+                await game.save( err => {
                     if ( err ) {
-                        console.log( "Error while saving player in post starter-settings" );
+                        console.log( "Error while saving the game" );
                     }
                 } );
-            }
-        } );
-        Player.findById( req.body.bankerId, ( err, player ) => {
-            if ( err ) {
-                console.log( "Error while finding the player there" );
-            };
-            game.startSettings = {
-                ...req.body,
-                bankerId: player._id
-            };
-            game.isStartSettingsDone = true;
-            game.save( err => {
-                if ( err ) {
-                    console.log( "Error while saving the game" );
-                }
-            } );
-            res.end();
-        } );
-        Player.findByIdAndUpdate( game.players[ 0 ], { isGoing: true }, err => {
-            if ( err ) {
-                console.log( "Error while updating " );
+                res.send( { error: "" } );
+            } catch ( err ) {
+                console.error( err );
+                res.send( { err } );
             }
         } );
     } );
@@ -316,9 +320,12 @@ app.get( "/:gameId/unpick-player", ( req, res ) => {
         }
         let error = unpickPlayer( req.query.id );
         if ( error !== null ) {
-            res.send( { error: error } );
+            console.log( error );
+            res.send( { error } );
         }
-        res.send( { error: "" } )
+        else {
+            res.send( { error: "" } )
+        }
     } );
 } );//change isPicked parameter of player to false
 
@@ -348,6 +355,11 @@ app.get( "/:gameId/:playerId", ( req, res, next ) => {
         Game.findById( gameId, ( err, game ) => {
             if ( err ) throw err;
             if ( game ) {
+                for ( const [ key, val ] of connections.entries() ) {
+                    if ( val.id === playerId ) {
+                        console.log( key.readyState );
+                    }
+                }
                 Player.findById( playerId, ( err, player ) => {
                     if ( err ) throw err;
                     if ( player && game.players.includes( player._id ) ) {
@@ -585,14 +597,19 @@ app.ws( "/*/*", ws => {
                     break;
                 }
                 case "sendId": {
-                    connections[ ws ] = data;
-                    ws.send( JSON.stringify( {
-                        type: "confirmPick"
-                    } ) );
+                    if ( Object.values( connections ).find( con => con && con.id === data.id ) === undefined ) {
+                        connections[ ws ] = data;
+                        pickPlayer( data.id )
+                            .then( () => {
+                                ws.send( JSON.stringify( {
+                                    type: "confirmPick"
+                                } ) );
+                            } )
+                    }
                     break;
                 }
                 case "closeRoom": {
-                    if ( connections[ ws ] !== undefined ) {
+                    if ( connections[ ws ] !== undefined && connections[ ws ].gameId ) {
                         const { gameId } = connections[ ws ];
                         Game.findByIdAndDelete( gameId, async ( err, game ) => {
                             if ( err ) {
@@ -617,16 +634,23 @@ app.ws( "/*/*", ws => {
         }
     } );
     ws.on( "close", () => {
-        console.log( connections[ ws ] );
         if ( connections[ ws ] !== undefined ) {
             unpickPlayer( connections[ ws ].id );
+            delete connections[ ws ];
         }
     } );
     ws.on( "error", err => {
-        console.error( err );
+        console.error( "ERROR", err );
     } );
 } );
+app.ws( "/:gameId", ws => {
+    ws.on( "connection", msg => {
+        const data = JSON.parse( msg );
 
+        console.log( "CON" );
+    } );
+    ws.on( "error", err => console.log( err ) );
+} )
 
 module.exports = server;
 

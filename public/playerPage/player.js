@@ -3,8 +3,8 @@ let gameId = document.getElementsByTagName( "html" )[ 0 ].dataset.gameid;
 let host = document.location.host.split( "/" )[ 0 ];
 let isPicked = false;
 let protocol = document.location.protocol;
-let wsName = protocol === "https:" ? "wss:" : "ws:";
-let socket = new WebSocket( `${wsName}//${host}/${document.location.pathname}` );
+let wsProtocol = protocol === "https:" ? "wss:" : "ws:";
+let socket = new WebSocket( `${wsProtocol}//${host}/${document.location.pathname}` );
 
 //array with players in game to give them money
 let players = [];
@@ -295,9 +295,12 @@ let changeIsGoing = ( isGoing ) => {
     document.getElementById( "input" ).disabled = !isGoing;
 };
 //show only message on player's screen
-function showMessage ( err ) {
-    console.log( err );
-    document.getElementsByClassName( "container" )[ 0 ].innerHTML = err;
+function showMessage ( msg ) {
+    console.log( msg );
+    const title = document.createElement( "h1" );
+    title.innerText = msg;
+    document.getElementsByClassName( "userContent" )[ 0 ].remove();
+    document.getElementsByClassName( "container" )[ 0 ].appendChild( title );
 }
 
 
@@ -411,13 +414,6 @@ socket.onmessage = res => {
             break;
         }
         case "confirmPick": {
-            axios.get( `${protocol}//${host}/${gameId}/pick-player?id=${playerId}` )
-                .then( err => {
-                    if ( err.data.error ) {
-                        showMessage( err.data.error );
-                        isPicked = true;
-                    }
-                } );
             const connectionLabel = document.getElementById( "isConnected" );
             connectionLabel.innerText = "You are connected";
             connectionLabel.classList.add( "connected" );
@@ -428,17 +424,13 @@ socket.onmessage = res => {
 };
 //works when web socket close connection
 socket.onclose = () => {
-    alert( "Please reload the page" );
+    const connectionLabel = document.getElementById( "isConnected" );
+    connectionLabel.innerText = "You are not connected";
+    connectionLabel.classList.remove( "connected" );
+    connectionLabel.classList.add( "not-connected" );
 };
 
 //* Event handlers
-//go to "player-pick monitor"
-let signOut = () => {
-    axios.get( concatURL( document.location.origin, gameId, "unpick-player", `?id=${playerId}` ) )
-        .then( () => {
-            document.location.replace( concatURL( document.location.origin, gameId ) );
-        } )
-};
 //close room for all players
 let closeRoom = ( e ) => {
     e.preventDefault();
@@ -601,7 +593,13 @@ let changePlayerMoney = ( e ) => {
         playerCont.parentElement.replaceChild( newPlayerCont, playerCont );
     }
 };
-
+//go to "player-pick monitor"
+let signOut = () => {
+    axios.get( concatURL( document.location.origin, gameId, "unpick-player", `?id=${playerId}` ) )
+        .then( () => {
+            document.location.replace( concatURL( document.location.origin, gameId ) );
+        } )
+};
 //* Apply event listeners
 document.getElementById( "changePlayer" ).addEventListener( "click", signOut );
 document.getElementById( "closeRoom" )?.addEventListener( "click", closeRoom );
@@ -630,6 +628,15 @@ axios.get( concatURL( document.location.origin, gameId, "players" ) )
     .then( res => {
         players = res.data;
         res.data.forEach( e => {
+            if ( e._id === playerId ) {
+                if ( e.isPicked ) {
+                    document.querySelector( ".message" ).style.visibility = "visible";
+                    document.querySelector( ".userContent" ).remove();
+                } else {
+                    document.querySelector( ".userContent" ).style.visibility = "visible";
+                    document.querySelector( ".message" ).remove();
+                }
+            }
             //add to pay list(opens in minusMoney)
             newPayListPlayer( e );
             if ( html.dataset.isbanker === "true" ) {

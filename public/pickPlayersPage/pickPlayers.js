@@ -1,5 +1,14 @@
 let playersCont = document.getElementById( "players-cont" );
 
+const wsProtocol = document.location.protocol === "https:" ? "wss:" : "ws:";
+const ws = new WebSocket( concatURL( `${wsProtocol}//`, document.location.host, document.location.pathname ) );
+
+ws.onopen = () => {
+    ws.send( JSON.stringify( {
+        type: "connect"
+    } ) )
+}
+
 let ids = [];
 
 let newPlayer = ( playerData ) => {
