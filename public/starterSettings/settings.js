@@ -47,14 +47,15 @@ function deleteName ( deleter, e ) {
             if ( wasBanker && document.querySelectorAll( ".player-cont:not(.head)" ).length > 0 ) {
                 const newBankerElement = document.querySelectorAll( ".player-cont:not(.head)" )[ 0 ];
                 newBankerElement.children[ 0 ].checked = true;
-                newBankerElement.id;
+                bankerId = newBankerElement.id;
+            } else {
+                bankerId = "";
             }
             if ( document.querySelectorAll( ".player-cont:not(.head)" ).length <= 6 && document.getElementsByClassName( "add-player" ).length === 0 ) {
                 playersCont.appendChild( addPlayerBtnCont );
             }
         } );
     e.stopPropagation();
-
 }
 //action for add players or change names
 let playerAction = ( player, text ) => {
@@ -76,34 +77,33 @@ let playerAction = ( player, text ) => {
                 axios.get( concatURL( document.location.origin, document.location.pathname, "new-player", `?name=${player.children[ 0 ].value}` ) )
                     .then( ( { data: id } ) => {
                         player.parentNode.id = id;
+                        //create new checkbox
+                        let checkbox = document.createElement( "input" );
+                        checkbox.classList.add( "isBanker" );
+                        checkbox.type = "checkbox";
+                        checkbox.addEventListener( "click", () => {
+                            makeBanker( checkbox );
+                        } );
+                        if ( document.querySelectorAll( ".player-cont:not(.head)" ).length === 0 ) {
+                            checkbox.checked = true;
+                            bankerId = player.parentNode.id;
+                        } else {
+                            checkbox.checked = false;
+                        }
+                        player.parentNode.replaceChild( checkbox, player.previousSibling );
+                        if ( document.querySelectorAll( ".player-cont:not(.head)" ).length < 5 && document.getElementsByClassName( "add-player" ).length !== 0 ) {
+                            playersCont.appendChild( addPlayerBtnCont );
+                        }
+                        //change add-player button to player button
+                        player.classList.remove( "add-player" );
+                        player.parentNode.classList.remove( "add-player-cont" );
+                        player.parentNode.classList.add( "player-cont" );
+                        player.nextSibling.classList.add( "delete" );
+                        player.nextSibling.innerText = "x";
+                        player.nextSibling.addEventListener( "click", ( e ) => {
+                            deleteName( player, e );
+                        } );
                     } );
-
-                //create new checkbox
-                let checkbox = document.createElement( "input" );
-                checkbox.classList.add( "isBanker" );
-                checkbox.type = "checkbox";
-                checkbox.addEventListener( "click", () => {
-                    makeBanker( checkbox );
-                } );
-                if ( document.querySelectorAll( ".player-cont:not(.head)" ).length === 0 ) {
-                    checkbox.checked = true;
-                    bankerId = player.id;
-                } else {
-                    checkbox.checked = false;
-                }
-                player.parentNode.replaceChild( checkbox, player.previousSibling );
-                if ( document.querySelectorAll( ".player-cont:not(.head)" ).length < 5 && document.getElementsByClassName( "add-player" ).length !== 0 ) {
-                    playersCont.appendChild( addPlayerBtnCont );
-                }
-                //change add-player button to player button
-                player.classList.remove( "add-player" );
-                player.parentNode.classList.remove( "add-player-cont" );
-                player.parentNode.classList.add( "player-cont" );
-                player.nextSibling.classList.add( "delete" );
-                player.nextSibling.innerText = "x";
-                player.nextSibling.addEventListener( "click", ( e ) => {
-                    deleteName( player, e );
-                } );
             }
         } else {
             axios.get( concatURL( document.location.origin, document.location.pathname, "change-name", `${player.parentNode.id}?name=${player.children[ 0 ].value}` ) );
@@ -266,20 +266,16 @@ if ( addPlayerBtn ) {
     } );
 }
 //add actions to player buttons
-for ( let i = 0; i < players.length; i++ ) {
-    players[ i ].addEventListener( "click", () => {
-        playerAction( players[ i ], players[ i ].innerText );
+for ( const player of players ) {
+    player.addEventListener( "click", () => {
+        playerAction( player, player.innerText );
     } );
-    let check = document.getElementsByClassName( "isBanker" );
-    for ( let j = 0; j < check; j++ ) {
-        check[ i ].checked = false;
+    if ( [ ...players ].indexOf( player ) === 0 && !player.classList.contains( "add-player" ) ) {
+        player.previousSibling.checked = true;
     }
-    if ( i === 0 && !players[ i ].classList.contains( "add-player" ) ) {
-        players[ i ].previousSibling.checked = true;
-    }
-    if ( players[ i ].parentNode.classList.contains( "player-cont" ) ) {
-        players[ i ].nextSibling.addEventListener( "click", ( e ) => {
-            deleteName( players[ i ], e );
+    if ( player.parentNode.classList.contains( "player-cont" ) ) {
+        player.nextSibling.addEventListener( "click", ( e ) => {
+            deleteName( player, e );
         } );
     }
 }
@@ -290,7 +286,7 @@ document.getElementById( "reset" ).addEventListener( "click", reset );
 //set create button
 document.getElementById( "next" ).addEventListener( "click", create );
 //give action to checkboxes
-let checkBoxes = document.getElementsByClassName( "isBanker" );
+const checkBoxes = document.getElementsByClassName( "isBanker" );
 for ( let i = 0; i < checkBoxes.length; i++ ) {
     checkBoxes[ i ].addEventListener( "click", () => {
         makeBanker( checkBoxes[ i ] );

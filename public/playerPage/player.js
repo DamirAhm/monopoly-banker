@@ -304,13 +304,6 @@ function showMessage ( err ) {
 //* Socket
 //works when web socket opens connection
 socket.onopen = () => {
-    axios.get( `${protocol}//${host}/${gameId}/pick-player?id=${playerId}` )
-        .then( err => {
-            if ( err.data.error ) {
-                showMessage( err.data.error );
-                isPicked = true;
-            }
-        } );
     socket.send( JSON.stringify( {
         type: "sendId",
         id: playerId,
@@ -415,6 +408,21 @@ socket.onmessage = res => {
             setTimeout( () => {
                 document.location.replace( "/" );
             }, 10000 )
+            break;
+        }
+        case "confirmPick": {
+            axios.get( `${protocol}//${host}/${gameId}/pick-player?id=${playerId}` )
+                .then( err => {
+                    if ( err.data.error ) {
+                        showMessage( err.data.error );
+                        isPicked = true;
+                    }
+                } );
+            const connectionLabel = document.getElementById( "isConnected" );
+            connectionLabel.innerText = "You are connected";
+            connectionLabel.classList.add( "connected" );
+            connectionLabel.classList.remove( "not-connected" );
+            break;
         }
     }
 };
@@ -426,9 +434,9 @@ socket.onclose = () => {
 //* Event handlers
 //go to "player-pick monitor"
 let signOut = () => {
-    axios.get( concatURL( document.location.origin, document.location.pathname, "unpick-player", `?id=${playerId}` ) )
+    axios.get( concatURL( document.location.origin, gameId, "unpick-player", `?id=${playerId}` ) )
         .then( () => {
-            document.location.replace( concatURL( document.location.origin, document.location.pathname ) );
+            document.location.replace( concatURL( document.location.origin, gameId ) );
         } )
 };
 //close room for all players
@@ -447,7 +455,7 @@ let gotCircle = ( e ) => {
             from: playerId,
             redo: false
         };
-        axios.put( concatURL( document.location.origin, document.location.pathname, "moneyActions", `?playerId=${playerId}` ), action )
+        axios.put( concatURL( document.location.origin, gameId, "moneyActions", `?playerId=${playerId}` ), action )
             .then( res => {
                 if ( res.data.error ) {
                     alert( res.data.error );
@@ -465,10 +473,9 @@ let gotCircle = ( e ) => {
 //give turn to next player
 let giveTurn = ( e ) => {
     e.preventDefault();
-    axios.get( concatURL( document.location.origin, document.location.pathname, "giveTurn", `?playerId=${playerId}` ) )
+    axios.get( concatURL( document.location.origin, gameId, "giveTurn", `?playerId=${playerId}` ) )
         .then( res => {
             if ( !res.data.error ) {
-                console.log( res );
                 turnsBeforeNewCircle = res.data.turns;
                 if ( turnsBeforeNewCircle >= 0 ) {
                     document.getElementById( "gotCircle" ).disabled = true;
@@ -597,7 +604,7 @@ let changePlayerMoney = ( e ) => {
 
 //* Apply event listeners
 document.getElementById( "changePlayer" ).addEventListener( "click", signOut );
-document.getElementById( "closeRoom" ).addEventListener( "click", closeRoom );
+document.getElementById( "closeRoom" )?.addEventListener( "click", closeRoom );
 document.getElementById( "gotCircle" ).addEventListener( "click", ( e ) => {
     gotCircle( e );
 } );
@@ -619,7 +626,7 @@ for ( let i = 0; i < options.length; i++ ) {
 
 //* Initialize
 //get players
-axios.get( concatURL( document.location.origin, document.location.pathname, "players" ) )
+axios.get( concatURL( document.location.origin, gameId, "players" ) )
     .then( res => {
         players = res.data;
         res.data.forEach( e => {

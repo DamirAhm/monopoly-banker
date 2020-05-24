@@ -41,7 +41,7 @@ let onPlayerPick = ( e ) => {
                     e.preventDefault();
                     alert( "This player is already picked" );
                 } else {
-                    document.location.replace( `?playerId=${id}` );
+                    document.location.replace( concatURL( document.location.origin, document.location.pathname, `./${id}` ) );
                 }
             } else {
                 alert( res.data.error );
