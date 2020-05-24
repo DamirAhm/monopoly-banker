@@ -593,8 +593,13 @@ app.ws( "/*/*", ws => {
                     break;
                 }
                 case "sendId": {
+<<<<<<< HEAD
                     if ( Object.values( playerConnections ).find( con => con && con.id === data.id ) === undefined ) {
                         playerConnections[ ws ] = data;
+=======
+                    if ( Object.values( connections ).find( con => con && con.id === data.id ) === undefined ) {
+                        connections[ ws ] = data;
+>>>>>>> d0664a78c913a9be06f921c1157b83fe4c214a8f
                         pickPlayer( data.id )
                             .then( () => {
                                 ws.send( JSON.stringify( {
