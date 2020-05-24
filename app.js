@@ -355,11 +355,14 @@ app.get( "/:gameId/:playerId", ( req, res, next ) => {
         Game.findById( gameId, ( err, game ) => {
             if ( err ) throw err;
             if ( game ) {
+<<<<<<< HEAD
                 for ( const [ key, val ] of connections.entries() ) {
                     if ( val.id === playerId ) {
                         console.log( key.readyState );
                     }
                 }
+=======
+>>>>>>> 1bc6f367f3c0381c9578dcc608ea719ca232e403
                 Player.findById( playerId, ( err, player ) => {
                     if ( err ) throw err;
                     if ( player && game.players.includes( player._id ) ) {
@@ -634,6 +637,7 @@ app.ws( "/*/*", ws => {
         }
     } );
     ws.on( "close", () => {
+        console.log( connections[ ws ] );
         if ( connections[ ws ] !== undefined ) {
             unpickPlayer( connections[ ws ].id );
             delete connections[ ws ];
