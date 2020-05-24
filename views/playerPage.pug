@@ -31,7 +31,9 @@ html(data-isbanker=isBanker.toString() data-gameId=gameId data-playerId=user.id 
                 #pick-player-to-pay.col-lg-3.col-md-6.col-sm-12
                     .title For who?
                     .player(id= "bank") Bank
+
             #changePlayer(class="fas fa-sign-out-alt")
+            #isConnected(class="not-connected") You are not connected
             if (isBanker)
                 #closeRoom(class="far fa-window-close")
             input#urlLink
