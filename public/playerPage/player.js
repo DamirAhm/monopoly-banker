@@ -601,6 +601,11 @@ let changePlayerMoney = ( e ) => {
         playerCont.parentElement.replaceChild( newPlayerCont, playerCont );
     }
 };
+let closeModal = ( modal ) => {
+    modal.style.display = "none";
+}
+let propagationStopper = ( e ) => e.stopPropagation();
+
 //* Apply event listeners
 document.getElementById( "changePlayer" ).addEventListener( "click", signOut );
 document.getElementById( "closeRoom" )?.addEventListener( "click", closeRoom );
@@ -613,6 +618,8 @@ document.getElementById( "nextPlayer" ).addEventListener( "click", ( e ) => {
 document.getElementById( "bank" ).addEventListener( "click", ( e ) => {
     onReceiverPick( e );
 } );
+document.getElementsByClassName( "bg-cont" )[ 0 ].addEventListener( "click", e => closeModal( e.target ) );
+document.getElementById( "pick-player-to-pay" ).addEventListener( "click", propagationStopper );
 minusBtn.addEventListener( "click", ( e ) => {
     minusMoney( e );
 } );
