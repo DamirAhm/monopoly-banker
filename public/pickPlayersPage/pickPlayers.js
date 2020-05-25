@@ -47,12 +47,12 @@ let onPlayerPick = ( e ) => {
             if ( !res.data.error ) {
                 if ( res.data.isPicked ) {
                     e.preventDefault();
-                    alert( "This player is already picked" );
+                    appendNotification( "This player is already picked" );
                 } else {
                     document.location.replace( concatURL( document.location.origin, document.location.pathname, `./${id}` ) );
                 }
             } else {
-                alert( res.data.error );
+                appendNotification( res.data.error );
             }
         } )
 };

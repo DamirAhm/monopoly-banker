@@ -277,10 +277,10 @@ let minusMoney = () => {
         if ( +money.innerText > +input.value ) {
             document.getElementsByClassName( "bg-cont" )[ 0 ].style.display = "flex";
         } else {
-            alert( "Not enough money" );
+            appendNotification( "Not enough money", "warn" );
         }
     } else {
-        alert( "Enter not negative money total" );
+        appendNotification( "Enter not negative money total", "warn" );
     }
 };
 //change player controls page while (not) going
@@ -404,7 +404,7 @@ socket.onmessage = res => {
             break;
         }
         case "timeOver": {
-            alert( "Game time is over" );
+            appendNotification( "Game time is over", "info" );
         }
         case "closeRoom": {
             showMessage( "Your game has ended" );
@@ -458,7 +458,7 @@ let gotCircle = ( e ) => {
         axios.put( concatURL( document.location.origin, gameId, "moneyActions", `?playerId=${playerId}` ), action )
             .then( res => {
                 if ( res.data.error ) {
-                    alert( res.data.error );
+                    appendNotification( res.data.error );
                 } else {
                     money.innerText = res.data;
                     socket.send( JSON.stringify( action ) );
@@ -467,7 +467,7 @@ let gotCircle = ( e ) => {
                 }
             } );
     } else {
-        alert( "Calm down you get circles too fast" );
+        appendNotification( "Calm down you get circles too fast", "warn" );
     }
 };
 //give turn to next player

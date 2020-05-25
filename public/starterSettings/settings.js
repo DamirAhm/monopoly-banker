@@ -240,10 +240,10 @@ let create = () => {
                 document.location.replace( `./` );
             } );
         } else {
-            alert( "You should pick banker" );
+            appendNotification( "You should pick banker", "warn" );
         }
     } else {
-        alert( "Minimal players count is 2" );
+        appendNotification( "Minimal players count is 2", "warn" );
     }
 };
 //change game banker
