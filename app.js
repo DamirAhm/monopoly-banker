@@ -198,10 +198,7 @@ app.post( "/:gameId/starter-settings", ( req, res ) => {
                         }
                     } );
                 }
-                game.startSettings = {
-                    ...req.body,
-                    bankerId: player._id
-                };
+                game.startSettings = req.body;
                 game.isStartSettingsDone = true;
                 await game.save( err => {
                     if ( err ) {
