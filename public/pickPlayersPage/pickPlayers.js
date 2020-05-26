@@ -49,7 +49,7 @@ let onPlayerPick = ( e ) => {
                     e.preventDefault();
                     appendNotification( "This player is already picked" );
                 } else {
-                    document.location.replace( concatURL( document.location.origin, document.location.pathname, `./${id}` ) );
+                    document.location = `./${id}`;
                 }
             } else {
                 appendNotification( res.data.error );

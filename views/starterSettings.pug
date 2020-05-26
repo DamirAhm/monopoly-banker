@@ -67,7 +67,7 @@ html
                         .setting.maxTime.togglable(class= (!startSettings.isMaxTimeOn && "blocked"))
                             p Time limit
                             div.input
-                                input.value.texti(data-default= "0" data-name= "maxTime" type= "number" min="0" value= startSettings.maxTime disabled)#isMaxTimeOn
+                                input.value.texti(data-default= "1" data-name= "maxTime" type= "number" min="0" value= startSettings.maxTime disabled)#isMaxTimeOn
                                 pre= " min"
                     if !isStartSettingsDone
                         .buttons.center

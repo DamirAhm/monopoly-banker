@@ -276,7 +276,7 @@ let create = () => {
             }
 
             axios.post( concatURL( document.location.origin, document.location.pathname ), startSettings ).then( () => {
-                document.location.replace( `./` );
+                document.location = ( `./` );
             } );
         } else {
             appendNotification( "You should pick banker", "warn" );

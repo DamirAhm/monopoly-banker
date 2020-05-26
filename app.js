@@ -41,10 +41,11 @@ const closeRoom = ( gameId, data ) => {
         };
         try {
             const { players } = await game.populate( "players" ).execPopulate();
+            const winners = findWinner( players );
             for ( const player of players ) {
                 await player.deleteOne();
             }
-            toAll( wss.getWss().clients, el => el.send( JSON.stringify( data ) ) );
+            toAll( wss.getWss().clients, el => el.send( JSON.stringify( { ...data, winners } ) ) );
         }
         catch ( err ) {
             toAll( wss.getWss().clients, el => el.send( JSON.stringify( { error: err } ) ) );
@@ -108,14 +109,29 @@ const toAll = ( sockets, cb ) => {
     }
 }
 
-let findNextGoing = ( players, goingId ) => {
-    if ( players.length === 0 ) return null;
-    const goingInd = players.indexOf( goingId );
-    if ( goingInd === -1 ) return players[ 0 ];
-    const lengthenPlayers = players.concat( [ players[ 0 ] ] ) //push first player to the end if current going is last in players
+let findNextGoing = ( playerIds, goingId ) => {
+    if ( playerIds.length === 0 ) return null;
+    const goingInd = playerIds.indexOf( goingId );
+    if ( goingInd === -1 ) return playerIds[ 0 ];
+    const lengthenPlayers = playerIds.concat( [ playerIds[ 0 ] ] ) //push first player to the end if current going is last in players
 
     return lengthenPlayers[ goingInd + 1 ];
 };
+let findWinner = ( players ) => {
+    let max = -1;
+    let winners = [];
+
+    for ( const player of players ) {
+        if ( player.money > max ) {
+            max = player.money;
+            winners = [ player ];
+        } else if ( player.money === max ) {
+            winners.push( player );
+        }
+    }
+
+    return winners;
+}
 
 app.get( "/", ( req, res ) => {
     res.render( "starterPage" );
@@ -641,7 +657,8 @@ app.ws( "/*/*", ws => {
                 case "closeRoom": {
                     if ( playerConnections[ ws ] !== undefined && playerConnections[ ws ].gameId ) {
                         const { gameId } = playerConnections[ ws ];
-                        closeRoom( gameId, data );
+                        if ( gameId )
+                            closeRoom( gameId, data );
                     }
                     break;
                 }
@@ -665,15 +682,22 @@ app.ws( "/:gameId", ws => {
 
 
 const checkTimeouted = () => {
-    Game.find( {}, ( err, games ) => {
-        for ( const game of games ) {
-            const isMaxTimeGone = game.startSettings.isMaxTimeOn && ( Date.now() - game.createdAt ) >= game.startSettings.maxTime;
-            if ( Date.now() - game.createdAt >= 24 * 60 * 60 * 1000 || game.isGameOver || isMaxTimeGone ) {
-                closeRoom( game._id, {
-                    gameId: game._id.toString(),
-                    type: "closeRoom"
-                } );
+    Game.find( {}, async ( err, games ) => {
+        try {
+            for ( const game of games ) {
+                const isMaxTimeGone = game.startSettings.isMaxTimeOn && ( Date.now() - game.createdAt ) >= game.startSettings.maxTime;
+                if ( Date.now() - game.createdAt >= 24 * 60 * 60 * 1000 || game.isGameOver || isMaxTimeGone ) {
+                    const { players } = await game.populate( "players" ).execPopulate();
+                    const winners = findWinner( players );
+                    closeRoom( game._id, {
+                        gameId: game._id.toString(),
+                        type: "closeRoom",
+                        winners
+                    } );
+                }
             }
+        } catch ( err ) {
+            console.log( err );
         }
     } )
 }

@@ -296,14 +296,32 @@ let changeIsGoing = ( isGoing ) => {
     document.getElementById( "input" ).disabled = !isGoing;
 };
 //show only message on player's screen
-function showMessage ( msg ) {
-    console.log( msg );
-    const title = document.createElement( "h1" );
-    title.innerText = msg;
-    document.getElementsByClassName( "userContent" )[ 0 ].remove();
-    document.getElementsByClassName( "container" )[ 0 ].appendChild( title );
+let showMessage = ( ...msgs ) => {
+    document.getElementsByClassName( "userContent" )?.[ 0 ]?.remove();
+    for ( const msg of msgs ) {
+        let element;
+        if ( msg instanceof Element ) {
+            element = msg;
+        } else if ( typeof msg === "string" ) {
+            const title = document.createElement( "h1" );
+            title.innerText = msg;
+            element = title;
+        }
+        document.getElementsByClassName( "container" )?.[ 0 ]?.appendChild( element );
+    }
 }
-
+//create message with winners of the game
+let createWinnerMsg = ( players ) => {
+    const element = document.createElement( "p" );
+    element.classList.add( "winner" );
+    if ( players.length === 1 ) {
+        const [ player ] = players;
+        element.innerHTML = `Player <span class='winner-name'>${player.name}</span> wins the game with <span class='winner-money'>${player.money} k</span>`;
+    } else if ( players.length > 1 ) {
+        element.innerHTML = `Players <span class='winner-name'>${players.map( p => p.name ).join( ", " )}</span> win the game with <span class='winner-money'>${players[ 0 ].money} k</span>`;
+    }
+    return element;
+}
 
 //* Socket
 //works when web socket opens connection
@@ -408,11 +426,9 @@ socket.onmessage = res => {
             appendNotification( "Game time is over", "info" );
         }
         case "closeRoom": {
-            if ( data.gameId === gameId ) {
-                showMessage( "Your game has ended" );
-                setTimeout( () => {
-                    document.location.replace( "/" );
-                }, 10000 )
+            if ( data.gameId && data.gameId === gameId && data.winners ) {
+                showMessage( "Your game has ended", createWinnerMsg( data.winners || [] ) );
+                document.getElementById( "changePlayer" ).onclick = () => ( document.location = "../" );
             }
             break;
         }
@@ -439,7 +455,7 @@ socket.onclose = () => {
 let signOut = () => {
     axios.get( concatURL( document.location.origin, gameId, "unpick-player", `?id=${playerId}` ) )
         .then( () => {
-            document.location.replace( concatURL( document.location.origin, gameId ) );
+            document.location = "./" + gameId;
         } )
 };
 //close room for all players
@@ -448,7 +464,7 @@ let closeRoom = ( e ) => {
     e.target.remove();
     socket.send( JSON.stringify( {
         type: "closeRoom",
-        gameId
+        gameId,
     } ) )
 }
 //func while you got circle
@@ -615,7 +631,7 @@ let closeModal = ( modal ) => {
 let propagationStopper = ( e ) => e.stopPropagation();
 
 //* Apply event listeners
-document.getElementById( "changePlayer" ).addEventListener( "click", signOut );
+document.getElementById( "changePlayer" ).onclick = signOut;
 document.getElementById( "closeRoom" )?.addEventListener( "click", closeRoom );
 document.getElementById( "gotCircle" ).addEventListener( "click", ( e ) => {
     gotCircle( e );

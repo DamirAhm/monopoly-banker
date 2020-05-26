@@ -11,7 +11,7 @@ btn.addEventListener( "click", () => {
         if ( res.data.error ) {
             throw res.data.error;
         }
-        document.location.replace( concatURL( document.location.origin, document.location.pathname, res.data, "starter-settings" ) );
+        document.location = `/${res.data}/starter-settings`;
     } )
 } );
 

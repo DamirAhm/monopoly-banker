@@ -4,6 +4,10 @@
     align-items: center;
 }
 
+.container {
+    flex-direction: column;
+}
+
 #playerControls{
     display: flex;
     align-items: center;
@@ -321,6 +325,16 @@ form{
 
 .delete>*{
     color: black;
+}
+
+.winner {
+    font-size: 1.4rem;
+}
+.winner-name {
+    color: var(--blue);
+}
+.winner-money {
+    color: var(--teal);
 }
 
 @media screen and (max-height: 330px) {
