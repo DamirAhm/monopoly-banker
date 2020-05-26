@@ -17,7 +17,7 @@ let money = document.getElementById( "money" );
 //money input
 let input = document.getElementById( "input" );
 //minus btns
-let minusBtn = document.getElementsByClassName( "moneyBtns" )[ 0 ].children[ 0 ];
+let reduceBtn = document.getElementsByClassName( "moneyBtns" )[ 0 ].children[ 0 ];
 //pages for banker
 let options = document.getElementsByClassName( "option" );
 let pickPlayer = document.getElementById( "pick-player-to-pay" );
@@ -174,7 +174,7 @@ let changeMovesCount = ( moveCont ) => {
                         let count = res.data - 1;
                         countElement.innerText = count > 0 ? ( count + ( count === 1 ? " move more" : " moves more" ) ) : "No more moves";
                     } else {
-                        throw new Error( res.data.error );
+                        appendNotification( res.data.error );
                     }
                 } );
         } else {
@@ -229,7 +229,7 @@ let updateMove = ( playerMoveCont, move ) => {
             }
         }
     } else {
-        throw new Error( move.error );
+        appendNotification( move.error );
     }
 };
 //confirms money update
@@ -272,7 +272,7 @@ let backFromUpdate = ( e, oldMoney ) => {
     e.target.parentElement.parentElement.replaceWith( playerInfo );
 };
 //opens a choose player monitor
-let minusMoney = () => {
+let reduceMoney = () => {
     if ( +input.value > 0 ) {
         if ( +money.innerText > +input.value ) {
             document.getElementsByClassName( "bg-cont" )[ 0 ].style.display = "flex";
@@ -475,19 +475,22 @@ let giveTurn = ( e ) => {
     e.preventDefault();
     axios.get( concatURL( document.location.origin, gameId, "giveTurn", `?playerId=${playerId}` ) )
         .then( res => {
-            if ( !res.data.error ) {
+            if ( !res.data.error && res.data.nextGoing ) {
                 turnsBeforeNewCircle = res.data.turns;
                 if ( turnsBeforeNewCircle >= 0 ) {
                     document.getElementById( "gotCircle" ).disabled = true;
                 } else {
                     document.getElementById( "gotCircle" ).disabled = false;
                 }
+
                 socket.send( JSON.stringify( {
-                    type: "giveTurn"
+                    type: "giveTurn",
+                    id: res.data.nextGoing
                 } ) );
+
                 changeIsGoing( false );
             } else {
-                throw new Error( res.data.error );
+                appendNotification( res.data.error || "Can't find next going player" );
             }
         } );
 };
@@ -535,7 +538,7 @@ let onReceiverPick = ( e ) => {
             } ) );
             money.innerText = res.data;
         } else {
-            throw new Error( res.data.error );
+            appendNotification( res.data.error );
         }
     } );
 };
@@ -620,8 +623,8 @@ document.getElementById( "bank" ).addEventListener( "click", ( e ) => {
 } );
 document.getElementsByClassName( "bg-cont" )[ 0 ].addEventListener( "click", e => closeModal( e.target ) );
 document.getElementById( "pick-player-to-pay" ).addEventListener( "click", propagationStopper );
-minusBtn.addEventListener( "click", ( e ) => {
-    minusMoney( e );
+reduceBtn.addEventListener( "click", ( e ) => {
+    reduceMoney( e );
 } );
 //give actions to options
 for ( let i = 0; i < options.length; i++ ) {

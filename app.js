@@ -87,6 +87,15 @@ let unpickPlayer = async ( id ) => {
     } );
 };
 
+let findNextGoing = ( players, goingId ) => {
+    if ( players.length === 0 ) return null;
+    const goingInd = players.indexOf( goingId );
+    if ( goingInd === -1 ) return players[ 0 ];
+    const lengthenPlayers = players.concat( [ players[ 0 ] ] ) //push first player to the end if current going is last in players
+
+    return lengthenPlayers[ goingInd + 1 ];
+};
+
 app.get( "/", ( req, res ) => {
     res.render( "starterPage" );
 } ); //return starterPage
@@ -393,23 +402,21 @@ app.get( "/:gameId/giveTurn", ( req, res ) => {
             player.isGoing = false;
             player.turnsBeforeNewCircle = Math.max( 0, player.turnsBeforeNewCircle - 1 );
             player.save( err => {
-                if ( err ) { throw err };
-                if ( game.players.indexOf( player._id ) === game.players.length - 1 ) {
-                    Player.findByIdAndUpdate( game.players[ 0 ]._id, { isGoing: true }, ( err, nextPlayer ) => {
-                        if ( err ) {
-                            console.log( "Error while updating player in give turn" );
-                        }
-                        res.send( { turns: player.turnsBeforeNewCircle } );
-                    } );
-
-                } else {
-                    Player.findByIdAndUpdate( game.players[ game.players.indexOf( player._id ) + 1 ]._id, { isGoing: true }, ( err, nextPlayer ) => {
-                        if ( err ) {
-                            console.log( "Error while updating player in give turn" );
-                        }
-                        res.send( { turns: player.turnsBeforeNewCircle } );
-                    } );
+                if ( err ) {
+                    console.log( "Error while updating player in give turn" );
+                    res.send( { error: err } );
+                    return;
                 }
+                const nextGoing = findNextGoing( game.players.map( _id => _id.toString() ), req.query.playerId );
+
+                Player.findByIdAndUpdate( nextGoing, { isGoing: true }, ( error ) => {
+                    if ( error ) {
+                        console.log( "Error while updating player in give turn" );
+                        res.send( { error } );
+                        return;
+                    }
+                    res.send( { turns: player.turnsBeforeNewCircle, nextGoing } );
+                } );
             } );
         } );
     } );
@@ -566,16 +573,7 @@ app.ws( "/*/*", ws => {
         if ( data ) {
             switch ( data.type ) {
                 case "giveTurn": {
-                    Player.findOne( { isGoing: true }, ( err, player ) => {
-                        if ( err ) throw err;
-                        toAll( wss.getWss().clients, el => {
-                            let action = {
-                                type: "giveTurn",
-                                id: player._id,
-                            };
-                            el.send( JSON.stringify( action ) );
-                        } )
-                    } )
+                    toAll( wss.getWss().clients, el => el.send( JSON.stringify( data ) ) )
                     break;
                 }
                 case "giveMoney": {
