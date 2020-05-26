@@ -407,10 +407,12 @@ socket.onmessage = res => {
             appendNotification( "Game time is over", "info" );
         }
         case "closeRoom": {
-            showMessage( "Your game has ended" );
-            setTimeout( () => {
-                document.location.replace( "/" );
-            }, 10000 )
+            if ( data.gameId === gameId ) {
+                showMessage( "Your game has ended" );
+                setTimeout( () => {
+                    document.location.replace( "/" );
+                }, 10000 )
+            }
             break;
         }
         case "confirmPick": {
@@ -443,7 +445,8 @@ let signOut = () => {
 let closeRoom = ( e ) => {
     e.preventDefault();
     socket.send( JSON.stringify( {
-        type: "closeRoom"
+        type: "closeRoom",
+        gameId
     } ) )
 }
 //func while you got circle

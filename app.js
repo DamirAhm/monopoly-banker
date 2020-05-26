@@ -8,8 +8,9 @@ const express = require( "express" ),
     config = require( "./config" );
 
 mongoose.connect( config.MONGO_URL, { useFindAndModify: false, useNewUrlParser: true }, err => {
-    if ( err )
-        throw err;
+    if ( err ) {
+        console.error( err );
+    }
     console.log( "Successfully connected to: " + config.MONGO_URL );
 } );
 
@@ -106,7 +107,8 @@ app.post( "/", ( req, res ) => {
     newGame.save( err => {
         if ( err ) {
             res.json( { error: err } );
-            throw err
+            console.log( err );
+            return;
         }
         res.json( newGame._id );
     } );
@@ -248,7 +250,7 @@ app.get( "/:gameId/players", ( req, res ) => {
                     res.json( players );
                 } else {
                     res.json( { error: "Error in players count" } );
-                    throw new Error( "Error in players count" );
+                    console.error( "Error in players count" )
                 }
             } );
         }
@@ -305,7 +307,7 @@ app.post( "/:gameId/players/change-sequence", ( req, res ) => {
             } );
         } else {
             res.send( { error: "Error in players count" } );
-            throw new Error( "Error in players count" );
+            console.error( "Error in players count" );
         }
     } );
 } ); //change game room player sequence
@@ -363,10 +365,18 @@ app.get( "/:gameId/:playerId", ( req, res, next ) => {
     const { playerId, gameId } = req.params;
     if ( mongoose.Types.ObjectId.isValid( playerId ) ) {
         Game.findById( gameId, ( err, game ) => {
-            if ( err ) throw err;
+            if ( err ) {
+                console.log( err );
+                res.send( { error: err } );
+                return;
+            };
             if ( game ) {
                 Player.findById( playerId, ( err, player ) => {
-                    if ( err ) throw err;
+                    if ( err ) {
+                        console.log( err );
+                        res.send( { error: err } );
+                        return;
+                    };
                     if ( player && game.players.includes( player._id ) ) {
                         let bankerId = game.startSettings.bankerId;
                         res.render( "playerPage", {
@@ -602,7 +612,7 @@ app.ws( "/*/*", ws => {
                         Game.findByIdAndDelete( gameId, async ( err, game ) => {
                             if ( err ) {
                                 console.error( err );
-                                throw err
+                                toAll( wss.getWss().clients, el => el.send( JSON.stringify( { error: err } ) ) );
                             };
                             try {
                                 const { players } = await game.populate( "players" ).execPopulate();
@@ -611,7 +621,7 @@ app.ws( "/*/*", ws => {
                                 }
                                 toAll( wss.getWss().clients, el => el.send( JSON.stringify( data ) ) );
                             } catch ( err ) {
-                                throw err;
+                                toAll( wss.getWss().clients, el => el.send( JSON.stringify( { error: err } ) ) );
                             }
                         } )
                         toAll( wss.getWss().clients, el => el.send( JSON.stringify( data ) ) );
