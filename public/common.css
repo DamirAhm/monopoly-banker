@@ -5,6 +5,11 @@
     border: none;
 }
 
+inputfa {
+    border: 1px solid black;
+    border-radius: 5px;
+}
+
 .container,
 .bg-cont {
     height: 100vh;
