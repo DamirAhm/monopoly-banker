@@ -147,6 +147,7 @@ h3 {
     align-items: center;
     flex-direction: column;
     min-height: 390px;
+    padding: 0 10px;
 }
 
 .player {
@@ -229,14 +230,9 @@ h5 > * {
     align-items: center;
     width: fit-content;
 }
-
-#circleMoney,
-#maxTime,
-#startMoneyIn,
-#minTurns {
+.input input:not([type="checkbox"]){
     width: 4vw;
 }
-
 .input * {
     padding: 0;
     margin: 0;
@@ -268,13 +264,13 @@ h5 > * {
 }
 
 .blocked {
-    color: #cccccc;
     border-color: #cccccc;
 }
-
+.blocked * {
+    color: #cccccc !important;
+}
 .blocked input {
-    border: #cccccc;
-    color: #cccccc;
+    border-color: #cccccc;
 }
 
 .changing {
@@ -319,6 +315,11 @@ h5 > * {
     border: none;
 }
 
+@media screen and (max-width: 1300px) {
+    input {
+        font-size: 0.8rem;
+    }
+}
 @media screen and (max-width: 768px) {
     .grid-container{
         grid-template-columns: 1fr;
@@ -346,13 +347,28 @@ h5 > * {
         grid-template-rows: 250px 40px;
     }
 }
-
-@media screen and (max-width: 285px){
+@media screen and (max-width: 400px){
     .setting {
         display: flex;
         flex-direction: column;
+        align-items: center;
     }
     .settings-buttons{
         grid-template-rows: 280px 40px;
+    }
+}
+@media screen and (max-width: 320px){
+    .container,
+    .grid-container {
+        width: 100vw;
+        padding: 0;
+    }
+    .player-cont {
+        grid-template-columns: repeat(3,1fr);    
+        font-size: 0.8rem;
+    }
+    .add-player-cont {
+        font-size: 0.8rem;
+        padding: 5px;
     }
 }

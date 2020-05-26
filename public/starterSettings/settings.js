@@ -12,6 +12,9 @@ let playersCont = document.getElementsByClassName( "players-cont" )[ 0 ];
 let changeSequenceBtn = document.getElementById( "change-sequence-btn" );
 //button for change player sequence and her bg
 let bgCont = document.getElementsByClassName( "bg-cont" )[ 0 ];
+const blockTogglers = document.getElementsByClassName( "toggleBlock" );
+//blocks that can be blocked
+const togglableBlocks = document.getElementsByClassName( "togglable" );
 
 //* Event listeners
 //create new add player btn
@@ -32,6 +35,21 @@ let createAddPlayerBtn = () => {
     addPlayerBtnCont.appendChild( divx );
     return addPlayerBtnCont;
 };
+let toggleBlockSetting = ( settingElement, isBlock ) => {
+    if ( isBlock ) {
+        settingElement.classList.add( "blocked" );
+        const inputs = settingElement.querySelectorAll( "input" );
+        for ( const input of inputs ) {
+            input.disabled = true;
+        }
+    } else {
+        settingElement.classList.remove( "blocked" );
+        const inputs = settingElement.querySelectorAll( "input" );
+        for ( const input of inputs ) {
+            input.disabled = false;
+        }
+    }
+}
 //delete player by id
 function deleteName ( deleter, e ) {
     let addPlayerBtnCont = createAddPlayerBtn();
@@ -214,12 +232,23 @@ let changeSequence = () => {
 };
 //go to standart settings
 let reset = () => {
-    document.getElementById( "maxTime" ).value = "0";
-    document.getElementById( "circleMoney" ).value = "2000";
-    document.getElementById( "startMoneyIn" ).value = "15000";
-    document.getElementById( "turn-on" ).checked = false;
-    toggleOn( false );
+    const settingElements = document.getElementsByClassName( "setting" );
+
+    for ( const settingElement of settingElements ) {
+        const valueInput = settingElement.querySelector( "input.value:not([type='checkbox'])" );
+        const checkboxInput = settingElement.querySelector( "input.value[type='checkbox']" );
+        if ( valueInput && valueInput.dataset.default && valueInput.value ) {
+            valueInput.value = valueInput.dataset.default;
+        }
+        if ( checkboxInput && checkboxInput.dataset.default && checkboxInput.value ) {
+            checkboxInput.checked = checkboxInput.dataset.default === "true";
+        }
+    }
+    for ( const block of togglableBlocks ) {
+        toggleBlockSetting( block, true )
+    }
 };
+
 //set create game action
 let create = () => {
     if ( document.getElementsByClassName( "player-cont" ).length >= 2 ) {
@@ -229,14 +258,24 @@ let create = () => {
             for ( let i = 0; i < players.length; i++ ) {
                 if ( players[ i ].children[ 0 ].checked ) {
                     bankerId = players[ i ].id;
+                    break;
+                }
+            };
+            const startSettings = { bankerId };
+            const settingElements = document.getElementsByClassName( "setting" );
+
+            for ( const settingElement of settingElements ) {
+                const valueInput = settingElement.querySelector( "input.value:not([type='checkbox'])" );
+                const checkboxInput = settingElement.querySelector( "input.value[type='checkbox']" );
+                if ( valueInput && valueInput.dataset.name && valueInput.value ) {
+                    startSettings[ valueInput.dataset.name ] = valueInput.value;
+                }
+                if ( checkboxInput && checkboxInput.dataset.name ) {
+                    startSettings[ checkboxInput.dataset.name ] = checkboxInput.checked;
                 }
             }
-            axios.post( concatURL( document.location.origin, document.location.pathname ), {
-                startMoney: +document.getElementById( "startMoneyIn" ).value,
-                moneyForCircle: +document.getElementById( "circleMoney" ).value,
-                minTurnsForCircle: +document.getElementById( "minTurns" ).value,
-                bankerId: bankerId
-            } ).then( () => {
+
+            axios.post( concatURL( document.location.origin, document.location.pathname ), startSettings ).then( () => {
                 document.location.replace( `./` );
             } );
         } else {
@@ -290,5 +329,12 @@ const checkBoxes = document.getElementsByClassName( "isBanker" );
 for ( let i = 0; i < checkBoxes.length; i++ ) {
     checkBoxes[ i ].addEventListener( "click", () => {
         makeBanker( checkBoxes[ i ] );
+    } );
+}
+//give actions to options
+for ( const toggler of blockTogglers ) {
+    toggler.addEventListener( "change", ( e ) => {
+        const elementToToggle = document.querySelector( e.target.dataset.to );
+        toggleBlockSetting( elementToToggle, !e.target.checked );
     } );
 }

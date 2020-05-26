@@ -20,6 +20,7 @@ let input = document.getElementById( "input" );
 let reduceBtn = document.getElementsByClassName( "moneyBtns" )[ 0 ].children[ 0 ];
 //pages for banker
 let options = document.getElementsByClassName( "option" );
+//block togglers 
 let pickPlayer = document.getElementById( "pick-player-to-pay" );
 
 //add new player to container
@@ -444,6 +445,7 @@ let signOut = () => {
 //close room for all players
 let closeRoom = ( e ) => {
     e.preventDefault();
+    e.target.remove();
     socket.send( JSON.stringify( {
         type: "closeRoom",
         gameId
@@ -630,8 +632,8 @@ reduceBtn.addEventListener( "click", ( e ) => {
     reduceMoney( e );
 } );
 //give actions to options
-for ( let i = 0; i < options.length; i++ ) {
-    options[ i ].addEventListener( "click", ( e ) => {
+for ( const option of options ) {
+    option.addEventListener( "click", ( e ) => {
         optionAction( e );
     } );
 }

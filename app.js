@@ -33,10 +33,24 @@ app.set( "views", "./views" );
 let server = http.createServer( app );
 let wss = expressWs( app, server );
 
-const toAll = ( sockets, cb ) => {
-    for ( const socket of sockets ) {
-        cb( socket );
-    }
+const closeRoom = ( gameId, data ) => {
+    Game.findByIdAndDelete( gameId, async ( err, game ) => {
+        if ( err ) {
+            console.error( err );
+            toAll( wss.getWss().clients, el => el.send( JSON.stringify( { error: err } ) ) );
+        };
+        try {
+            const { players } = await game.populate( "players" ).execPopulate();
+            for ( const player of players ) {
+                await player.deleteOne();
+            }
+            toAll( wss.getWss().clients, el => el.send( JSON.stringify( data ) ) );
+        }
+        catch ( err ) {
+            toAll( wss.getWss().clients, el => el.send( JSON.stringify( { error: err } ) ) );
+        }
+    } );
+    toAll( wss.getWss().clients, el => el.send( JSON.stringify( data ) ) );
 }
 
 let pickPlayer = async ( id ) => {
@@ -87,6 +101,12 @@ let unpickPlayer = async ( id ) => {
         }
     } );
 };
+
+const toAll = ( sockets, cb ) => {
+    for ( const socket of sockets ) {
+        cb( socket );
+    }
+}
 
 let findNextGoing = ( players, goingId ) => {
     if ( players.length === 0 ) return null;
@@ -190,38 +210,50 @@ app.post( "/:gameId/starter-settings", ( req, res ) => {
     Game.findById( req.params.gameId, ( err, game ) => {
         if ( err ) {
             console.log( "Error while finding the game in post starter-settings" );
-
         }
-        Player.find( { gameId: game._id }, async ( err, players ) => {
-            try {
-                if ( err ) {
-                    console.log( "Error while finding players in post starter-settings" );
-                }
-                for ( let i = 0; i < players.length; i++ ) {
-                    if ( i === 0 ) {
-                        players[ i ].isGoing = true;
+        if ( req.body ) {
+            Player.find( { gameId: game._id }, async ( err, players ) => {
+                try {
+                    if ( err ) {
+                        console.log( "Error while finding players in post starter-settings" );
+                        res.send( { error: err } )
+                        return;
                     }
-                    players[ i ].money = req.body.startMoney;
-                    players[ i ].turnsBeforeNewCircle = req.body.minTurnsForCircle;
-                    await players[ i ].save( err => {
+                    for ( let i = 0; i < players.length; i++ ) {
+                        if ( i === 0 ) {
+                            players[ i ].isGoing = true;
+                        }
+                        players[ i ].money = req.body.startMoney;
+                        players[ i ].turnsBeforeNewCircle = req.body.minTurnsForCircle;
+                        await players[ i ].save( err => {
+                            if ( err ) {
+                                console.log( "Error while saving player in post starter-settings" );
+                                res.send( { error: err } )
+                                return;
+                            }
+                        } );
+                    }
+                    game.startSettings = {
+                        ...req.body,
+                        maxTime: ( req.body.maxTime * 1000 * 60 ) || 0
+                    };
+                    game.isStartSettingsDone = true;
+                    await game.save( err => {
                         if ( err ) {
-                            console.log( "Error while saving player in post starter-settings" );
+                            console.log( "Error while saving the game" );
+                            res.send( { error: err } )
+                            return;
                         }
                     } );
+                    res.send( { error: "" } );
+                } catch ( err ) {
+                    console.error( err );
+                    res.send( { err } );
                 }
-                game.startSettings = req.body;
-                game.isStartSettingsDone = true;
-                await game.save( err => {
-                    if ( err ) {
-                        console.log( "Error while saving the game" );
-                    }
-                } );
-                res.send( { error: "" } );
-            } catch ( err ) {
-                console.error( err );
-                res.send( { err } );
-            }
-        } );
+            } );
+        } else {
+            res.send( { error: "Post of start setting must contain body" } )
+        }
     } );
 } );//Posts starter settings for game
 
@@ -609,22 +641,7 @@ app.ws( "/*/*", ws => {
                 case "closeRoom": {
                     if ( playerConnections[ ws ] !== undefined && playerConnections[ ws ].gameId ) {
                         const { gameId } = playerConnections[ ws ];
-                        Game.findByIdAndDelete( gameId, async ( err, game ) => {
-                            if ( err ) {
-                                console.error( err );
-                                toAll( wss.getWss().clients, el => el.send( JSON.stringify( { error: err } ) ) );
-                            };
-                            try {
-                                const { players } = await game.populate( "players" ).execPopulate();
-                                for ( const player of players ) {
-                                    await player.deleteOne();
-                                }
-                                toAll( wss.getWss().clients, el => el.send( JSON.stringify( data ) ) );
-                            } catch ( err ) {
-                                toAll( wss.getWss().clients, el => el.send( JSON.stringify( { error: err } ) ) );
-                            }
-                        } )
-                        toAll( wss.getWss().clients, el => el.send( JSON.stringify( data ) ) );
+                        closeRoom( gameId, data );
                     }
                     break;
                 }
@@ -646,34 +663,23 @@ app.ws( "/:gameId", ws => {
     ws.on( "error", err => console.log( err ) );
 } )
 
+
+const checkTimeouted = () => {
+    Game.find( {}, ( err, games ) => {
+        for ( const game of games ) {
+            const isMaxTimeGone = game.startSettings.isMaxTimeOn && ( Date.now() - game.createdAt ) >= game.startSettings.maxTime;
+            if ( Date.now() - game.createdAt >= 24 * 60 * 60 * 1000 || game.isGameOver || isMaxTimeGone ) {
+                closeRoom( game._id, {
+                    gameId: game._id.toString(),
+                    type: "closeRoom"
+                } );
+            }
+        }
+    } )
+}
+
+checkTimeouted();
+setInterval( checkTimeouted, 60 * 1000 );
+
+
 module.exports = server;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
