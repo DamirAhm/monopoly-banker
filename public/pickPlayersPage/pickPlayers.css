@@ -5,30 +5,40 @@
     flex-direction: column;
 }
 
-
+.container {
+    min-width: 180px;
+}
 
 #url{
     font-size: 1.4em;
     margin-bottom: 20px;
 }
 #url:hover {
-    color: #54a4ff;
+    color: var(--blue);
     cursor: pointer;
 }
 
 #players-cont{
     display: block;
-    margin-top: 30px;
 }
 
 .title{
     font-size: 2em;
+    padding-bottom: 20px;
 }
 
 .player{
     padding: 15px;
     font-size: 1.5em;
     cursor: pointer;
+    text-align: center;
+    margin-bottom: 5px;
+    border: 1px solid transparent;
+}
+.player:hover {
+    color: var(--blue);
+    border: 1px solid var(--blue);
+    border-radius: 8px;
 }
 
 .row{

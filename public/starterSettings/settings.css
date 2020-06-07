@@ -239,6 +239,11 @@ h5 > * {
     border: 1px solid var(--gray);
 }
 
+.negativeBtn,
+.positiveBtn {
+    transition: 0.3s;
+} 
+
 .positiveBtn {
     background-color: var(--green);
     color: white;
