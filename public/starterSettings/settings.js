@@ -124,7 +124,14 @@ let playerAction = ( player, text ) => {
                     } );
             }
         } else {
-            axios.get( concatURL( document.location.origin, document.location.pathname, "change-name", `${player.parentNode.id}?name=${player.children[ 0 ].value}` ) );
+            axios.get(
+                concatURL(
+                    document.location.origin,
+                    document.location.pathname,
+                    "change-name",
+                    `${player.parentNode.id}?name=${player.children[ 0 ].value}`
+                )
+            );
         }
         player.innerHTML = player.children[ 0 ].value || text;
         player.classList.remove( "changing" );
@@ -168,8 +175,10 @@ let playerAction = ( player, text ) => {
         btnCont.classList.add( "btn-cont" );
         rejBtn.innerText = "Back";
         rejBtn.id = "reject";
+        rejBtn.className = "negativeBtn";
         confBtn.innerText = "Confirm";
         confBtn.id = "confirm";
+        confBtn.className = "positiveBtn";
         btnCont.appendChild( rejBtn );
         btnCont.appendChild( confBtn );
         player.appendChild( input );
@@ -224,7 +233,7 @@ let changeSequence = () => {
             playersElems.push( elem );
         } );
         playersElems.forEach( e => {
-            bgCont.children[ 0 ].children[ 0 ].appendChild( e );
+            bgCont.children[ 0 ].children[ 1 ].appendChild( e );
         } );
 
         bgCont.style.display = "flex";
@@ -248,7 +257,6 @@ let reset = () => {
         toggleBlockSetting( block, true )
     }
 };
-
 //set create game action
 let create = () => {
     if ( document.getElementsByClassName( "player-cont" ).length >= 2 ) {
@@ -295,6 +303,10 @@ let makeBanker = ( playerCheckbox ) => {
     playerCheckbox.checked = true;
     bankerId = playerCheckbox.parentElement.id;
 };
+let closeChangeSequence = () => {
+    bgCont.style.display = "none";
+    document.getElementsByClassName( "change-sequence-players" )[ 0 ].innerHTML = "";
+}
 
 //* Add event listeners
 //set add-player button (да да да костылиииии)
@@ -320,6 +332,9 @@ for ( const player of players ) {
 }
 //add action to change sequence btn
 changeSequenceBtn.addEventListener( "click", changeSequence );
+bgCont.addEventListener( "click", closeChangeSequence );
+document.getElementById( "closeChangeSequence" ).addEventListener( "click", closeChangeSequence );
+document.getElementsByClassName( "change-sequence-cont" )[ 0 ].addEventListener( "click", e => e.stopPropagation() );
 //set reset button
 document.getElementById( "reset" ).addEventListener( "click", reset );
 //set create button

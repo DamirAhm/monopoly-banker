@@ -39,6 +39,7 @@ input {
 button {
     font-size: 1.1rem;
     border-radius: 5px;
+    border: 1px solid transparent;
 }
 
 .container,

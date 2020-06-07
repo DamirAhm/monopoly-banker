@@ -3,21 +3,15 @@ html
     head
         title Starter settings
         meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
-        link(
-            rel="stylesheet"
-            href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-            integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
-            crossorigin="anonymous"
-        )
+        include includes/linkCommon
+        include includes/iconLink
         link(
             rel="stylesheet"
             href="../../public/starterSettings/settings.css"
         )
-        include includes/linkCommon
-        include includes/iconLink
-    body
+    body.center
         .container.center
-            .col-lg-10.grid-container
+            .grid-container
                 .players
                     .players-cont 
                         div.head.player-cont
@@ -71,12 +65,13 @@ html
                                 pre= " min"
                     if !isStartSettingsDone
                         .buttons.center
-                            button#reset Standard settings
-                            button#next Create
+                            button#reset.negativeBtn Standard settings
+                            button#next.positiveBtn Create
             .bg-cont
-                .col-lg-4.col-sm-12.col-md-8.change-sequence-cont
+                .change-sequence-cont
                     div.title Choose players by circle
                     div.change-sequence-players
+                    button#closeChangeSequence.negativeBtn Close
         if !isStartSettingsDone
             script(src="../../public/starterSettings/settings.js")
             script(src="https://unpkg.com/axios/dist/axios.min.js")

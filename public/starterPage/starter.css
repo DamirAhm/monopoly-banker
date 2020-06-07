@@ -14,3 +14,7 @@ button{
     padding: 5px;
     margin-top: 10px;
 }
+button:hover{
+    color: var(--blue);
+    border-color: var(--blue);
+}

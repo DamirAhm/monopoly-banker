@@ -11,7 +11,6 @@ p {
 
 button {
     background-color: transparent;
-    border: 1px solid black;
 }
 
 input {
@@ -24,19 +23,25 @@ input {
     align-items: center;
 }
 
+.container {
+    width: 1140px;
+    overflow: auto;
+}
+
 .grid-container {
     display: grid;
     grid-template-columns: 3fr 5fr;
-    height: 60%;
+    min-height: 60%;
+    width: 80%;
 }
 
 .change-sequence-cont {
-    height: 60%;
+    min-height: 60%;
     background-color: #fff;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    padding: 20px
+    padding: 20px;
+    min-width: 40%; 
 }
 
 .bg-cont {
@@ -49,7 +54,6 @@ input {
     background: rgba(0, 0, 0, 0.6);
     text-align: center;
 }
-
 
 .setting {
     display: flex;
@@ -71,71 +75,6 @@ input {
     justify-content: center;
     text-align: center;
 }
-
-
-.switch {
-    position: relative;
-    display: inline-block;
-    width: 40px;
-    height: 21px;
-}
-
-/* Hide default HTML checkbox */
-.switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-/* The slider */
-.slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ccc;
-    -webkit-transition: .2s;
-    transition: .2s;
-    padding-top: 5px;
-}
-
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 17px;
-    width: 17px;
-    left: 2px;
-    bottom: 2px;
-    background-color: white;
-    -webkit-transition: .2s;
-    transition: .2s;
-}
-
-input:checked + .slider {
-    background-color: #2196F3;
-}
-
-input:focus + .slider {
-    box-shadow: 0 0 1px #2196F3;
-}
-
-input:checked + .slider:before {
-    -webkit-transform: translateX(100%);
-    -ms-transform: translateX(19px);
-    transform: translateX(19px);
-}
-
-/* Rounded sliders */
-.slider.round {
-    border-radius: 18px;
-}
-
-.slider.round:before {
-    border-radius: 50%;
-}
-
 
 h3 {
     text-align: center;
@@ -159,6 +98,7 @@ h3 {
     width: 100%;
     display: flex;
     justify-content: center;
+    box-sizing: border-box;
 }
 
 .isBanker{
@@ -206,7 +146,6 @@ h5 > * {
 
 .end-line button {
     background-color: transparent;
-    border: none;
     font-size: 0.7em;
     padding: 5px;
 }
@@ -234,7 +173,7 @@ h5 > * {
     width: 4vw;
 }
 .input * {
-    padding: 0;
+    padding: 3px;
     margin: 0;
 }
 
@@ -256,6 +195,7 @@ h5 > * {
 
 .buttons button {
     padding: 7px;
+    color: white;
 }
 
 .settings-buttons {
@@ -291,28 +231,38 @@ h5 > * {
 }
 
 .btn-cont button {
-    padding: 0 3px;
-    border: none;
+    padding: 1px 3px;
+    font-size: 1rem;
 }
 
-.btn-cont #confirm {
-    background-color: #23D735;
+#change-sequence-btn:hover {
+    border: 1px solid var(--gray);
+}
+
+.positiveBtn {
+    background-color: var(--green);
     color: white;
 }
+.positiveBtn:hover {
+    border: 1px solid var(--green);
+    color: var(--green);
+    background-color: transparent;
+}
 
-.btn-cont #reject {
-    background-color: #D72323;
+.negativeBtn {
+    background-color: var(--red);
     color: white;
 }
-
-#next {
-    background-color: #23D735;
-    border: none;
+.negativeBtn:hover {
+    border: 1px solid var(--red);
+    color: var(--red);
+    background-color: transparent;
 }
 
-#reset {
-    background-color: #D72323;
-    border: none;
+#closeChangeSequence {
+    margin: auto auto 0 auto;
+    width: 40%;
+    padding: 5px;
 }
 
 @media screen and (max-width: 1300px) {
@@ -338,11 +288,11 @@ h5 > * {
         height: 50vh;
     }
     .container{
-        padding: 20px auto;
+        padding: 20px 0;
         box-sizing: border-box;
     }
-    .bg-cont{
-        height: 100%;
+    .change-sequence-cont{
+        min-width: 80%;
     }
     .settings-buttons{
         grid-template-rows: auto;
@@ -354,12 +304,19 @@ h5 > * {
         flex-direction: column;
         align-items: center;
     }
+    .change-sequence-cont{
+        min-width: 100%;
+    }
 }
 @media screen and (max-width: 320px){
     .container,
     .grid-container {
         width: 100vw;
-        padding: 0;
+        padding: 20px 0;
+        margin: 0;
+    }
+    .container {
+        align-items: flex-start;
     }
     .player-cont {
         grid-template-columns: repeat(3,1fr);    
