@@ -3,21 +3,15 @@ html(data-isbanker=isBanker.toString() data-gameId=gameId data-playerId=user.id 
     head
         title= user.name
         meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
-        link(
-            rel="stylesheet"
-            href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-            integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
-            crossorigin="anonymous"
-        )
+        include includes/iconLink
+        include includes/linkCommon
         link(
             rel="stylesheet"
             href="../public/playerPage/player.css"
         )
-        include includes/iconLink
-        include includes/linkCommon
     body
         .container.center
-            div(style="visibility: hidden").userContent.col-lg-4.col-sm-12.col-md-6
+            div(style="visibility: hidden").userContent.center
                 if(isBanker)
                     header
                         ul.options
