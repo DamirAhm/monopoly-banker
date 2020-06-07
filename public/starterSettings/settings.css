@@ -332,6 +332,7 @@ h5 > * {
     .container{
         display: flex;
         align-self: center;
+        max-height: none;
     }
     .players-cont{
         height: 50vh;
@@ -344,7 +345,7 @@ h5 > * {
         height: 100%;
     }
     .settings-buttons{
-        grid-template-rows: 250px 40px;
+        grid-template-rows: auto;
     }
 }
 @media screen and (max-width: 400px){
@@ -352,9 +353,6 @@ h5 > * {
         display: flex;
         flex-direction: column;
         align-items: center;
-    }
-    .settings-buttons{
-        grid-template-rows: 280px 40px;
     }
 }
 @media screen and (max-width: 320px){
