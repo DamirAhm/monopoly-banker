@@ -178,6 +178,14 @@
     left: 0;
 }
 
+#timer {
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.5rem;
+}
+
 #isConnected {
     position: absolute;
     bottom: 20px;
@@ -198,10 +206,6 @@
     cursor: pointer;
 }
 
-#urlLink{
-    display: none;
-}
-
 .options{
     display: grid;
     list-style-type: none;
@@ -220,6 +224,7 @@
     padding: 10px 20px;
     border-right: 1px solid black;
     box-sizing: border-box;
+    height: 100%;
 }
 
 .option:last-child{
@@ -349,11 +354,8 @@ form{
     }
 }
 
-@media screen and (max-height: 330px) {
-    #changePlayer{
-        left: 10px;
-        top: 10px;
-        font-size: 1.7em;
-        cursor: pointer;
+@media screen and (max-width: 250px) {
+    #timer{
+        top: 60px;
     }
 }

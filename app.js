@@ -432,7 +432,7 @@ app.get( "/:gameId/:playerId", ( req, res, next ) => {
                             isBanker: player._id.toString() === bankerId.toString(),
                             gameId: player.gameId,
                             isGoing: player.isGoing,
-                            moneyPerCircle: game.startSettings.moneyForCircle,
+                            startSettings: { ...game.startSettings, createdAt: game.createdAt },
                             turnsBeforeCircle: player.turnsBeforeNewCircle
                         } );
                     } else {

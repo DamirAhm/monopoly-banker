@@ -1,5 +1,5 @@
 doctype html
-html(data-user=user data-isbanker=isBanker.toString() data-gameId=gameId data-playerId=user.id data-mpc= moneyPerCircle )
+html(data-isbanker=isBanker.toString() data-gameId=gameId data-playerId=user.id data-startSettings= startSettings )
     head
         title= user.name
         meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
@@ -28,10 +28,12 @@ html(data-user=user data-isbanker=isBanker.toString() data-gameId=gameId data-pl
                     .player(id= "bank") Bank
 
             #changePlayer(class="fas fa-sign-out-alt")
-            #isConnected(class="not-connected") You are not connected
+            if (startSettings.isMaxTimeOn)
+                #timer= startSettings.maxTime
             if (isBanker)
                 #closeRoom(class="far fa-window-close")
-            input#urlLink
+            #isConnected(class="not-connected") You are not connected
+    script= `let turnsBeforeNewCircle = ${turnsBeforeCircle};`
     script(src="https://kit.fontawesome.com/9ef32952ff.js")
     script(src="https://unpkg.com/axios/dist/axios.min.js")
     script(src="../public/playerPage/player.js")

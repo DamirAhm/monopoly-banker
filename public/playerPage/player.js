@@ -1,5 +1,7 @@
-let playerId = document.getElementsByTagName( "html" )[ 0 ].dataset.playerid;
-let gameId = document.getElementsByTagName( "html" )[ 0 ].dataset.gameid;
+let playerId = document.querySelector( "html" ).dataset.playerid;
+let gameId = document.querySelector( "html" ).dataset.gameid;
+let startSettings = JSON.parse( document.querySelector( "html" ).dataset.startsettings );
+let createdAt = Date.parse( startSettings.createdAt );
 let host = document.location.host.split( "/" )[ 0 ];
 let isPicked = false;
 let protocol = document.location.protocol;
@@ -22,55 +24,7 @@ let reduceBtn = document.getElementsByClassName( "moneyBtns" )[ 0 ].children[ 0 
 let options = document.getElementsByClassName( "option" );
 //block togglers 
 let pickPlayer = document.getElementById( "pick-player-to-pay" );
-
-//add new player to container
-let newPayListPlayer = ( playerData ) => {
-    if ( playerData._id !== playerId ) {
-        let player = document.createElement( "div" );
-        player.classList.add( "player" );
-        player.classList.add( "center" );
-        player.innerText = playerData.name;
-        player.id = playerData._id;
-        player.addEventListener( "click", ( e ) => {
-            onReceiverPick( e );
-        } );
-        pickPlayer.appendChild( player );
-    }
-};
-//add new player to other players container to control their money
-let newPlayerInfo = ( playerData ) => {
-    let player = document.createElement( "div" );
-    player.classList.add( "playerInfo" );
-    player.classList.add( "center" );
-    if ( playerData.isGoing ) {
-        player.classList.add( "going" );
-    } else {
-        player.classList.add( "waiting" );
-    }
-    let nameCont = document.createElement( "span" );
-    nameCont.innerText = playerData.name;
-    let moneyCont = document.createElement( "span" );
-    moneyCont.innerText = playerData.money;
-    moneyCont.classList.add( "moneyCont" );
-    moneyCont.id = playerData._id + "money";
-    player.dataset.id = playerData._id;
-    player.appendChild( nameCont );
-    player.appendChild( moneyCont );
-    player.addEventListener( "click", ( e ) => {
-        changePlayerMoney( e );
-    } );
-    document.getElementById( "playersMoney" ).appendChild( player );
-};
-//add new player move container to control their moves to make money control easier
-let newMoveCont = ( playerData ) => {
-    let player = createPlayer( playerData._id );
-    let fstRow = createFstRow( playerData.name );
-    let sndRow = createSndRow( playerData.moves[ playerData.moves.length - 1 ], playerData.moves.length );
-    player.appendChild( fstRow );
-    player.appendChild( sndRow );
-
-    document.getElementById( "moveLog" ).appendChild( player );
-};
+let timerSpan = document.getElementById( "timer" );
 
 //* functions to make a player controls
 let createPlayer = ( playerId ) => {
@@ -85,7 +39,7 @@ let createFstRow = ( playerName ) => {
     //create name span
     let name = document.createElement( "span" );
     name.innerText = playerName;
-    fstRow.appendChild( name );
+    fstRow?.appendChild( name );
     return fstRow;
 };
 let createSndRow = ( lastMove, movesCount ) => {
@@ -104,15 +58,15 @@ let createSndRow = ( lastMove, movesCount ) => {
     target.style.fontWeight = "bolder";
     target.style.color = "white";
 
-    moveCont.appendChild( type );
-    moveCont.appendChild( total );
-    moveCont.appendChild( target );
+    moveCont?.appendChild( type );
+    moveCont?.appendChild( total );
+    moveCont?.appendChild( target );
 
     //create delete button
     let deleteBtn = createDeleteBtn( +movesCount === 0 ? 0 : +movesCount - 1 );
 
-    sndRow.appendChild( moveCont );
-    sndRow.appendChild( deleteBtn );
+    sndRow?.appendChild( moveCont );
+    sndRow?.appendChild( deleteBtn );
 
     //fill move container
     if ( lastMove ) {
@@ -140,7 +94,7 @@ let createDeleteBtn = ( movesCount ) => {
     let count = document.createElement( "span" );
     count.innerText = movesCount === 0 ? "No more moves" : ( `${movesCount} moves more` );
     count.classList.add( "count" );
-    deleteBtn.appendChild( count );
+    deleteBtn?.appendChild( count );
 
     //add events to show moves count
     deleteBtn.addEventListener( "mouseover", ( e ) => {
@@ -150,6 +104,55 @@ let createDeleteBtn = ( movesCount ) => {
         hoverCount( e );
     } );
     return deleteBtn;
+};
+
+//add new player to container
+let newPayListPlayer = ( playerData ) => {
+    if ( playerData._id !== playerId ) {
+        let player = document.createElement( "div" );
+        player.classList.add( "player" );
+        player.classList.add( "center" );
+        player.innerText = playerData.name;
+        player.id = playerData._id;
+        player.addEventListener( "click", ( e ) => {
+            onReceiverPick( e );
+        } );
+        pickPlayer?.appendChild( player );
+    }
+};
+//add new player to other players container to control their money
+let newPlayerInfo = ( playerData ) => {
+    let player = document.createElement( "div" );
+    player.classList.add( "playerInfo" );
+    player.classList.add( "center" );
+    if ( playerData.isGoing ) {
+        player.classList.add( "going" );
+    } else {
+        player.classList.add( "waiting" );
+    }
+    let nameCont = document.createElement( "span" );
+    nameCont.innerText = playerData.name;
+    let moneyCont = document.createElement( "span" );
+    moneyCont.innerText = playerData.money;
+    moneyCont.classList.add( "moneyCont" );
+    moneyCont.id = playerData._id + "money";
+    player.dataset.id = playerData._id;
+    player?.appendChild( nameCont );
+    player?.appendChild( moneyCont );
+    player.addEventListener( "click", ( e ) => {
+        changePlayerMoney( e );
+    } );
+    document.getElementById( "playersMoney" )?.appendChild( player );
+};
+//add new player move container to control their moves to make money control easier
+let newMoveCont = ( playerData ) => {
+    let player = createPlayer( playerData._id );
+    let fstRow = createFstRow( playerData.name );
+    let sndRow = createSndRow( playerData.moves[ playerData.moves.length - 1 ], playerData.moves.length );
+    player?.appendChild( fstRow );
+    player?.appendChild( sndRow );
+
+    document.getElementById( "moveLog" )?.appendChild( player );
 };
 
 //redo move and replace with previous
@@ -208,7 +211,7 @@ let updateMove = ( playerMoveCont, move ) => {
                     redoMove( move, playerMoveCont );
                 };
                 playerMoveCont.children[ 0 ].innerText = "Went a circle + ";
-                playerMoveCont.children[ 1 ].innerText = html.dataset.mpc;
+                playerMoveCont.children[ 1 ].innerText = startSettings.moneyPerCircle;
                 playerMoveCont.children[ 2 ].innerText = "";
                 playerMoveCont.parentElement.classList.add( "going" );
                 if ( playerMoveCont.parentElement.classList.contains( "not-going" ) ) {
@@ -406,7 +409,7 @@ socket.onmessage = res => {
         case "gotCircle": {
             if ( html.dataset.isbanker === "true" ) {
                 let moneySpan = document.getElementById( data.from + "money" );
-                moneySpan.innerText = ( +moneySpan.innerText + ( data.redo ? -parseInt( html.dataset.mpc ) : +parseInt( html.dataset.mpc ) ) ).toString();
+                moneySpan.innerText = ( +moneySpan.innerText + ( data.redo ? -parseInt( startSettings.moneyPerCircle ) : +parseInt( startSettings.moneyPerCircle ) ) ).toString();
                 let playerMoves = document.getElementsByClassName( "moveCont" );
                 for ( let i = 0; i < playerMoves.length; i++ ) {
                     if ( playerMoves[ i ].parentElement.parentElement.dataset.id === data.from ) {
@@ -418,7 +421,7 @@ socket.onmessage = res => {
                 }
             }
             if ( data.redo && data.from === playerId ) {
-                money.innerText = ( +money.innerText + ( data.redo ? -parseInt( html.dataset.mpc ) : +parseInt( html.dataset.mpc ) ) ).toString();
+                money.innerText = ( +money.innerText + ( data.redo ? -parseInt( startSettings.moneyPerCircle ) : +parseInt( startSettings.moneyPerCircle ) ) ).toString();
             }
             break;
         }
@@ -613,12 +616,12 @@ let changePlayerMoney = ( e ) => {
         backBtn.addEventListener( "click", ( e ) => {
             backFromUpdate( e, oldMoney );
         } );
-        btnCont.appendChild( confirmBtn );
-        btnCont.appendChild( backBtn );
+        btnCont?.appendChild( confirmBtn );
+        btnCont?.appendChild( backBtn );
         let newPlayerCont = document.createElement( "form" );
         newPlayerCont.classList.add( "changeMoneyForm" );
-        newPlayerCont.appendChild( playerCont.cloneNode( true ) );
-        newPlayerCont.appendChild( btnCont );
+        newPlayerCont?.appendChild( playerCont.cloneNode( true ) );
+        newPlayerCont?.appendChild( btnCont );
         newPlayerCont.onsubmit = ( e ) => {
             confirmUpdate( e, oldMoney );
         };
@@ -652,6 +655,39 @@ for ( const option of options ) {
     option.addEventListener( "click", ( e ) => {
         optionAction( e );
     } );
+}
+
+//* Timer stuff
+if ( timerSpan && startSettings.isMaxTimeOn && startSettings.maxTime ) {
+    const getHours = ( time ) => {
+        const allSeconds = time / 1000;
+        const seconds = getSeconds( time );
+        const minutes = getMinutes( time );
+        return ~~( allSeconds - seconds - minutes * 60 ) / 60 / 60;
+    }
+    const getMinutes = ( time ) => {
+        const allSeconds = time / 1000;
+        const seconds = getSeconds( time );
+        const minutes = ( allSeconds - seconds ) / 60;
+        return ~~minutes % 60;
+    }
+    const getSeconds = ( time ) => {
+        const seconds = time / 1000;
+        return ~~( seconds % 60 ); //~~ - to integer;
+    }
+    const getTimeStr = ( time ) => `${getHours( time )}:${getMinutes( time )}:${getSeconds( time )}`
+    const getTime = () => startSettings.maxTime - ( Date.now() - createdAt );
+    const changeTime = ( timeStr ) => timerSpan.innerText = timeStr;
+    const checkTimer = ( time ) => {
+        if ( time <= 0 ) {
+            clearInterval( timerInterval );
+        }
+        else {
+            changeTime( getTimeStr( time ) );
+        }
+    }
+    checkTimer( getTime() );
+    const timerInterval = setInterval( () => checkTimer( getTime() ), 1000 );
 }
 
 //* Initialize
