@@ -32,6 +32,13 @@
 input {
     border: 1px solid black;
     border-radius: 5px;
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+button {
+    font-size: 1.1rem;
+    border-radius: 5px;
 }
 
 .container,
