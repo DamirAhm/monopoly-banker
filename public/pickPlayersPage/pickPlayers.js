@@ -57,9 +57,24 @@ let onPlayerPick = ( e ) => {
         } )
 };
 
+const copy = ( str ) => {
+    let tmp = document.createElement( 'INPUT' ); // Создаём новый текстовой input
+    let focus = document.activeElement; // Получаем ссылку на элемент в фокусе (чтобы не терять фокус)
+
+    tmp.value = str; // Временному input вставляем текст для копирования
+
+    document.body.appendChild( tmp ); // Вставляем input в DOM
+    tmp.select(); // Выделяем весь текст в input
+    document.execCommand( 'copy' ); // Магия! Копирует в буфер выделенный текст (см. команду выше)
+    document.body.removeChild( tmp ); // Удаляем временный input
+    focus.focus(); // Возвращаем фокус туда, где был
+}
+
 const urlSpan = document.getElementById( "url" );
-urlSpan.addEventListener( "click", () => {
-    navigator.clipboard.writeText( document.location.href )
+urlSpan.addEventListener( "click", ( e ) => {
+    e.target.classList.add( "blink" );
+    setTimeout( () => e.target.classList.remove( "blink" ), 1000 )
+    copy( document.location.href )
 } )
 
 ws.onmessage = ( msg ) => {
