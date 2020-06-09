@@ -354,8 +354,17 @@ form{
     }
 }
 
+<<<<<<< HEAD
 @media screen and (max-width: 250px) {
     #timer{
         top: 60px;
+=======
+@media screen and (max-height: 330px) {
+    #changePlayer{
+        left: 10px;
+        top: 10px;
+        font-size: 1.7em;
+        cursor: pointer;
+>>>>>>> bf4bca156fc93e0ebd007d19641b0302df5ec260
     }
 }
