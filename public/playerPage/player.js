@@ -239,7 +239,7 @@ let updateMove = ( playerMoveCont, move ) => {
 };
 //confirms money update
 let confirmUpdate = ( e, oldMoney ) => {
-    e.preventDefault();
+
     let playerInfo = e.target.parentElement.previousSibling;
     let delta = +playerInfo.children[ 1 ].value - +oldMoney.innerText;
     e.target.parentElement.previousSibling.replaceChild( oldMoney, playerInfo.children[ 1 ] );
@@ -267,7 +267,7 @@ let confirmUpdate = ( e, oldMoney ) => {
 };
 //back from money update
 let backFromUpdate = ( e, oldMoney ) => {
-    e.preventDefault();
+
     let playerInfo = e.target.parentElement.previousSibling;
     e.target.parentElement.previousSibling.replaceChild( oldMoney, playerInfo.children[ 1 ] );
     playerInfo = playerInfo.cloneNode( true );
@@ -330,11 +330,9 @@ let createWinnerMsg = ( players ) => {
 //* Socket
 const openSocket = () => {
     socket = new WebSocket( `${wsProtocol}//${host}/${document.location.pathname}` );
-    let reopenInterval = null;
 
     //works when web socket opens connection
     socket.onopen = () => {
-        clearInterval( reopenInterval );
         socket.send( JSON.stringify( {
             type: "sendId",
             id: playerId,
@@ -458,7 +456,7 @@ const openSocket = () => {
         connectionLabel.classList.remove( "connected" );
         connectionLabel.classList.add( "not-connected" );
 
-        reopenInterval = setInterval( openSocket, 1000 );
+        setTimeout( openSocket, 1000 );
     };
 };
 openSocket();
@@ -471,8 +469,7 @@ let signOut = () => {
     axios.get( concatURL( document.location.origin, gameId, "unpick-player", `?id=${playerId}` ) )
 };
 //close room for all players
-let closeRoom = ( e ) => {
-    e.preventDefault();
+let closeRoom = () => {
     e.target.remove();
     socket.send( JSON.stringify( {
         type: "closeRoom",
@@ -480,8 +477,7 @@ let closeRoom = ( e ) => {
     } ) )
 }
 //func while you got circle
-let gotCircle = ( e ) => {
-    e.preventDefault();
+let gotCircleHandler = () => {
     if ( turnsBeforeNewCircle === 0 ) {
         let action = {
             type: "gotCircle",
@@ -496,7 +492,7 @@ let gotCircle = ( e ) => {
                     money.innerText = res.data;
                     socket.send( JSON.stringify( action ) );
                     turnsBeforeNewCircle = 1;
-                    giveTurn( e );
+                    giveTurn();
                 }
             } );
     } else {
@@ -504,8 +500,8 @@ let gotCircle = ( e ) => {
     }
 };
 //give turn to next player
-let giveTurn = ( e ) => {
-    e.preventDefault();
+let giveTurn = () => {
+
     axios.get( concatURL( document.location.origin, gameId, "giveTurn", `?playerId=${playerId}` ) )
         .then( res => {
             if ( !res.data.error && res.data.nextGoing ) {
@@ -645,20 +641,12 @@ let propagationStopper = ( e ) => e.stopPropagation();
 //* Apply event listeners
 document.getElementById( "changePlayer" ).onclick = signOut;
 document.getElementById( "closeRoom" )?.addEventListener( "click", closeRoom );
-document.getElementById( "gotCircle" ).addEventListener( "click", ( e ) => {
-    gotCircle( e );
-} );
-document.getElementById( "nextPlayer" ).addEventListener( "click", ( e ) => {
-    giveTurn( e );
-} );
-document.getElementById( "bank" ).addEventListener( "click", ( e ) => {
-    onReceiverPick( e );
-} );
-document.getElementsByClassName( "bg-cont" )[ 0 ].addEventListener( "click", e => closeModal( e.target ) );
-document.getElementById( "pick-player-to-pay" ).addEventListener( "click", propagationStopper );
-reduceBtn.addEventListener( "click", ( e ) => {
-    reduceMoney( e );
-} );
+document.getElementById( "gotCircle" )?.addEventListener( "click", gotCircleHandler );
+document.getElementById( "nextPlayer" )?.addEventListener( "click", giveTurn );
+document.getElementById( "bank" )?.addEventListener( "click", onReceiverPick );
+document.getElementsByClassName( "bg-cont" )?.[ 0 ]?.addEventListener( "click", e => closeModal( e.target ) );
+document.getElementById( "pick-player-to-pay" )?.addEventListener( "click", propagationStopper );
+reduceBtn?.addEventListener( "click", reduceMoney );
 //give actions to options
 for ( const option of options ) {
     option.addEventListener( "click", ( e ) => {
@@ -703,24 +691,26 @@ if ( timerSpan && startSettings.isMaxTimeOn && startSettings.maxTime ) {
 //get players
 axios.get( concatURL( document.location.origin, gameId, "players" ) )
     .then( res => {
-        players = res.data;
-        res.data.forEach( e => {
-            if ( e._id === playerId ) {
-                if ( e.isPicked && !isInitialized ) {
-                    document.querySelector( ".message" ).style.visibility = "visible";
-                    document.querySelector( ".userContent" ).remove();
-                } else {
-                    document.querySelector( ".userContent" ).style.visibility = "visible";
-                    document.querySelector( ".message" ).remove();
+        players = res.data.players;
+        if ( players ) {
+            players.forEach( e => {
+                if ( e._id === playerId ) {
+                    if ( e.isPicked && !isInitialized ) {
+                        document.querySelector( ".message" ).style.visibility = "visible";
+                        document.querySelector( ".userContent" ).remove();
+                    } else {
+                        document.querySelector( ".userContent" ).style.visibility = "visible";
+                        document.querySelector( ".message" ).remove();
+                    }
                 }
-            }
-            //add to pay list(opens in minusMoney)
-            newPayListPlayer( e );
-            if ( html.dataset.isbanker === "true" ) {
-                //add to players money page
-                newPlayerInfo( e );
-                //add to move log page
-                newMoveCont( e );
-            }
-        } );
+                //add to pay list(opens in minusMoney)
+                newPayListPlayer( e );
+                if ( html.dataset.isbanker === "true" ) {
+                    //add to players money page
+                    newPlayerInfo( e );
+                    //add to move log page
+                    newMoveCont( e );
+                }
+            } );
+        }
     } );

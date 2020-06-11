@@ -274,10 +274,9 @@ app.post( "/:gameId/starter-settings", ( req, res ) => {
 } );//Posts starter settings for game
 
 app.get( "/:gameId/players", ( req, res ) => {
-    Game.findById( req.params.gameId, ( err, game ) => {
+    Game.findById( req.params.gameId, async ( err, game ) => {
         if ( err ) {
             console.log( "Error while finding game in players" );
-
         }
         if ( req.query.id ) {
             Player.findById( req.query.id, ( err, player ) => {
@@ -288,19 +287,18 @@ app.get( "/:gameId/players", ( req, res ) => {
                 res.json( player );
             } );
         } else {
-            Player.find( { gameId: game._id }, ( err, players ) => {
-                if ( err ) {
-                    console.log( "Error while finding game in players" );
-
-                }
-                if ( players.length === game.players.length ) {
-                    players.sort( ( a, b ) => game.players.indexOf( a._id ) - game.players.indexOf( b._id ) );
-                    res.json( players );
+            try {
+                const { players } = await game.populate( "players" ).execPopulate();
+                if ( players ) {
+                    res.json( { players } );
                 } else {
-                    res.json( { error: "Error in players count" } );
-                    console.error( "Error in players count" )
+                    console.error( "Can`t get players" );
+                    res.send( { error: "Can`t get players" } );
                 }
-            } );
+            } catch ( error ) {
+                console.error( error );
+                res.send( { error } )
+            }
         }
     } );
 } ); //return game room players
