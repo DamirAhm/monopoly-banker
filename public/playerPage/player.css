@@ -69,6 +69,14 @@
     /* background-color: #ff0606; */
     box-shadow: 0 0 10px #545454;
 }
+.btn[disabled]{
+    background-color: var(--gray) !important;
+    color: white;
+    border-color: transparent !important;
+}
+.btn[disabled]:hover {
+    box-shadow: none;
+}
 
 .actions input{
     width: 100%;
