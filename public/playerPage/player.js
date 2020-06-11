@@ -6,7 +6,7 @@ const host = document.location.host.split( "/" )[ 0 ];
 const isPicked = false;
 const protocol = document.location.protocol;
 const wsProtocol = protocol === "https:" ? "wss:" : "ws:";
-const socket = new WebSocket( `${wsProtocol}//${host}/${document.location.pathname}` );
+let socket;
 let isInitialized = false;
 
 //array with players in game to give them money
@@ -328,131 +328,140 @@ let createWinnerMsg = ( players ) => {
 }
 
 //* Socket
-//works when web socket opens connection
-socket.onopen = () => {
-    socket.send( JSON.stringify( {
-        type: "sendId",
-        id: playerId,
-        gameId: gameId
-    } ) );
-};
-//works when web socket receive a message / action
-socket.onmessage = res => {
-    let data = JSON.parse( res.data );
-    switch ( data.type ) {
-        case "giveTurn": {
-            if ( data.id === playerId ) {
-                changeIsGoing( true );
-            }
-            if ( html.dataset.isbanker === "true" ) {
-                let infos = document.getElementsByClassName( "playerInfo" );
-                //change going player in players money page
-                for ( let i = 0; i < infos.length; i++ ) {
-                    if ( infos[ i ].classList.contains( "going" ) ) {
-                        infos[ i ].classList.remove( "going" );
-                    } else if ( infos[ i ].classList.contains( "waiting" ) ) {
-                        infos[ i ].classList.remove( "waiting" );
-                    }
-                    if ( infos[ i ].dataset.id === data.id ) {
-                        infos[ i ].classList.add( "going" );
-                        if ( infos[ i ].classList.contains( "waiting" ) ) {
-                            infos[ i ].classList.remove( "waiting" );
-                        } else if ( infos[ i ].classList.contains( "loosed" ) ) {
-                            infos[ i ].classList.remove( "loosed" );
-                        }
-                    } else if ( !infos[ i ].classList.contains( "loosed" ) ) {
-                        infos[ i ].classList.add( "waiting" );
+const openSocket = () => {
+    socket = new WebSocket( `${wsProtocol}//${host}/${document.location.pathname}` );
+    let reopenInterval = null;
+
+    //works when web socket opens connection
+    socket.onopen = () => {
+        clearInterval( reopenInterval );
+        socket.send( JSON.stringify( {
+            type: "sendId",
+            id: playerId,
+            gameId: gameId
+        } ) );
+    };
+    //works when web socket receive a message / action
+    socket.onmessage = res => {
+        let data = JSON.parse( res.data );
+        switch ( data.type ) {
+            case "giveTurn": {
+                if ( data.id === playerId ) {
+                    changeIsGoing( true );
+                }
+                if ( html.dataset.isbanker === "true" ) {
+                    let infos = document.getElementsByClassName( "playerInfo" );
+                    //change going player in players money page
+                    for ( let i = 0; i < infos.length; i++ ) {
                         if ( infos[ i ].classList.contains( "going" ) ) {
                             infos[ i ].classList.remove( "going" );
-                        } else if ( infos[ i ].classList.contains( "loosed" ) ) {
-                            infos[ i ].classList.remove( "loosed" );
+                        } else if ( infos[ i ].classList.contains( "waiting" ) ) {
+                            infos[ i ].classList.remove( "waiting" );
+                        }
+                        if ( infos[ i ].dataset.id === data.id ) {
+                            infos[ i ].classList.add( "going" );
+                            if ( infos[ i ].classList.contains( "waiting" ) ) {
+                                infos[ i ].classList.remove( "waiting" );
+                            } else if ( infos[ i ].classList.contains( "loosed" ) ) {
+                                infos[ i ].classList.remove( "loosed" );
+                            }
+                        } else if ( !infos[ i ].classList.contains( "loosed" ) ) {
+                            infos[ i ].classList.add( "waiting" );
+                            if ( infos[ i ].classList.contains( "going" ) ) {
+                                infos[ i ].classList.remove( "going" );
+                            } else if ( infos[ i ].classList.contains( "loosed" ) ) {
+                                infos[ i ].classList.remove( "loosed" );
+                            }
                         }
                     }
                 }
+                break;
             }
-            break;
-        }
-        case "giveMoney": {
-            if ( !data.redo ) {
-                if ( data.for === playerId ) {
-                    money.innerText = +money.innerText + data.total;
+            case "giveMoney": {
+                if ( !data.redo ) {
+                    if ( data.for === playerId ) {
+                        money.innerText = +money.innerText + data.total;
+                    }
+                } else {
+                    if ( data.for === playerId ) {
+                        money.innerText = ( +money.innerText - data.total ).toString();
+                    } else if ( data.from === playerId ) {
+                        money.innerText = +money.innerText + data.total;
+                    }
                 }
-            } else {
-                if ( data.for === playerId ) {
-                    money.innerText = ( +money.innerText - data.total ).toString();
-                } else if ( data.from === playerId ) {
-                    money.innerText = +money.innerText + data.total;
+                if ( html.dataset.isbanker === "true" ) {
+                    if ( data.for !== "bank" ) {
+                        let moneySpan = document.getElementById( data.for + "money" );
+                        moneySpan.innerText = ( +moneySpan.innerText + ( data.redo ? -data.total : +data.total ) ).toString();
+                    }
+                    if ( !data.bankerMove ) {
+                        let moneySpan = document.getElementById( data.from + "money" );
+                        moneySpan.innerText = ( +moneySpan.innerText + ( data.redo ? +data.total : -data.total ) ).toString();
+                    }
+                    if ( !data.bankerMove ) {
+                        let playerMoves = document.getElementsByClassName( "playerMove" );
+                        for ( let i = 0; i < playerMoves.length; i++ ) {
+                            if ( playerMoves[ i ].dataset.id === data.from ) {
+                                updateMove( playerMoves[ i ].children[ 1 ].children[ 0 ], data, true );
+                                if ( !data.redo ) {
+                                    changeMovesCount( playerMoves[ i ].children[ 1 ].children[ 0 ] );
+                                }
+                            }
+                        }
+                    }
                 }
+                break;
             }
-            if ( html.dataset.isbanker === "true" ) {
-                if ( data.for !== "bank" ) {
-                    let moneySpan = document.getElementById( data.for + "money" );
-                    moneySpan.innerText = ( +moneySpan.innerText + ( data.redo ? -data.total : +data.total ) ).toString();
-                }
-                if ( !data.bankerMove ) {
+            case "gotCircle": {
+                if ( html.dataset.isbanker === "true" ) {
                     let moneySpan = document.getElementById( data.from + "money" );
-                    moneySpan.innerText = ( +moneySpan.innerText + ( data.redo ? +data.total : -data.total ) ).toString();
-                }
-                if ( !data.bankerMove ) {
-                    let playerMoves = document.getElementsByClassName( "playerMove" );
+                    moneySpan.innerText = ( +moneySpan.innerText + ( data.redo ? -parseInt( startSettings.moneyPerCircle ) : +parseInt( startSettings.moneyPerCircle ) ) ).toString();
+                    let playerMoves = document.getElementsByClassName( "moveCont" );
                     for ( let i = 0; i < playerMoves.length; i++ ) {
-                        if ( playerMoves[ i ].dataset.id === data.from ) {
-                            updateMove( playerMoves[ i ].children[ 1 ].children[ 0 ], data, true );
+                        if ( playerMoves[ i ].parentElement.parentElement.dataset.id === data.from ) {
+                            updateMove( playerMoves[ i ], data, true );
                             if ( !data.redo ) {
                                 changeMovesCount( playerMoves[ i ].children[ 1 ].children[ 0 ] );
                             }
                         }
                     }
                 }
-            }
-            break;
-        }
-        case "gotCircle": {
-            if ( html.dataset.isbanker === "true" ) {
-                let moneySpan = document.getElementById( data.from + "money" );
-                moneySpan.innerText = ( +moneySpan.innerText + ( data.redo ? -parseInt( startSettings.moneyPerCircle ) : +parseInt( startSettings.moneyPerCircle ) ) ).toString();
-                let playerMoves = document.getElementsByClassName( "moveCont" );
-                for ( let i = 0; i < playerMoves.length; i++ ) {
-                    if ( playerMoves[ i ].parentElement.parentElement.dataset.id === data.from ) {
-                        updateMove( playerMoves[ i ], data, true );
-                        if ( !data.redo ) {
-                            changeMovesCount( playerMoves[ i ].children[ 1 ].children[ 0 ] );
-                        }
-                    }
+                if ( data.redo && data.from === playerId ) {
+                    money.innerText = ( +money.innerText + ( data.redo ? -parseInt( startSettings.moneyPerCircle ) : +parseInt( startSettings.moneyPerCircle ) ) ).toString();
                 }
+                break;
             }
-            if ( data.redo && data.from === playerId ) {
-                money.innerText = ( +money.innerText + ( data.redo ? -parseInt( startSettings.moneyPerCircle ) : +parseInt( startSettings.moneyPerCircle ) ) ).toString();
+            case "timeOver": {
+                appendNotification( "Game time is over", "info" );
             }
-            break;
-        }
-        case "timeOver": {
-            appendNotification( "Game time is over", "info" );
-        }
-        case "closeRoom": {
-            if ( data.gameId && data.gameId === gameId && data.winners ) {
-                showMessage( "Your game has ended", createWinnerMsg( data.winners || [] ) );
-                document.getElementById( "changePlayer" ).onclick = () => ( document.location = "/" );
+            case "closeRoom": {
+                if ( data.gameId && data.gameId === gameId && data.winners ) {
+                    showMessage( "Your game has ended", createWinnerMsg( data.winners || [] ) );
+                    document.getElementById( "changePlayer" ).onclick = () => ( document.location = "/" );
+                }
+                break;
             }
-            break;
+            case "confirmPick": {
+                const connectionLabel = document.getElementById( "isConnected" );
+                connectionLabel.innerText = "You are connected";
+                connectionLabel.classList.add( "connected" );
+                connectionLabel.classList.remove( "not-connected" );
+                isInitialized = true;
+                break;
+            }
         }
-        case "confirmPick": {
-            const connectionLabel = document.getElementById( "isConnected" );
-            connectionLabel.innerText = "You are connected";
-            connectionLabel.classList.add( "connected" );
-            connectionLabel.classList.remove( "not-connected" );
-            isInitialized = true;
-            break;
-        }
-    }
+    };
+    //works when web socket close connection
+    socket.onclose = () => {
+        const connectionLabel = document.getElementById( "isConnected" );
+        connectionLabel.innerText = "You are not connected";
+        connectionLabel.classList.remove( "connected" );
+        connectionLabel.classList.add( "not-connected" );
+
+        reopenInterval = setInterval( openSocket, 1000 );
+    };
 };
-//works when web socket close connection
-socket.onclose = () => {
-    const connectionLabel = document.getElementById( "isConnected" );
-    connectionLabel.innerText = "You are not connected";
-    connectionLabel.classList.remove( "connected" );
-    connectionLabel.classList.add( "not-connected" );
-};
+openSocket();
 
 //* Event handlers
 
