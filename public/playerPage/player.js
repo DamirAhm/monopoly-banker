@@ -1,12 +1,13 @@
-let playerId = document.querySelector( "html" ).dataset.playerid;
-let gameId = document.querySelector( "html" ).dataset.gameid;
-let startSettings = JSON.parse( document.querySelector( "html" ).dataset.startsettings );
-let createdAt = Date.parse( startSettings.createdAt );
-let host = document.location.host.split( "/" )[ 0 ];
-let isPicked = false;
-let protocol = document.location.protocol;
-let wsProtocol = protocol === "https:" ? "wss:" : "ws:";
-let socket = new WebSocket( `${wsProtocol}//${host}/${document.location.pathname}` );
+const playerId = document.querySelector( "html" ).dataset.playerid;
+const gameId = document.querySelector( "html" ).dataset.gameid;
+const startSettings = JSON.parse( document.querySelector( "html" ).dataset.startsettings );
+const createdAt = Date.parse( startSettings.createdAt );
+const host = document.location.host.split( "/" )[ 0 ];
+const isPicked = false;
+const protocol = document.location.protocol;
+const wsProtocol = protocol === "https:" ? "wss:" : "ws:";
+const socket = new WebSocket( `${wsProtocol}//${host}/${document.location.pathname}` );
+let isInitialized = false;
 
 //array with players in game to give them money
 let players = [];
@@ -440,6 +441,7 @@ socket.onmessage = res => {
             connectionLabel.innerText = "You are connected";
             connectionLabel.classList.add( "connected" );
             connectionLabel.classList.remove( "not-connected" );
+            isInitialized = true;
             break;
         }
     }
@@ -456,10 +458,8 @@ socket.onclose = () => {
 
 //go to "player-pick monitor"
 let signOut = () => {
+    document.location = "/" + gameId;
     axios.get( concatURL( document.location.origin, gameId, "unpick-player", `?id=${playerId}` ) )
-        .then( () => {
-            document.location = "/" + gameId;
-        } )
 };
 //close room for all players
 let closeRoom = ( e ) => {
@@ -697,7 +697,7 @@ axios.get( concatURL( document.location.origin, gameId, "players" ) )
         players = res.data;
         res.data.forEach( e => {
             if ( e._id === playerId ) {
-                if ( e.isPicked ) {
+                if ( e.isPicked && !isInitialized ) {
                     document.querySelector( ".message" ).style.visibility = "visible";
                     document.querySelector( ".userContent" ).remove();
                 } else {
