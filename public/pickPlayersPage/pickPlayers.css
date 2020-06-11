@@ -37,7 +37,7 @@
 }
 
 #players-cont{
-    display: block;
+    width: 100%;
 }
 
 .title{
@@ -51,11 +51,13 @@
     cursor: pointer;
     text-align: center;
     margin-bottom: 5px;
-    border: 1px solid transparent;
-}
-.player:hover {
     color: var(--blue);
     border: 1px solid var(--blue);
+    border-radius: 8px;
+}
+.player:hover {
+    color: white;
+    background-color: var(--blue);
     border-radius: 8px;
 }
 

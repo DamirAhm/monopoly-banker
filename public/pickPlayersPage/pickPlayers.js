@@ -1,4 +1,6 @@
-let playersCont = document.getElementById( "players-cont" );
+//* elements
+const players = document.getElementsByClassName( "player" );
+const urlSpan = document.getElementById( "url" );
 
 const wsProtocol = document.location.protocol === "https:" ? "wss:" : "ws:";
 const ws = new WebSocket( concatURL( `${wsProtocol}//`, document.location.host, document.location.pathname ) );
@@ -9,52 +11,23 @@ ws.onopen = () => {
     } ) )
 }
 
-let ids = [];
-
-let newPlayer = ( playerData ) => {
-    let player = document.createElement( "div" );
-    player.classList.add( "player" );
-    player.classList.add( "center" );
-    ids.push( playerData._id );
-    player.innerText = playerData.name;
-    player.addEventListener( "click", ( e ) => {
-        onPlayerPick( e );
-    } );
-    playersCont.appendChild( player );
-};
-
-if ( playersCont ) {
-    axios.get( concatURL( document.location.origin, document.location.pathname, "players" ) )
-        .then( res => {
-            res.data.forEach( player => {
-                if ( !player.isPicked ) {
-                    newPlayer( player );
-                }
-            } );
-        } );
-}
-
 let onPlayerPick = ( e ) => {
-    let id = "";
-    let players = document.getElementsByClassName( "player" );
-    for ( let i = 0; i < players.length; i++ ) {
-        if ( players[ i ] === e.target ) {
-            id = ids[ i ];
-        }
-    }
-    axios.get( concatURL( document.location.origin, document.location.pathname, "players", `?id=${id}` ) )
-        .then( res => {
-            if ( !res.data.error ) {
-                if ( res.data.isPicked ) {
-                    e.preventDefault();
-                    appendNotification( "This player is already picked" );
+    let { id } = e.target;
+    if ( id ) {
+        axios.get( concatURL( document.location.origin, document.location.pathname, "players", `?id=${id}` ) )
+            .then( res => {
+                if ( !res.data.error ) {
+                    if ( res.data.isPicked ) {
+                        e.preventDefault();
+                        appendNotification( "This player is already picked" );
+                    } else {
+                        document.location = concatURL( document.location.origin, document.location.pathname, id );
+                    }
                 } else {
-                    document.location = `./${id}`;
+                    appendNotification( res.data.error );
                 }
-            } else {
-                appendNotification( res.data.error );
-            }
-        } )
+            } )
+    }
 };
 
 const copy = ( str ) => {
@@ -70,36 +43,50 @@ const copy = ( str ) => {
     focus.focus(); // Возвращаем фокус туда, где был
 }
 
-const urlSpan = document.getElementById( "url" );
+//* give event listeners
 urlSpan.addEventListener( "click", ( e ) => {
     e.target.classList.add( "blink" );
     setTimeout( () => e.target.classList.remove( "blink" ), 1000 )
     copy( document.location.href )
-} )
+} );
+for ( const player of players ) {
+    player.addEventListener( "click", onPlayerPick )
+}
+
 
 ws.onmessage = ( msg ) => {
     const data = JSON.parse( msg.data );
     switch ( data.type ) {
         case "pick-player": {
             const { id } = data;
-            if ( id ) {
-                const index = ids.indexOf( id );
-                ids = ids.filter( e => e !== id );
-
-                let players = document.getElementsByClassName( "player" );
-                for ( let i = 0; i < players.length; i++ ) {
-                    if ( i === index ) {
-                        players[ i ].remove();
-                    }
-                }
-            }
+            removePlayer( id );
             break;
         }
         case "unpick-player": {
             const { player } = data;
             if ( player ) {
-                newPlayer( player );
+                addPlayer( player );
             }
         }
     }
 }
+
+const removePlayer = ( id ) => {
+    if ( id ) {
+        for ( const player of players ) {
+            if ( player.id === id ) {
+                player.remove();
+            }
+        }
+    }
+}
+const addPlayer = ( playerData ) => {
+    let player = document.createElement( "div" );
+    player.classList.add( "player", "center" );
+    player.innerText = playerData.name;
+    player.addEventListener( "click", ( e ) => {
+        onPlayerPick( e );
+    } );
+
+    document.getElementById( "playersCont" ).appendChild( player );
+};

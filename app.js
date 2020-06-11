@@ -391,14 +391,18 @@ app.get( "/:gameId/unpick-player", ( req, res ) => {
 
 app.get( "/:gameId", ( req, res ) => {
     if ( req.params.gameId !== "favicon.ico" ) {
-        Game.findById( req.params.gameId, ( err, game ) => {
+        Game.findById( req.params.gameId, async ( err, game ) => {
             if ( err ) {
                 console.log( "Error while finding the game in render game", err );
             }
             if ( game ) {
+                const players = await game.populate( "players" )
+                    .execPopulate()
+                    .then( ( { players } ) => players.filter( player => !player.isPicked ) )
                 if ( game.isStartSettingsDone ) {
                     res.render( "pickPlayersPage", {
-                        allPicked: game.players.every( e => e.isPicked )
+                        allPicked: players.length === 0,
+                        players
                     } );
                 } else {
                     res.send( "Confirm your starter settings" );

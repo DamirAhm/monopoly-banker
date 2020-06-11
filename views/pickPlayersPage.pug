@@ -12,9 +12,14 @@ html
     body
         .container.center
             span#url Копировать ссылку на игру
-            .center#players-cont
+            .center.content
                 if !allPicked
                     .title Pick your name
+                    #players-cont
+                        if (players && players.length > 0)
+                            for player in players
+                                    if (!player.isPicked)
+                                        .player.center(id= player.id)= player.name
                 else
                     .title All players is picked
         script(src="https://unpkg.com/axios/dist/axios.min.js")
