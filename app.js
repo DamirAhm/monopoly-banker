@@ -282,7 +282,6 @@ app.get( "/:gameId/players", ( req, res ) => {
             Player.findById( req.query.id, ( err, player ) => {
                 if ( err ) {
                     console.log( "Error while finding game in players" );
-
                 }
                 res.json( player );
             } );
@@ -414,33 +413,30 @@ app.get( "/:gameId", ( req, res ) => {
 app.get( "/:gameId/:playerId", ( req, res, next ) => {
     const { playerId, gameId } = req.params;
     if ( mongoose.Types.ObjectId.isValid( playerId ) ) {
-        Game.findById( gameId, ( err, game ) => {
+        Game.findById( gameId, async ( err, game ) => {
             if ( err ) {
                 console.log( err );
                 res.send( { error: err } );
                 return;
             };
             if ( game ) {
-                Player.findById( playerId, ( err, player ) => {
-                    if ( err ) {
-                        console.log( err );
-                        res.send( { error: err } );
-                        return;
-                    };
-                    if ( player && game.players.includes( player._id ) ) {
-                        let bankerId = game.startSettings.bankerId;
-                        res.render( "playerPage", {
-                            user: player,
-                            isBanker: player._id.toString() === bankerId.toString(),
-                            gameId: player.gameId,
-                            isGoing: player.isGoing,
-                            startSettings: { ...game.startSettings, createdAt: game.createdAt },
-                            turnsBeforeCircle: player.turnsBeforeNewCircle
-                        } );
-                    } else {
-                        res.render( "404" );
-                    }
-                } )
+                const { players } = await game.populate( "players" ).execPopulate();
+
+                const player = players.find( player => player._id.toString() === playerId );
+                if ( player ) {
+                    let bankerId = game.startSettings.bankerId;
+                    res.render( "playerPage", {
+                        user: player,
+                        players,
+                        isBanker: player._id.toString() === bankerId.toString(),
+                        gameId: player.gameId,
+                        isGoing: player.isGoing,
+                        startSettings: { ...game.startSettings, createdAt: game.createdAt },
+                        turnsBeforeCircle: player.turnsBeforeNewCircle
+                    } );
+                } else {
+                    res.render( "404" );
+                }
             } else {
                 res.render( "404" );
             }
@@ -544,7 +540,6 @@ app.put( "/:gameId/moneyActions", ( req, res ) => {
                                     receiver.save( err => {
                                         if ( err ) {
                                             console.log( "Error while saving the player" );
-
                                         }
                                     } );
                                 } );
@@ -552,7 +547,6 @@ app.put( "/:gameId/moneyActions", ( req, res ) => {
                             player.save( err => {
                                 if ( err ) {
                                     console.log( "Error while saving the player" );
-
                                 }
                             } );
                             if ( player.moves.length === 0 ) {

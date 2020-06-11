@@ -1,1 +1,30 @@
+-
+    var typeStrs = {
+        giveMoney: "Gave ",
+        gotCircle: "Went circle +" 
+    }
+
+mixin move(moves, player)
+    -var lastMove = moves[moves.length - 1]
+    .playerMove(data-id= player._id data-move=lastMove)
+        .fstMoveRow
+            span= player.name
+        div(class= `sndMoveRow ${player.isGoing ? "going" : "not-going"}`)
+            if (player.moves.length === 0)
+                .moveCont
+                    span.type Player didn't done anything
+                    span.total
+                    span.target
+                span.delete(style= 'display: none') X
+                    span.count= 0
+            else                    
+                .moveCont
+                    span.type= typeStrs[lastMove.type]
+                    span.total= lastMove.type === "gotCircle" ? startSettings.moneyForCircle : lastMove.total + 'k for '
+                    span.target= lastMove.type === "gotCircle" ? "" : lastMove.target === bank ? "bank" : players.find(player => player._id === lastMove.target).name
+                span.delete(style= player.moves.length === 0 && 'display: none') X
+                    span.count= (player.moves.length - 1)
+ 
 #moveLog.workArea
+    for player in players
+        +move(player.moves, player)

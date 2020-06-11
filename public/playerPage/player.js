@@ -25,148 +25,11 @@ let reduceBtn = document.getElementsByClassName( "moneyBtns" )[ 0 ].children[ 0 
 let options = document.getElementsByClassName( "option" );
 //block togglers 
 let pickPlayer = document.getElementById( "pick-player-to-pay" );
+let playersToPick = pickPlayer.querySelectorAll( ".player" );
 let timerSpan = document.getElementById( "timer" );
+let playersMoves = document.getElementsByClassName( "playerMove" )
+let playersInfos = document.getElementsByClassName( "playerInfo" );
 
-//* functions to make a player controls
-let createPlayer = ( playerId ) => {
-    let player = document.createElement( "div" );
-    player.classList.add( "playerMove" );
-    player.dataset.id = playerId;
-    return player;
-};
-let createFstRow = ( playerName ) => {
-    let fstRow = document.createElement( "div" );
-    fstRow.classList.add( "fstMoveRow" );
-    //create name span
-    let name = document.createElement( "span" );
-    name.innerText = playerName;
-    fstRow?.appendChild( name );
-    return fstRow;
-};
-let createSndRow = ( lastMove, movesCount ) => {
-    //create parent element
-    let sndRow = document.createElement( "div" );
-    sndRow.classList.add( "sndMoveRow" );
-
-    //create container with move
-    let moveCont = document.createElement( "div" );
-    moveCont.classList.add( "moveCont" );
-
-    //create characteristics of move
-    let type = document.createElement( "span" );
-    let total = document.createElement( "span" );
-    let target = document.createElement( "span" );
-    target.style.fontWeight = "bolder";
-    target.style.color = "white";
-
-    moveCont?.appendChild( type );
-    moveCont?.appendChild( total );
-    moveCont?.appendChild( target );
-
-    //create delete button
-    let deleteBtn = createDeleteBtn( +movesCount === 0 ? 0 : +movesCount - 1 );
-
-    sndRow?.appendChild( moveCont );
-    sndRow?.appendChild( deleteBtn );
-
-    //fill move container
-    if ( lastMove ) {
-        updateMove( moveCont, lastMove );
-        //add there because it must be mounted
-        deleteBtn.onclick = () => {
-            redoMove( lastMove, deleteBtn.previousSibling );
-        };
-    } else {
-        //if player moves are clear
-        moveCont.children[ 0 ].innerText = "Player didn't do anything";
-        moveCont.children[ 1 ].innerText = "";
-        moveCont.children[ 2 ].innerText = "";
-        moveCont.nextSibling.style.display = "none";
-    }
-    return sndRow;
-};
-let createDeleteBtn = ( movesCount ) => {
-    //create delete button
-    let deleteBtn = document.createElement( "span" );
-    deleteBtn.classList.add( "delete" );
-    deleteBtn.innerText = "x";
-
-    //create span with moves count
-    let count = document.createElement( "span" );
-    count.innerText = movesCount === 0 ? "No more moves" : ( `${movesCount} moves more` );
-    count.classList.add( "count" );
-    deleteBtn?.appendChild( count );
-
-    //add events to show moves count
-    deleteBtn.addEventListener( "mouseover", ( e ) => {
-        hoverCount( e );
-    } );
-    deleteBtn.addEventListener( "mouseout", ( e ) => {
-        hoverCount( e );
-    } );
-    return deleteBtn;
-};
-
-//add new player to container
-let newPayListPlayer = ( playerData ) => {
-    if ( playerData._id !== playerId ) {
-        let player = document.createElement( "div" );
-        player.classList.add( "player" );
-        player.classList.add( "center" );
-        player.innerText = playerData.name;
-        player.id = playerData._id;
-        player.addEventListener( "click", ( e ) => {
-            onReceiverPick( e );
-        } );
-        pickPlayer?.appendChild( player );
-    }
-};
-//add new player to other players container to control their money
-let newPlayerInfo = ( playerData ) => {
-    let player = document.createElement( "div" );
-    player.classList.add( "playerInfo" );
-    player.classList.add( "center" );
-    if ( playerData.isGoing ) {
-        player.classList.add( "going" );
-    } else {
-        player.classList.add( "waiting" );
-    }
-    let nameCont = document.createElement( "span" );
-    nameCont.innerText = playerData.name;
-    let moneyCont = document.createElement( "span" );
-    moneyCont.innerText = playerData.money;
-    moneyCont.classList.add( "moneyCont" );
-    moneyCont.id = playerData._id + "money";
-    player.dataset.id = playerData._id;
-    player?.appendChild( nameCont );
-    player?.appendChild( moneyCont );
-    player.addEventListener( "click", ( e ) => {
-        changePlayerMoney( e );
-    } );
-    document.getElementById( "playersMoney" )?.appendChild( player );
-};
-//add new player move container to control their moves to make money control easier
-let newMoveCont = ( playerData ) => {
-    let player = createPlayer( playerData._id );
-    let fstRow = createFstRow( playerData.name );
-    let sndRow = createSndRow( playerData.moves[ playerData.moves.length - 1 ], playerData.moves.length );
-    player?.appendChild( fstRow );
-    player?.appendChild( sndRow );
-
-    document.getElementById( "moveLog" )?.appendChild( player );
-};
-
-//redo move and replace with previous
-let redoMove = ( move, moveCont ) => {
-    if ( move ) {
-        axios.put( `${protocol}//${host}/${gameId}/moneyActions?playerId=${playerId}`, { ...move, redo: true } )
-            .then( res => {
-                updateMove( moveCont, res.data );
-                changeMovesCount( moveCont );
-            } );
-        socket.send( JSON.stringify( { ...move, redo: true } ) );
-    }
-};
 //change moves count in given move container
 let changeMovesCount = ( moveCont ) => {
     if ( moveCont && moveCont.nextSibling ) {
@@ -179,64 +42,78 @@ let changeMovesCount = ( moveCont ) => {
                         let count = res.data - 1;
                         countElement.innerText = count > 0 ? ( count + ( count === 1 ? " move more" : " moves more" ) ) : "No more moves";
                     } else {
-                        appendNotification( res.data.error );
+                        res.data.error && appendNotification( res.data.error );
                     }
                 } );
         } else {
-            console.log( "Error at mvC" );
+            console.log( "Cant find id" );
         }
+    }
+};
+
+//redo move and replace with previous
+let redoMove = ( move, playerMove ) => {
+    if ( move ) {
+        axios.put( `${protocol}//${host}/${gameId}/moneyActions?playerId=${playerId}`, { ...move, redo: true } )
+            .then( res => {
+                updateMove( playerMove, res.data );
+                changeMovesCount( playerMove.querySelector( ".moveCont" ) );
+            } );
+        socket.send( JSON.stringify( { ...move, redo: true } ) );
     }
 };
 //update player last move
 let updateMove = ( playerMoveCont, move ) => {
-    if ( !move.error ) {
+    if ( !move.error && !move.redo ) {
+        const deleteSpan = playerMoveCont.querySelector( ".delete" );
+        const moveSpans = playerMoveCont.querySelectorAll( ".moveCont span" );
+
         switch ( move.type ) {
             case "giveMoney": {
-                playerMoveCont.nextSibling.style.display = "block";
-                playerMoveCont.nextSibling.onclick = () => {
+                deleteSpan.style.display = "block";
+                deleteSpan.onclick = () => {
                     redoMove( move, playerMoveCont );
                 };
                 let playerName = move.for !== "bank" ? players.find( e => e._id === move.for ).name : "Bank";
-                playerMoveCont.children[ 0 ].innerText = "Gave ";
-                playerMoveCont.children[ 1 ].innerText = move.total + ( move.total === 1 ? " thousand for " : "k for " );
-                playerMoveCont.children[ 2 ].innerText = playerName;
-                playerMoveCont.parentElement.classList.add( "not-going" );
-                if ( playerMoveCont.parentElement.classList.contains( "going" ) ) {
-                    playerMoveCont.parentElement.classList.remove( "going" );
-                }
+                moveSpans[ 0 ].innerText = "Gave ";
+                moveSpans[ 1 ].innerText = move.total + " k for ";
+                moveSpans[ 2 ].innerText = playerName;
                 break;
             }
             case "gotCircle": {
-                playerMoveCont.nextSibling.style.display = "block";
-                playerMoveCont.nextSibling.onclick = () => {
+                deleteSpan.style.display = "block";
+                deleteSpan.onclick = () => {
                     redoMove( move, playerMoveCont );
                 };
-                playerMoveCont.children[ 0 ].innerText = "Went a circle + ";
-                playerMoveCont.children[ 1 ].innerText = startSettings.moneyPerCircle;
-                playerMoveCont.children[ 2 ].innerText = "";
-                playerMoveCont.parentElement.classList.add( "going" );
-                if ( playerMoveCont.parentElement.classList.contains( "not-going" ) ) {
-                    playerMoveCont.parentElement.classList.remove( "not-going" );
-                }
+                moveSpans[ 0 ].innerText = "Went a circle + ";
+                moveSpans[ 1 ].innerText = startSettings.moneyForCircle;
+                moveSpans[ 2 ].innerText = "";
                 break;
             }
             default: {
-                playerMoveCont.nextSibling.style.display = "none";
-                playerMoveCont.nextSibling.children.innerText = "0 moves more";
-                playerMoveCont.children[ 0 ].innerText = "Player didn't do anything";
-                playerMoveCont.children[ 1 ].innerText = "";
-                playerMoveCont.children[ 2 ].innerText = "";
-                if ( playerMoveCont.parentElement.classList.contains( "going" ) ) {
-                    playerMoveCont.parentElement.classList.remove( "going" );
-                } else if ( playerMoveCont.parentElement.classList.contains( "not-going" ) ) {
-                    playerMoveCont.parentElement.classList.remove( "not-going" );
-                }
+                deleteSpan.style.display = "none";
+                deleteSpan.children.innerText = "0 moves more";
+                moveSpans[ 0 ].innerText = "Player didn't do anything";
+                moveSpans[ 1 ].innerText = "";
+                moveSpans[ 2 ].innerText = "";
             }
         }
     } else {
-        appendNotification( move.error );
+        move.error && appendNotification( move.error );
     }
 };
+let activateMove = ( playerMove ) => {
+    const deleteSpan = playerMove.querySelector( ".delete" );
+
+    if ( deleteSpan ) {
+        const move = JSON.parse( playerMove.dataset.move );
+
+        if ( move ) {
+            deleteSpan.onclick = () => redoMove( move, playerMove );
+        }
+    }
+}
+
 //confirms money update
 let confirmUpdate = ( e, oldMoney ) => {
 
@@ -276,6 +153,7 @@ let backFromUpdate = ( e, oldMoney ) => {
     } );
     e.target.parentElement.parentElement.replaceWith( playerInfo );
 };
+
 //opens a choose player monitor
 let reduceMoney = () => {
     if ( +input.value > 0 ) {
@@ -288,6 +166,7 @@ let reduceMoney = () => {
         appendNotification( "Enter not negative money total", "warn" );
     }
 };
+
 //change player controls page while (not) going
 let changeIsGoing = ( isGoing ) => {
     const turnLabel = document.getElementsByClassName( "isMyTurn" )[ 0 ];
@@ -299,6 +178,7 @@ let changeIsGoing = ( isGoing ) => {
     document.getElementById( "nextPlayer" ).disabled = !isGoing;
     document.getElementById( "input" ).disabled = !isGoing;
 };
+
 //show only message on player's screen
 let showMessage = ( ...msgs ) => {
     document.getElementsByClassName( "userContent" )?.[ 0 ]?.remove();
@@ -339,6 +219,8 @@ const openSocket = () => {
             gameId: gameId
         } ) );
     };
+    const getIsGoing = () => !document.querySelector( ".isMyTurn" ).classList.contains( "going" );
+
     //works when web socket receive a message / action
     socket.onmessage = res => {
         let data = JSON.parse( res.data );
@@ -349,27 +231,22 @@ const openSocket = () => {
                 }
                 if ( html.dataset.isbanker === "true" ) {
                     let infos = document.getElementsByClassName( "playerInfo" );
+                    let playerMoves = document.getElementsByClassName( "playerMove" );
                     //change going player in players money page
                     for ( let i = 0; i < infos.length; i++ ) {
                         if ( infos[ i ].classList.contains( "going" ) ) {
                             infos[ i ].classList.remove( "going" );
-                        } else if ( infos[ i ].classList.contains( "waiting" ) ) {
-                            infos[ i ].classList.remove( "waiting" );
                         }
                         if ( infos[ i ].dataset.id === data.id ) {
                             infos[ i ].classList.add( "going" );
-                            if ( infos[ i ].classList.contains( "waiting" ) ) {
-                                infos[ i ].classList.remove( "waiting" );
-                            } else if ( infos[ i ].classList.contains( "loosed" ) ) {
-                                infos[ i ].classList.remove( "loosed" );
-                            }
-                        } else if ( !infos[ i ].classList.contains( "loosed" ) ) {
-                            infos[ i ].classList.add( "waiting" );
-                            if ( infos[ i ].classList.contains( "going" ) ) {
-                                infos[ i ].classList.remove( "going" );
-                            } else if ( infos[ i ].classList.contains( "loosed" ) ) {
-                                infos[ i ].classList.remove( "loosed" );
-                            }
+                        }
+                        if ( playerMoves[ i ].getElementsByClassName( "sndMoveRow" )?.[ 0 ].classList.contains( "going" ) ) {
+                            playerMoves[ i ].getElementsByClassName( "sndMoveRow" )?.[ 0 ].classList.remove( "going" );
+                            playerMoves[ i ].getElementsByClassName( "sndMoveRow" )?.[ 0 ].classList.add( "not-going" );
+                        }
+                        if ( playerMoves[ i ].dataset.id === data.id ) {
+                            playerMoves[ i ].getElementsByClassName( "sndMoveRow" )?.[ 0 ].classList.add( "going" );
+                            playerMoves[ i ].getElementsByClassName( "sndMoveRow" )?.[ 0 ].classList.remove( "not-going" );
                         }
                     }
                 }
@@ -388,21 +265,19 @@ const openSocket = () => {
                     }
                 }
                 if ( html.dataset.isbanker === "true" ) {
+                    let moneySpan = document.getElementById( data.from + "money" );
                     if ( data.for !== "bank" ) {
-                        let moneySpan = document.getElementById( data.for + "money" );
                         moneySpan.innerText = ( +moneySpan.innerText + ( data.redo ? -data.total : +data.total ) ).toString();
                     }
                     if ( !data.bankerMove ) {
-                        let moneySpan = document.getElementById( data.from + "money" );
                         moneySpan.innerText = ( +moneySpan.innerText + ( data.redo ? +data.total : -data.total ) ).toString();
-                    }
-                    if ( !data.bankerMove ) {
+
                         let playerMoves = document.getElementsByClassName( "playerMove" );
                         for ( let i = 0; i < playerMoves.length; i++ ) {
                             if ( playerMoves[ i ].dataset.id === data.from ) {
-                                updateMove( playerMoves[ i ].children[ 1 ].children[ 0 ], data, true );
+                                updateMove( playerMoves[ i ], data );
                                 if ( !data.redo ) {
-                                    changeMovesCount( playerMoves[ i ].children[ 1 ].children[ 0 ] );
+                                    changeMovesCount( playerMoves[ i ].querySelector( ".moveCont" ) );
                                 }
                             }
                         }
@@ -413,19 +288,21 @@ const openSocket = () => {
             case "gotCircle": {
                 if ( html.dataset.isbanker === "true" ) {
                     let moneySpan = document.getElementById( data.from + "money" );
-                    moneySpan.innerText = ( +moneySpan.innerText + ( data.redo ? -parseInt( startSettings.moneyPerCircle ) : +parseInt( startSettings.moneyPerCircle ) ) ).toString();
-                    let playerMoves = document.getElementsByClassName( "moveCont" );
+                    moneySpan.innerText = ( +moneySpan.innerText + ( data.redo ? -parseInt( startSettings.moneyForCircle ) : +parseInt( startSettings.moneyForCircle ) ) ).toString();
+                    let playerMoves = document.getElementsByClassName( "playerMove" );
                     for ( let i = 0; i < playerMoves.length; i++ ) {
-                        if ( playerMoves[ i ].parentElement.parentElement.dataset.id === data.from ) {
-                            updateMove( playerMoves[ i ], data, true );
+                        if ( playerMoves[ i ].dataset.id === data.from ) {
+                            updateMove( playerMoves[ i ], data );
                             if ( !data.redo ) {
-                                changeMovesCount( playerMoves[ i ].children[ 1 ].children[ 0 ] );
+                                changeMovesCount( playerMoves[ i ].querySelector( ".moveCont" ) );
                             }
                         }
                     }
                 }
                 if ( data.redo && data.from === playerId ) {
-                    money.innerText = ( +money.innerText + ( data.redo ? -parseInt( startSettings.moneyPerCircle ) : +parseInt( startSettings.moneyPerCircle ) ) ).toString();
+                    document.getElementById( "gotCircle" ).disabled = getIsGoing();
+                    turnsBeforeNewCircle = 0;
+                    money.innerText = ( +money.innerText + -parseInt( startSettings.moneyForCircle ) ).toString();
                 }
                 break;
             }
@@ -461,7 +338,8 @@ const openSocket = () => {
 };
 openSocket();
 
-//* Event handlers
+//* Event handlers //
+
 
 //go to "player-pick monitor"
 let signOut = () => {
@@ -476,6 +354,7 @@ let closeRoom = () => {
         gameId,
     } ) )
 }
+
 //func while you got circle
 let gotCircleHandler = () => {
     if ( turnsBeforeNewCircle === 0 ) {
@@ -523,6 +402,7 @@ let giveTurn = () => {
             }
         } );
 };
+
 //switch banker`s pages
 let optionAction = ( e ) => {
     document.getElementsByClassName( "active" )[ 0 ].classList.remove( "active" );
@@ -545,6 +425,7 @@ let optionAction = ( e ) => {
         }
     }
 };
+
 //works on click on player in pay list
 let onReceiverPick = ( e ) => {
     let moneyCount = input.value;
@@ -571,6 +452,7 @@ let onReceiverPick = ( e ) => {
         }
     } );
 };
+
 //check how many moves more on hover
 let hoverCount = ( e ) => {
     if ( e.target.children[ 0 ] ) {
@@ -593,6 +475,7 @@ let hoverCount = ( e ) => {
         }
     }
 };
+
 //change players money in players money page
 let changePlayerMoney = ( e ) => {
     if ( e.target.children.length > 0 ) {
@@ -633,6 +516,7 @@ let changePlayerMoney = ( e ) => {
         playerCont.parentElement.replaceChild( newPlayerCont, playerCont );
     }
 };
+
 let closeModal = ( modal ) => {
     modal.style.display = "none";
 }
@@ -652,6 +536,17 @@ for ( const option of options ) {
     option.addEventListener( "click", ( e ) => {
         optionAction( e );
     } );
+}
+for ( const playerMove of playersMoves ) {
+    if ( playerMove.dataset.move ) {
+        activateMove( playerMove );
+    }
+}
+for ( const playerInfo of playersInfos ) {
+    playerInfo.onclick = changePlayerMoney;
+}
+for ( const playerToPick of playersToPick ) {
+    playerToPick.onclick = onReceiverPick;
 }
 
 //* Timer stuff
@@ -702,14 +597,6 @@ axios.get( concatURL( document.location.origin, gameId, "players" ) )
                         document.querySelector( ".userContent" ).style.visibility = "visible";
                         document.querySelector( ".message" ).remove();
                     }
-                }
-                //add to pay list(opens in minusMoney)
-                newPayListPlayer( e );
-                if ( html.dataset.isbanker === "true" ) {
-                    //add to players money page
-                    newPlayerInfo( e );
-                    //add to move log page
-                    newMoveCont( e );
                 }
             } );
         }

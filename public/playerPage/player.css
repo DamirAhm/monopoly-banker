@@ -39,14 +39,6 @@
     padding: 7px;
 }
 
-.going{
-    background-color: rgba(0,255,0,0.7);
-}
-
-.not-going{
-    background-color: rgba(255,0,0,0.7);
-}
-
 .actions{
     width: 100%;
 }
@@ -256,6 +248,14 @@
     flex-direction: column;
 }
 
+.changeMoneyForm {
+    width: 100%;
+}
+
+.moveCont span.target {
+    color: white;
+}
+
 .playerInfo{
     width: 100%;
     display: flex;
@@ -263,15 +263,13 @@
     padding: 20px;
     cursor: pointer;
     margin: 5px 0;
+    background-color: #f5ff91;
+    box-sizing: border-box;
 }
 
 #playersMoney{
     flex-direction: column;
     align-items: center;
-}
-
-.waiting{
-    background-color: #f5ff91;
 }
 
 .newMoney{
@@ -305,6 +303,7 @@ form{
 
 .workArea{
     height: 444px;
+    width: 90%;
 }
 
 .playerMove{
@@ -318,8 +317,11 @@ form{
     justify-content: space-between;
     margin-top: 10px;
     margin-bottom: 15px;
-    padding: 5px 10px;
+    padding: 15px;
     align-items: center;
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .count{
@@ -328,14 +330,23 @@ form{
     padding-left: 5px;
 }
 
-.delete{
+.delete {
     cursor: pointer;
-    margin-right: 30px;
-    color: white;
+    color: black;
+    margin-left: auto; 
 }
 
-.delete>*{
-    color: black;
+.delete:hover > span {
+    display: inline;
+}
+
+
+.going{
+    background-color: rgba(0,255,0,0.7);
+}
+
+.not-going{
+    background-color: rgba(255,0,0,0.7);
 }
 
 .winner {
@@ -364,17 +375,8 @@ form{
     }
 }
 
-<<<<<<< HEAD
 @media screen and (max-width: 250px) {
     #timer{
         top: 60px;
-=======
-@media screen and (max-height: 330px) {
-    #changePlayer{
-        left: 10px;
-        top: 10px;
-        font-size: 1.7em;
-        cursor: pointer;
->>>>>>> bf4bca156fc93e0ebd007d19641b0302df5ec260
     }
 }
