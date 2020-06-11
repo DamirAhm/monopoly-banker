@@ -347,8 +347,9 @@ let signOut = () => {
     axios.get( concatURL( document.location.origin, gameId, "unpick-player", `?id=${playerId}` ) )
 };
 //close room for all players
-let closeRoom = () => {
+let closeRoom = ( e ) => {
     e.target.remove();
+    timerSpan && timerSpan.remove();
     socket.send( JSON.stringify( {
         type: "closeRoom",
         gameId,
@@ -569,7 +570,7 @@ if ( timerSpan && startSettings.isMaxTimeOn && startSettings.maxTime ) {
     }
     const getTimeStr = ( time ) => `${getHours( time )}:${getMinutes( time )}:${getSeconds( time )}`
     const getTime = () => startSettings.maxTime - ( Date.now() - createdAt );
-    const changeTime = ( timeStr ) => timerSpan.innerText = timeStr;
+    const changeTime = ( timeStr ) => timerSpan && ( timerSpan.innerText = timeStr );
     const checkTimer = ( time ) => {
         if ( time <= 0 ) {
             clearInterval( timerInterval );

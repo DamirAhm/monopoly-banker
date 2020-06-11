@@ -19,7 +19,7 @@ const togglableBlocks = document.getElementsByClassName( "togglable" );
 //* Event listeners
 //create new add player btn
 let createAddPlayerBtn = () => {
-    let addPlayerBtn = document.createElement( "div" );
+    let addPlayerBtn = document.createElement( "button" );
     addPlayerBtn.classList.add( "player" );
     addPlayerBtn.classList.add( "add-player" );
     addPlayerBtn.innerText = "Add player";
@@ -81,10 +81,11 @@ let playerAction = ( player, text ) => {
     let addPlayerBtnCont = createAddPlayerBtn();
 
     //return old name or dont create new player
-    let back = ( player, text, e ) => {
+    let back = ( player, text ) => {
         player.classList.remove( "changing" );
         player.innerHTML = text;
-        e.stopPropagation();
+        player.parentNode.replaceWith( addPlayerBtnCont );
+        return;
     };
 
     //confirm new player
@@ -147,8 +148,10 @@ let playerAction = ( player, text ) => {
 
     //set player buttons and give actions for them
     if ( !player.classList.contains( "changing" ) ) {
-        player.innerText = "";
-        player.classList.add( "changing" );
+        const newPlayer = document.createElement( "div" );
+        newPlayer.classList.add( "player", "add-player" );
+        player.replaceWith( newPlayer );
+        newPlayer.classList.add( "changing" );
         let input = document.createElement( "input" );
         input.classList.add( "changeName" );
         input.autofocus = true;
@@ -159,17 +162,20 @@ let playerAction = ( player, text ) => {
         }
         input.style.display = "table-cell";
         let confBtn = document.createElement( "button" );
-        input.addEventListener( "keydown", handleInput( () => confirm( player, text ) ) );
+        input.addEventListener( "keydown", handleInput( () => confirm( newPlayer, text ) ) );
+        input.onsubmit = ( e ) => {
+            confirm( newPlayer, text, e );
+        };
         confBtn.addEventListener( "click", ( e ) => {
-            if ( player.children[ 0 ].value !== text ) {
-                confirm( player, text, e );
+            if ( newPlayer.children[ 0 ].value !== text ) {
+                confirm( newPlayer, text, e );
             } else {
-                back( player, player.children[ 0 ].value, e );
+                back( newPlayer, newPlayer.children[ 0 ].value, e );
             }
         } );
         let rejBtn = document.createElement( "button" );
         rejBtn.addEventListener( "click", ( e ) => {
-            back( player, text, e );
+            back( newPlayer, text, e );
         } );
         let btnCont = document.createElement( "div" );
         btnCont.classList.add( "btn-cont" );
@@ -181,11 +187,8 @@ let playerAction = ( player, text ) => {
         confBtn.className = "positiveBtn";
         btnCont.appendChild( rejBtn );
         btnCont.appendChild( confBtn );
-        player.appendChild( input );
-        player.appendChild( btnCont );
-        input.onsubmit = ( e ) => {
-            confirm( player, text, e );
-        };
+        newPlayer.appendChild( input );
+        newPlayer.appendChild( btnCont );
         input.focus();
     }
 };
@@ -194,11 +197,13 @@ let changeSequence = () => {
     if ( document.querySelectorAll( ".player-cont:not(.head)" ).length > 1 ) {
         let newSequence = [];
         let addToQueue = ( elem ) => {
+            const parent = elem.parentElement;
             newSequence.push( elem );
-            if ( elem.parentNode.children.length <= 1 ) {
+            if ( parent.children.length <= 1 ) {
                 close();
             }
             elem.remove();
+            parent.children[ 0 ].focus();
         };
 
         //close change sequnce window
@@ -223,7 +228,7 @@ let changeSequence = () => {
         const players = document.querySelectorAll( ".player-cont:not(.head)" );
         let playersElems = [];
         players.forEach( ( { id, children } ) => {
-            let elem = document.createElement( "div" );
+            let elem = document.createElement( "button" );
             elem.innerText = children[ 1 ].innerText;
             elem.id = id;
             elem.classList.add( "player" );
@@ -233,10 +238,11 @@ let changeSequence = () => {
             playersElems.push( elem );
         } );
         playersElems.forEach( e => {
-            bgCont.children[ 0 ].children[ 1 ].appendChild( e );
+            bgCont.querySelector( ".change-sequence-players" ).appendChild( e );
         } );
 
         bgCont.style.display = "flex";
+        playersElems[ 0 ].focus();
     }
 };
 //go to standart settings
@@ -260,7 +266,7 @@ let reset = () => {
 //set create game action
 let create = () => {
     if ( document.getElementsByClassName( "player-cont" ).length >= 2 ) {
-        if ( bankerId.trim() !== "" && document.querySelectorAll( ".player-cont input:checked" ).length === 1 ) {
+        if ( bankerId.trim() !== "" || document.querySelectorAll( ".player-cont input:checked" ).length === 1 ) {
             let players = document.getElementsByClassName( "player-cont" );
             let bankerId;
             for ( let i = 0; i < players.length; i++ ) {
@@ -342,7 +348,7 @@ document.getElementById( "next" ).addEventListener( "click", create );
 //give action to checkboxes
 const checkBoxes = document.getElementsByClassName( "isBanker" );
 for ( let i = 0; i < checkBoxes.length; i++ ) {
-    checkBoxes[ i ].addEventListener( "click", () => {
+    checkBoxes[ i ].addEventListener( "change", () => {
         makeBanker( checkBoxes[ i ] );
     } );
 }

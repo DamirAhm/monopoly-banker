@@ -24,13 +24,13 @@ html
                                     input(disabled = isStartSettingsDone type = "checkbox" checked = startSettings.bankerId == i.id data-bankerId=startSettings.bankerId data-id=i.id).isBanker
                                     .player= i.name
                                     if !isStartSettingsDone
-                                        .delete x
+                                        button.delete x
                                     else
                                         div
                         if !maxPlayers && !isStartSettingsDone
                             .add-player-cont
                                 div
-                                .add-player.player Add player
+                                button.add-player.player Add player
                                 div
                     if !isStartSettingsDone
                         .end-line
@@ -67,11 +67,12 @@ html
                         .buttons.center
                             button#reset.negativeBtn Standard settings
                             button#next.positiveBtn Create
-            .bg-cont
-                .change-sequence-cont
-                    div.title Choose players by circle
-                    div.change-sequence-players
-                    button#closeChangeSequence.negativeBtn Close
+            if !isStartSettingsDone
+                .bg-cont
+                    .change-sequence-cont
+                        div.title Choose players by circle
+                        div.change-sequence-players
+                        button#closeChangeSequence.negativeBtn Close
         if !isStartSettingsDone
             script(src="../../public/starterSettings/settings.js")
             script(src="https://unpkg.com/axios/dist/axios.min.js")

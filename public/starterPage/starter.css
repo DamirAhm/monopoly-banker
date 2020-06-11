@@ -10,11 +10,12 @@
 }
 button{
     background: transparent;
-    border: 1px solid black;
+    border: 1px solid var(--blue) !important;
     padding: 5px;
     margin-top: 10px;
+    color: var(--blue);
 }
 button:hover{
-    color: var(--blue);
-    border-color: var(--blue);
+    color: var(--white);
+    background-color: var(--blue);
 }

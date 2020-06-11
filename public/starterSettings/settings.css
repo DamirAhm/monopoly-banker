@@ -92,13 +92,17 @@ h3 {
 .player {
     text-align: center;
     cursor: pointer;
-    padding: 5px;
+    padding: 10px;
     border: 1px solid black;
-    margin-top: 10px;
     width: 100%;
     display: flex;
     justify-content: center;
     box-sizing: border-box;
+    border-radius: 10px;
+}
+
+.change-sequence-players .player {
+    margin-top: 20px;
 }
 
 .isBanker{
@@ -112,6 +116,12 @@ h3 {
     width: 100%;
     display: grid;
     grid-template-columns: 1fr 60% 1fr;
+    margin-top: 20px;
+}
+
+.add-player:hover {
+    border: 1px solid var(--blue);
+    color: var(--blue);
 }
 
 .delete {
@@ -156,7 +166,6 @@ h5 > * {
 
 .banker,
 .players-cont {
-    margin: 20px 0;
     text-align: center;
     width: 100%;
     display: flex;
@@ -175,6 +184,9 @@ h5 > * {
 .input * {
     padding: 3px;
     margin: 0;
+}
+.input *:hover {
+    border: 1px solid var(--blue);
 }
 
 .texti {
@@ -245,23 +257,23 @@ h5 > * {
 } 
 
 .positiveBtn {
-    background-color: var(--green);
-    color: white;
+    background-color: white;
+    color: var(--green) !important;
+    border: 1px solid var(--green);
 }
 .positiveBtn:hover {
-    border: 1px solid var(--green);
-    color: var(--green);
-    background-color: transparent;
+    color: white !important;
+    background-color: var(--green);
 }
 
 .negativeBtn {
-    background-color: var(--red);
-    color: white;
+    background-color: white;
+    color: var(--red) !important;
+    border: 1px solid var(--red);
 }
 .negativeBtn:hover {
-    border: 1px solid var(--red);
-    color: var(--red);
-    background-color: transparent;
+    color: white !important;
+    background-color: var(--red);
 }
 
 #closeChangeSequence {
