@@ -431,7 +431,7 @@ socket.onmessage = res => {
         case "closeRoom": {
             if ( data.gameId && data.gameId === gameId && data.winners ) {
                 showMessage( "Your game has ended", createWinnerMsg( data.winners || [] ) );
-                document.getElementById( "changePlayer" ).onclick = () => ( document.location = "../" );
+                document.getElementById( "changePlayer" ).onclick = () => ( document.location = "/" );
             }
             break;
         }
@@ -458,7 +458,7 @@ socket.onclose = () => {
 let signOut = () => {
     axios.get( concatURL( document.location.origin, gameId, "unpick-player", `?id=${playerId}` ) )
         .then( () => {
-            document.location = "./" + gameId;
+            document.location = "/" + gameId;
         } )
 };
 //close room for all players
