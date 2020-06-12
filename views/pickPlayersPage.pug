@@ -18,7 +18,7 @@ html
                     #players-cont
                         if (players && players.length > 0)
                             for player in players
-                                    if (!player.isPicked)
+                                    if (!player.isPicked && !player.isLost)
                                         .player.center(id= player.id)= player.name
                 else
                     .title All players is picked
