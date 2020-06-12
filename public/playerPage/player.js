@@ -29,6 +29,8 @@ let playersToPick = pickPlayer.querySelectorAll( ".player" );
 let timerSpan = document.getElementById( "timer" );
 let playersMoves = document.getElementsByClassName( "playerMove" )
 let playersInfos = document.getElementsByClassName( "playerInfo" );
+let toggleMenuCont = document.getElementById( "toggleMenu" );
+let menu = document.getElementById( "menu" );
 
 //change moves count in given move container
 let changeMovesCount = ( moveCont ) => {
@@ -522,9 +524,12 @@ let closeModal = ( modal ) => {
     modal.style.display = "none";
 }
 let propagationStopper = ( e ) => e.stopPropagation();
+let toggleMenu = ( e ) => {
+    toggleMenuCont.classList.toggle( "changed" );
+}
 
 //* Apply event listeners
-document.getElementById( "changePlayer" ).onclick = signOut;
+document.getElementById( "changePlayer" )?.addEventListener( "click", signOut );
 document.getElementById( "closeRoom" )?.addEventListener( "click", closeRoom );
 document.getElementById( "gotCircle" )?.addEventListener( "click", gotCircleHandler );
 document.getElementById( "nextPlayer" )?.addEventListener( "click", giveTurn );
@@ -532,6 +537,7 @@ document.getElementById( "bank" )?.addEventListener( "click", onReceiverPick );
 document.getElementsByClassName( "bg-cont" )?.[ 0 ]?.addEventListener( "click", e => closeModal( e.target ) );
 document.getElementById( "pick-player-to-pay" )?.addEventListener( "click", propagationStopper );
 reduceBtn?.addEventListener( "click", reduceMoney );
+toggleMenuBtn.addEventListener( "click", toggleMenu )
 //give actions to options
 for ( const option of options ) {
     option.addEventListener( "click", ( e ) => {

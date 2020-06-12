@@ -251,31 +251,6 @@ h5 > * {
     border: 1px solid var(--gray);
 }
 
-.negativeBtn,
-.positiveBtn {
-    transition: 0.3s;
-} 
-
-.positiveBtn {
-    background-color: white;
-    color: var(--green) !important;
-    border: 1px solid var(--green);
-}
-.positiveBtn:hover {
-    color: white !important;
-    background-color: var(--green);
-}
-
-.negativeBtn {
-    background-color: white;
-    color: var(--red) !important;
-    border: 1px solid var(--red);
-}
-.negativeBtn:hover {
-    color: white !important;
-    background-color: var(--red);
-}
-
 #closeChangeSequence {
     margin: auto auto 0 auto;
     width: 40%;
