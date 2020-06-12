@@ -506,6 +506,7 @@ let optionAction = ( e ) => {
 let onReceiverPick = ( e ) => {
     let moneyCount = input.value;
     bgCont.style.display = "none";
+    document.getElementById( "pick-player-to-pay" ).style.display = "none";
     input.value = "";
     axios.put( `${protocol}//${host}/${gameId}/moneyActions?playerId=${playerId}`, {
         type: "giveMoney",
@@ -607,7 +608,6 @@ document.getElementById( "changePlayer" )?.addEventListener( "click", signOut );
 document.getElementById( "closeRoom" )?.addEventListener( "click", closeRoom );
 document.getElementById( "gotCircle" )?.addEventListener( "click", gotCircleHandler );
 document.getElementById( "nextPlayer" )?.addEventListener( "click", giveTurn );
-document.getElementById( "bank" )?.addEventListener( "click", onReceiverPick );
 document.getElementById( "pick-player-to-pay" )?.addEventListener( "click", propagationStopper );
 document.getElementById( "giveUp" )?.addEventListener( "click", giveUp );
 document.getElementById( "toInitPage" )?.addEventListener( "click", () => document.location = "/" );
