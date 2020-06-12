@@ -95,25 +95,13 @@
     color: #fff;
 }
 
-#pick-player-to-pay{
-    height: 60%;
-    background-color: #fff;
-    display: flex;
-    flex-direction: column;
-    padding: 20px;
+.player{
+    cursor: pointer;
+    min-width: 205px;
 }
 
 .title{
-    font-size: 1.7em;
-}
-
-#pick-player-to-pay .player{
-    font-size: 1.7em;
-    padding: 10px;
-}
-
-#bank{
-    border: 1px black dashed;
+    font-size: 1.8em;
 }
 
 .bg-cont {
@@ -127,13 +115,49 @@
     text-align: center;
 }
 
-.player{
-    cursor: pointer;
-    min-width: 205px;
+#pick-player-to-pay{
+    height: 60%;
+    background-color: #fff;
+    display: none;
+    flex-direction: column;
+    padding: 20px;
 }
 
-.title{
-    font-size: 1.8em;
+#pick-player-to-pay .title{
+    font-size: 1.7em;
+}
+
+#pick-player-to-pay .player{
+    font-size: 1.7em;
+    padding: 10px;
+}
+
+#pick-player-to-pay #bank {
+    border: 1px black dashed;
+}
+
+#afterLostPrompt {
+    min-width: 400px;
+    background-color: #fff;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    display: none;
+    padding: 30px;
+}
+#afterLostPrompt .buttons {
+    display: flex;
+    min-width: 60%;
+    justify-content: space-between;
+    margin-top: 30px;
+}
+#afterLostPrompt .buttons *{
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 1.1rem;
+    text-align: center;
+    cursor: pointer;
 }
 
 #timer {
@@ -209,12 +233,14 @@
     color: white;
 }
 
+html[data-isbanker="true"] .playerInfo {
+    cursor: pointer;
+}
 .playerInfo{
     width: 100%;
     display: flex;
     justify-content: space-between;
     padding: 20px;
-    cursor: pointer;
     margin: 5px 0;
     background-color: #f5ff91;
     box-sizing: border-box;
@@ -223,6 +249,9 @@
 #playersMoney{
     flex-direction: column;
     align-items: center;
+}
+html[data-islost] #playersMoney {
+    display: flex !important;
 }
 
 .newMoney{
@@ -405,7 +434,6 @@ form{
 #changePlayer{
     cursor: pointer;
 }
-
 #closeRoom {
     cursor: pointer;
 }

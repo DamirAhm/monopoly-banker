@@ -1,9 +1,9 @@
 const playerId = document.querySelector( "html" ).dataset.playerid;
 const gameId = document.querySelector( "html" ).dataset.gameid;
+const isBanker = document.querySelector( "html" ).dataset.isbanker === "true";
 const startSettings = JSON.parse( document.querySelector( "html" ).dataset.startsettings );
 const createdAt = Date.parse( startSettings.createdAt );
 const host = document.location.host.split( "/" )[ 0 ];
-const isPicked = false;
 const protocol = document.location.protocol;
 const wsProtocol = protocol === "https:" ? "wss:" : "ws:";
 let socket;
@@ -20,17 +20,18 @@ let money = document.getElementById( "money" );
 //money input
 let input = document.getElementById( "input" );
 //minus btns
-let reduceBtn = document.getElementsByClassName( "moneyBtns" )[ 0 ].children[ 0 ];
+let reduceBtn = document.getElementsByClassName( "moneyBtns" )?.[ 0 ]?.children[ 0 ];
 //pages for banker
 let options = document.getElementsByClassName( "option" );
 //block togglers 
 let pickPlayer = document.getElementById( "pick-player-to-pay" );
-let playersToPick = pickPlayer.querySelectorAll( ".player" );
+let playersToPick = pickPlayer?.querySelectorAll( ".player" );
 let timerSpan = document.getElementById( "timer" );
 let playersMoves = document.getElementsByClassName( "playerMove" )
 let playersInfos = document.getElementsByClassName( "playerInfo" );
 let toggleMenuCont = document.getElementById( "toggleMenu" );
 let menu = document.getElementById( "menu" );
+let bgCont = document.getElementsByClassName( "bg-cont" )?.[ 0 ];
 
 //change moves count in given move container
 let changeMovesCount = ( moveCont ) => {
@@ -156,11 +157,15 @@ let backFromUpdate = ( e, oldMoney ) => {
     e.target.parentElement.parentElement.replaceWith( playerInfo );
 };
 
+//* Modals /
 //opens a choose player monitor
-let reduceMoney = () => {
+let openReceiverPickerModal = () => {
+    document.getElementsByClassName( "bg-cont" )?.[ 0 ]?.addEventListener( "click", closeModal );
+
     if ( +input.value > 0 ) {
         if ( +money.innerText > +input.value ) {
-            document.getElementsByClassName( "bg-cont" )[ 0 ].style.display = "flex";
+            bgCont.style.display = "flex";
+            document.getElementById( "pick-player-to-pay" ).style.display = "flex";
         } else {
             appendNotification( "Not enough money", "warn" );
         }
@@ -168,18 +173,48 @@ let reduceMoney = () => {
         appendNotification( "Enter not negative money total", "warn" );
     }
 };
+//opens after  player's lost
+let afterLostOptions = () => {
+    if ( !isBanker ) {
+        const afterLostPrompt = document.getElementById( "afterLostPrompt" );
+
+        afterLostPrompt.style.display = "flex";
+        bgCont.style.display = "flex";
+
+        afterLostPrompt.querySelector( "#keepWatching" ).addEventListener( "click", () => {
+            bgCont.style.display = "none";
+            afterLostPrompt.style.display = "none";
+            if ( document.getElementById( "playersMoney" ) )
+                document.getElementById( "playersMoney" ).style.display = "flex";
+        } );
+        afterLostPrompt.querySelector( "#leave" ).addEventListener( "click", () => {
+            axios.get( concatURL( document.location.origin, gameId, "players", "delete-player", `?playerId=${playerId}` ) );
+            document.location = "/";
+        } );
+    } else {
+        document.getElementById( "yourControlsBtn" )?.remove();
+        if ( !document.getElementById( "moveLogBtn" ).classList.contains( "active" ) ) {
+            document.getElementById( "playersMoney" ).style.display = "flex";
+            document.getElementById( "otherPlayersBtn" ).classList.add( "active" );
+        }
+        document.getElementsByClassName( "options" )[ 0 ].style.gridTemplateColumns = "repeat(2,1fr)";
+    }
+}
 
 //change player controls page while (not) going
 let changeIsGoing = ( isGoing ) => {
     const turnLabel = document.getElementsByClassName( "isMyTurn" )[ 0 ];
-    turnLabel.classList.remove( isGoing ? "not-going" : "going" );
-    turnLabel.classList.add( isGoing ? "going" : "not-going" );
-    turnLabel.innerText = isGoing ? "Your turn" : "Not your turn";
-    document.getElementById( "minus" ).disabled = !isGoing;
-    document.getElementById( "gotCircle" ).disabled = !isGoing || turnsBeforeNewCircle > 0;
-    document.getElementById( "nextPlayer" ).disabled = !isGoing;
-    document.getElementById( "input" ).disabled = !isGoing;
+    if ( turnLabel ) {
+        turnLabel.classList.remove( isGoing ? "not-going" : "going" );
+        turnLabel.classList.add( isGoing ? "going" : "not-going" );
+        turnLabel.innerText = isGoing ? "Your turn" : "Not your turn";
+        document.getElementById( "minus" ).disabled = !isGoing;
+        document.getElementById( "gotCircle" ).disabled = !isGoing || turnsBeforeNewCircle > 0;
+        document.getElementById( "nextPlayer" ).disabled = !isGoing;
+        document.getElementById( "input" ).disabled = !isGoing;
+    }
 };
+const getIsGoing = () => !document.querySelector( ".isMyTurn" ).classList.contains( "going" );
 
 //show only message on player's screen
 let showMessage = ( ...msgs ) => {
@@ -221,7 +256,6 @@ const openSocket = () => {
             gameId: gameId
         } ) );
     };
-    const getIsGoing = () => !document.querySelector( ".isMyTurn" ).classList.contains( "going" );
 
     //works when web socket receive a message / action
     socket.onmessage = res => {
@@ -267,12 +301,7 @@ const openSocket = () => {
                     }
                 }
                 if ( html.dataset.isbanker === "true" ) {
-                    let moneySpan = document.getElementById( data.from + "money" );
-                    if ( data.for !== "bank" ) {
-                        moneySpan.innerText = ( +moneySpan.innerText + ( data.redo ? -data.total : +data.total ) ).toString();
-                    }
                     if ( !data.bankerMove ) {
-                        moneySpan.innerText = ( +moneySpan.innerText + ( data.redo ? +data.total : -data.total ) ).toString();
 
                         let playerMoves = document.getElementsByClassName( "playerMove" );
                         for ( let i = 0; i < playerMoves.length; i++ ) {
@@ -284,6 +313,14 @@ const openSocket = () => {
                             }
                         }
                     }
+                }
+                let fromMoneySpan = document.getElementById( data.from + "money" );
+                let forMoneySpan = document.getElementById( data.for + "money" );
+                if ( data.for !== "bank" ) {
+                    forMoneySpan.innerText = ( +forMoneySpan.innerText + ( data.redo ? -data.total : +data.total ) ).toString();
+                }
+                if ( !data.bankerMove ) {
+                    fromMoneySpan.innerText = ( +fromMoneySpan.innerText + ( data.redo ? +data.total : -data.total ) ).toString();
                 }
                 break;
             }
@@ -308,13 +345,13 @@ const openSocket = () => {
                 }
                 break;
             }
-            case "timeOver": {
-                appendNotification( "Game time is over", "info" );
-            }
             case "closeRoom": {
                 if ( data.gameId && data.gameId === gameId && data.winners ) {
                     showMessage( "Your game has ended", createWinnerMsg( data.winners || [] ) );
                     document.getElementById( "changePlayer" ).onclick = () => ( document.location = "/" );
+                    document.getElementById( "changePlayer" )?.remove()
+                    document.getElementById( "giveUp" )?.remove()
+                    document.getElementById( "closeRoom" )?.remove()
                 }
                 break;
             }
@@ -325,6 +362,27 @@ const openSocket = () => {
                 connectionLabel.classList.remove( "not-connected" );
                 isInitialized = true;
                 break;
+            }
+            case "deletePlayer": {
+                const playerId = data.id;
+
+                if ( playerId ) {
+                    const playersInfos = document.getElementsByClassName( "playerInfo" );
+
+                    for ( const playerInfo of playersInfos ) {
+                        if ( playerInfo.dataset.id === playerId ) {
+                            playerInfo.remove();
+                        }
+                    }
+
+                    const playersMoves = document.getElementsByClassName( "playerMove" );
+
+                    for ( const playerMove of playersMoves ) {
+                        if ( playerMove.dataset.id === playerId ) {
+                            playerMove.remove();
+                        }
+                    }
+                }
             }
         }
     };
@@ -342,20 +400,31 @@ openSocket();
 
 //* Event handlers //
 
-
 //go to "player-pick monitor"
 let signOut = () => {
     document.location = "/" + gameId;
     axios.get( concatURL( document.location.origin, gameId, "unpick-player", `?id=${playerId}` ) )
 };
 //close room for all players
-let closeRoom = ( e ) => {
-    e.target.remove();
+let closeRoom = () => {
     timerSpan && timerSpan.remove();
     socket.send( JSON.stringify( {
         type: "closeRoom",
         gameId,
     } ) )
+}
+let giveUp = () => {
+    if ( getIsGoing )
+        giveTurn();
+    axios.put( concatURL( document.location.origin, gameId, "players/lost", `?playerId=${playerId}` ) )
+        .then( res => {
+            if ( !res.data.error ) {
+                removePlayerControls();
+                afterLostOptions();
+            } else {
+                appendNotification( res.data.error )
+            }
+        } )
 }
 
 //func while you got circle
@@ -383,15 +452,16 @@ let gotCircleHandler = () => {
 };
 //give turn to next player
 let giveTurn = () => {
-
     axios.get( concatURL( document.location.origin, gameId, "giveTurn", `?playerId=${playerId}` ) )
         .then( res => {
             if ( !res.data.error && res.data.nextGoing ) {
                 turnsBeforeNewCircle = res.data.turns;
                 if ( turnsBeforeNewCircle >= 0 ) {
-                    document.getElementById( "gotCircle" ).disabled = true;
+                    if ( document.getElementById( "gotCircle" ) )
+                        document.getElementById( "gotCircle" ).disabled = true;
                 } else {
-                    document.getElementById( "gotCircle" ).disabled = false;
+                    if ( document.getElementById( "gotCircle" ) )
+                        document.getElementById( "gotCircle" ).disabled = false;
                 }
 
                 socket.send( JSON.stringify( {
@@ -410,9 +480,12 @@ let giveTurn = () => {
 let optionAction = ( e ) => {
     document.getElementsByClassName( "active" )[ 0 ].classList.remove( "active" );
     e.target.classList.add( "active" );
-    document.getElementById( "playersMoney" ).style.display = "none";
-    document.getElementById( "playerControls" ).style.display = "none";
-    document.getElementById( "moveLog" ).style.display = "none";
+    if ( document.getElementById( "playersMoney" ) )
+        document.getElementById( "playersMoney" ).style.display = "none";
+    if ( document.getElementById( "playerControls" ) )
+        document.getElementById( "playerControls" ).style.display = "none";
+    if ( document.getElementById( "moveLog" ) )
+        document.getElementById( "moveLog" ).style.display = "none";
     switch ( e.target.id ) {
         case "yourControlsBtn": {
             document.getElementById( "playerControls" ).style.display = "flex";
@@ -432,7 +505,7 @@ let optionAction = ( e ) => {
 //works on click on player in pay list
 let onReceiverPick = ( e ) => {
     let moneyCount = input.value;
-    document.getElementsByClassName( "bg-cont" )[ 0 ].style.display = "none";
+    bgCont.style.display = "none";
     input.value = "";
     axios.put( `${protocol}//${host}/${gameId}/moneyActions?playerId=${playerId}`, {
         type: "giveMoney",
@@ -454,6 +527,7 @@ let onReceiverPick = ( e ) => {
             appendNotification( res.data.error );
         }
     } );
+    document.getElementsByClassName( "bg-cont" )?.[ 0 ]?.removeEventListener( "click", closeModal );
 };
 
 //check how many moves more on hover
@@ -520,7 +594,7 @@ let changePlayerMoney = ( e ) => {
     }
 };
 
-let closeModal = ( modal ) => {
+let closeModal = ( { target: modal } ) => {
     modal.style.display = "none";
 }
 let propagationStopper = ( e ) => e.stopPropagation();
@@ -534,26 +608,35 @@ document.getElementById( "closeRoom" )?.addEventListener( "click", closeRoom );
 document.getElementById( "gotCircle" )?.addEventListener( "click", gotCircleHandler );
 document.getElementById( "nextPlayer" )?.addEventListener( "click", giveTurn );
 document.getElementById( "bank" )?.addEventListener( "click", onReceiverPick );
-document.getElementsByClassName( "bg-cont" )?.[ 0 ]?.addEventListener( "click", e => closeModal( e.target ) );
 document.getElementById( "pick-player-to-pay" )?.addEventListener( "click", propagationStopper );
-reduceBtn?.addEventListener( "click", reduceMoney );
+document.getElementById( "giveUp" )?.addEventListener( "click", giveUp );
+document.getElementById( "toInitPage" )?.addEventListener( "click", () => document.location = "/" );
+reduceBtn?.addEventListener( "click", openReceiverPickerModal );
 toggleMenuBtn.addEventListener( "click", toggleMenu )
 //give actions to options
-for ( const option of options ) {
-    option.addEventListener( "click", ( e ) => {
-        optionAction( e );
-    } );
-}
-for ( const playerMove of playersMoves ) {
-    if ( playerMove.dataset.move ) {
-        activateMove( playerMove );
+if ( options ) {
+    for ( const option of options ) {
+        option.addEventListener( "click", ( e ) => {
+            optionAction( e );
+        } );
     }
 }
-for ( const playerInfo of playersInfos ) {
-    playerInfo.onclick = changePlayerMoney;
+if ( playersToPick ) {
+    for ( const playerToPick of playersToPick ) {
+        playerToPick.onclick = onReceiverPick;
+    }
 }
-for ( const playerToPick of playersToPick ) {
-    playerToPick.onclick = onReceiverPick;
+if ( isBanker ) {
+    if ( playersMoves )
+        for ( const playerMove of playersMoves ) {
+            if ( playerMove.dataset.move ) {
+                activateMove( playerMove );
+            }
+        }
+    if ( playersInfos )
+        for ( const playerInfo of playersInfos ) {
+            playerInfo.onclick = changePlayerMoney;
+        }
 }
 
 //* Timer stuff
@@ -608,3 +691,8 @@ axios.get( concatURL( document.location.origin, gameId, "players" ) )
             } );
         }
     } );
+function removePlayerControls () {
+    if ( document.getElementById( "playerControls" ) )
+        document.getElementById( "playerControls" ).remove();
+}
+

@@ -27,4 +27,5 @@ mixin move(moves, player)
  
 #moveLog.workArea
     for player in players
-        +move(player.moves, player)
+        if (!player.isLost)
+            +move(player.moves, player)

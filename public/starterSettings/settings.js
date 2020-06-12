@@ -1,4 +1,5 @@
 let bankerId;
+let gameId = document.querySelector( "html" ).dataset.gameid;
 
 if ( document.getElementsByClassName( "player-cont" ).length > 1 ) {
     bankerId = document.getElementsByClassName( "player-cont" )[ 1 ].id;
@@ -55,7 +56,7 @@ function deleteName ( deleter, e ) {
     let addPlayerBtnCont = createAddPlayerBtn();
     let parent = deleter.parentNode;
     let playerId = parent.id;
-    axios.get( concatURL( document.location.origin, document.location.pathname, "delete-player", `?id=${parent.id}` ) )
+    axios.get( concatURL( document.location.origin, gameId, "players", "delete-player", `?id=${parent.id}` ) )
         .then( () => {
             const wasBanker = parent.children[ 0 ].checked;
             parent.remove();
@@ -93,7 +94,7 @@ let playerAction = ( player, text ) => {
         //action logic
         if ( player.classList.contains( "add-player" ) ) {
             if ( player.children[ 0 ].value ) {
-                axios.get( concatURL( document.location.origin, document.location.pathname, "new-player", `?name=${player.children[ 0 ].value}` ) )
+                axios.get( concatURL( document.location.origin, gameId, "players", "new-player", `?name=${player.children[ 0 ].value}` ) )
                     .then( ( { data: id } ) => {
                         player.parentNode.id = id;
                         //create new checkbox
@@ -128,7 +129,7 @@ let playerAction = ( player, text ) => {
             axios.get(
                 concatURL(
                     document.location.origin,
-                    document.location.pathname,
+                    gameId, "players",
                     "change-name",
                     `${player.parentNode.id}?name=${player.children[ 0 ].value}`
                 )
@@ -149,7 +150,10 @@ let playerAction = ( player, text ) => {
     //set player buttons and give actions for them
     if ( !player.classList.contains( "changing" ) ) {
         const newPlayer = document.createElement( "div" );
-        newPlayer.classList.add( "player", "add-player" );
+        newPlayer.classList.add( "player" );
+        if ( player.classList.contains( "add-player" ) ) {
+            newPlayer.classList.add( "add-player" );
+        }
         player.replaceWith( newPlayer );
         newPlayer.classList.add( "changing" );
         let input = document.createElement( "input" );

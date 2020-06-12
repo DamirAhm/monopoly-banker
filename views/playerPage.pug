@@ -1,5 +1,5 @@
 doctype html
-html(data-isbanker=isBanker.toString() data-gameId=gameId data-playerId=user.id data-startSettings= startSettings )
+html(data-isbanker=isBanker.toString() data-gameId=gameId data-playerId=user.id data-startSettings= startSettings data-isLost= user.isLost)
     head
         title= user.name
         meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
@@ -12,28 +12,32 @@ html(data-isbanker=isBanker.toString() data-gameId=gameId data-playerId=user.id 
     body
         .container.center
             div(style="visibility: hidden").userContent.center
-                if(isBanker)
-                    header
-                        ul.options
-                            li#yourControlsBtn.option.active   Your controls
-                            li#otherPlayersBtn.option   Players money
-                            li#moveLogBtn.option   Move logs
-                include includes/playerControls
+                if(!user.isLost)
+                    if(isBanker)
+                        header
+                            ul.options
+                                li#yourControlsBtn.option.active   Your controls
+                                li#otherPlayersBtn.option   Players money
+                                li#moveLogBtn.option   Move logs
+                    include includes/playerControls
                 include includes/playersMoney
-                include includes/movesLog
+                if (isBanker)
+                    include includes/movesLog
 
             h1(style="visibility: hidden").message This user is already picked   
-
-            .bg-cont
-                #pick-player-to-pay.col-lg-3.col-md-6.col-sm-12
-                    .title For who?
-                    .player(id= "bank") Bank
-                    for player in players 
-                        if (player._id !== user._id)
-                            .player.center(id= player._id)= player.name
-
-            if (startSettings.isMaxTimeOn)
-                #timer= startSettings.maxTime
+            if(!user.isLost)
+                .bg-cont
+                    #pick-player-to-pay.col-lg-3.col-md-6.col-sm-12
+                        .title For who?
+                        .player(id= "bank") Bank
+                        for player in players 
+                            if (player._id !== user._id && !player.isLost)
+                                .player.center(id= player._id)= player.name
+                    #afterLostPrompt
+                        .title Do you want to leave or keep watching game?        
+                        .buttons
+                            #leave.negativeBtn Leave
+                            #keepWatching.positiveBtn Keep watching    
 
             #toggleMenu     
                 #toggleMenuBtn     
@@ -42,10 +46,14 @@ html(data-isbanker=isBanker.toString() data-gameId=gameId data-playerId=user.id 
                     .l.l3
                 #menu
                     #toInitPage.neutralBtn.menuItem Leave room 
-                    #changePlayer.neutralBtn.menuItem Change player
-                    #giveUp.neutralBtn.menuItem Give up
+                    if(!user.isLost)
+                        #changePlayer.neutralBtn.menuItem Change player
+                        #giveUp.neutralBtn.menuItem Give up
                     if (isBanker)
                         #closeRoom.menuItem.negativeBtn Close room
+            
+            if (startSettings.isMaxTimeOn)
+                #timer= startSettings.maxTime
     
             #isConnected(class="not-connected") You are not connected
     script= `let turnsBeforeNewCircle = ${turnsBeforeCircle};`

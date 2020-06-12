@@ -29,6 +29,10 @@ let playerSchema = mongoose.Schema( {
       type: Boolean,
       default: false
    },
+   isLost: {
+      type: Boolean,
+      default: false
+   },
    gameId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "GameModel"

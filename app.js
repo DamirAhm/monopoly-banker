@@ -48,7 +48,8 @@ const closeRoom = ( gameId, data ) => {
             toAll( wss.getWss().clients, el => el.send( JSON.stringify( { ...data, winners } ) ) );
         }
         catch ( err ) {
-            toAll( wss.getWss().clients, el => el.send( JSON.stringify( { error: err } ) ) );
+            console.error( err );
+            toAll( wss.getWss().clients, el => el.send( JSON.stringify( { error: err, type: "error" } ) ) );
         }
     } );
     toAll( wss.getWss().clients, el => el.send( JSON.stringify( data ) ) );
@@ -59,21 +60,25 @@ let pickPlayer = async ( id ) => {
         if ( err ) {
             console.log( "Error while finding player in pick-player" );
         }
-        if ( player.isPicked ) {
-            return "Player is already picked";
+        if ( player ) {
+            if ( player.isPicked ) {
+                return "Player is already picked";
+            } else {
+                player.isPicked = true;
+                return player.save( err => {
+                    if ( err ) {
+                        console.log( "Error while saving player in pick-player" );
+                        return err;
+                    }
+                    toAll( wss.getWss().clients, el => el.send( JSON.stringify( {
+                        type: "pick-player",
+                        id
+                    } ) ) )
+                    return null;
+                } );
+            }
         } else {
-            player.isPicked = true;
-            return player.save( err => {
-                if ( err ) {
-                    console.log( "Error while saving player in pick-player" );
-                    return err;
-                }
-                toAll( wss.getWss().clients, el => el.send( JSON.stringify( {
-                    type: "pick-player",
-                    id
-                } ) ) )
-                return null;
-            } );
+            return "Can't find player";
         }
     } );
 };
@@ -109,20 +114,28 @@ const toAll = ( sockets, cb ) => {
     }
 }
 
-let findNextGoing = ( playerIds, goingId ) => {
-    if ( playerIds.length === 0 ) return null;
-    const goingInd = playerIds.indexOf( goingId );
-    if ( goingInd === -1 ) return playerIds[ 0 ];
-    const lengthenPlayers = playerIds.concat( [ playerIds[ 0 ] ] ) //push first player to the end if current going is last in players
+let findNextGoing = ( players, goingId ) => {
+    if ( players.length === 0 ) return null;
 
-    return lengthenPlayers[ goingInd + 1 ];
+    const goingPlayerIndex = players.findIndex( player => player._id.toString() === goingId );
+    let nextPlayer = players.slice( goingPlayerIndex + 1 ).find( player => !player.isLost );
+
+    if ( nextPlayer === undefined ) {
+        nextPlayer = players.slice( 0, goingPlayerIndex ).find( player => !player.isLost );
+    }
+
+    return nextPlayer?._id;
 };
 let findWinner = ( players ) => {
     let max = -1;
     let winners = [];
 
+    if ( players.filter( player => !player.isLost ).length === 1 ) {
+        return [ players.find( player => !player.isLost ) ];
+    }
+
     for ( const player of players ) {
-        if ( player.money > max ) {
+        if ( player.money > max && !player.isLost ) {
             max = player.money;
             winners = [ player ];
         } else if ( player.money === max ) {
@@ -133,259 +146,10 @@ let findWinner = ( players ) => {
     return winners;
 }
 
+//* Pages
 app.get( "/", ( req, res ) => {
     res.render( "starterPage" );
 } ); //return starterPage
-app.post( "/", ( req, res ) => {
-    let newGame = new Game( {
-        _id: new mongoose.Types.ObjectId()
-    } );
-    newGame.save( err => {
-        if ( err ) {
-            res.json( { error: err } );
-            console.log( err );
-            return;
-        }
-        res.json( newGame._id );
-    } );
-} ); //create new room
-
-app.get( "/:gameId/starter-settings", ( req, res ) => {
-    Game.findById( req.params.gameId, async ( err, game ) => {
-        if ( err ) {
-            console.log( "Error while finding the game in starter-settings" );
-            res.send( "404 Game not found" );
-
-        }
-        if ( game ) {
-            const { players } = await game.populate( "players" ).execPopulate();
-            res.render( "starterSettings", {
-                players: players.length ? players : null,
-                isStartSettingsDone: game.isStartSettingsDone,
-                maxPlayers: players.length >= 6,
-                startSettings: game.startSettings
-            } );
-        } else {
-            res.render( "404" );
-        }
-    } );
-} ); //return game room starter settings
-app.get( "/:gameId/starter-settings/change-name/:_id", ( req, res ) => {
-    Player.findByIdAndUpdate( req.params._id, { name: req.query.name }, err => {
-        if ( err ) {
-            console.log( "Error while updating player in change name" );
-        }
-        res.end();
-    } );
-} ); //change player name by _id
-app.get( "/:gameId/starter-settings/new-player", ( req, res ) => {
-    Game.findById( req.params.gameId, ( err, game ) => {
-        if ( err ) {
-            console.log( "Error while finding game in new player" );
-
-        }
-        let newPlayer = new Player( {
-            _id: new mongoose.Types.ObjectId(),
-            name: req.query.name,
-            gameId: game._id
-        } );
-        game.players.push( newPlayer._id );
-        newPlayer.save( err => {
-            if ( err ) {
-                res.json( { error: "Error while saving player in new player" } );
-            }
-            res.send( newPlayer._id );
-        } );
-        game.save( err => {
-            if ( err ) {
-                console.log( err.message );
-            }
-        } );
-    } );
-} ); //create new player
-app.get( "/:gameId/starter-settings/delete-player", ( req, res ) => {
-    Game.findById( req.params.gameId, ( err, game ) => {
-        if ( err ) {
-            console.log( "Error while find game in delete player", err );
-        }
-        game.players = game.players.filter( player => player._id.toString() !== req.query.id.toString() );
-        game.save( err => {
-            if ( err ) {
-                console.log( "Error while saving game in delete", err );
-            }
-        } );
-        Player.findByIdAndDelete( req.query.id, err => {
-            if ( err ) {
-                console.log( "Error while deleting player", err );
-            }
-            res.end();
-        } );
-    } );
-} ); //delete player by _id
-app.post( "/:gameId/starter-settings", ( req, res ) => {
-    Game.findById( req.params.gameId, ( err, game ) => {
-        if ( err ) {
-            console.log( "Error while finding the game in post starter-settings" );
-        }
-        if ( req.body ) {
-            Player.find( { gameId: game._id }, async ( err, players ) => {
-                try {
-                    if ( err ) {
-                        console.log( "Error while finding players in post starter-settings" );
-                        res.send( { error: err } )
-                        return;
-                    }
-                    for ( let i = 0; i < players.length; i++ ) {
-                        if ( i === 0 ) {
-                            players[ i ].isGoing = true;
-                        }
-                        players[ i ].money = req.body.startMoney;
-                        players[ i ].turnsBeforeNewCircle = req.body.minTurnsForCircle;
-                        await players[ i ].save( err => {
-                            if ( err ) {
-                                console.log( "Error while saving player in post starter-settings" );
-                                res.send( { error: err } )
-                                return;
-                            }
-                        } );
-                    }
-                    game.startSettings = {
-                        ...req.body,
-                        maxTime: ( req.body.maxTime * 1000 * 60 ) || 0
-                    };
-                    game.isStartSettingsDone = true;
-                    await game.save( err => {
-                        if ( err ) {
-                            console.log( "Error while saving the game" );
-                            res.send( { error: err } )
-                            return;
-                        }
-                    } );
-                    res.send( { error: "" } );
-                } catch ( err ) {
-                    console.error( err );
-                    res.send( { err } );
-                }
-            } );
-        } else {
-            res.send( { error: "Post of start setting must contain body" } )
-        }
-    } );
-} );//Posts starter settings for game
-
-app.get( "/:gameId/players", ( req, res ) => {
-    Game.findById( req.params.gameId, async ( err, game ) => {
-        if ( err ) {
-            console.log( "Error while finding game in players" );
-        }
-        if ( req.query.id ) {
-            Player.findById( req.query.id, ( err, player ) => {
-                if ( err ) {
-                    console.log( "Error while finding game in players" );
-                }
-                res.json( player );
-            } );
-        } else {
-            try {
-                const { players } = await game.populate( "players" ).execPopulate();
-                if ( players ) {
-                    res.json( { players } );
-                } else {
-                    console.error( "Can`t get players" );
-                    res.send( { error: "Can`t get players" } );
-                }
-            } catch ( error ) {
-                console.error( error );
-                res.send( { error } )
-            }
-        }
-    } );
-} ); //return game room players
-app.get( "/:gameId/movesLeft", ( req, res ) => {
-    Game.findById( req.params.gameId, ( err ) => {
-        if ( err ) {
-            console.log( "Error while finding the game in movesLeft" );
-
-        }
-        if ( req.query.playerId ) {
-            Player.findById( req.query.playerId, ( err, player ) => {
-                if ( err ) {
-                    console.log( "Error while finding the player in movesLeft" );
-                }
-                res.send( player.moves.length.toString() );
-            } );
-        } else {
-            res.json( { error: "Player not Found" } );
-        }
-    } );
-} );
-app.post( "/:gameId/players/change-sequence", ( req, res ) => {
-    Game.findById( req.params.gameId, ( err, game ) => {
-        if ( err ) {
-            console.log( "Error while finding game in change sequence" );
-
-        }
-        if ( game.players.length === req.body.length ) {
-            let newPlayerList = [];
-            let promise = new Promise( ( res ) => {
-                for ( let i = 0; i < req.body.length; i++ ) {
-                    Player.findById( req.body[ i ].id, ( err, player ) => {
-                        if ( err ) {
-                            console.log( "Error while finding player in change sequence" );
-
-                        }
-                        newPlayerList[ i ] = player._id;
-                        if ( i === req.body.length - 1 ) {
-                            res( newPlayerList );
-                        }
-                    } );
-                }
-            } );
-            promise.then( newPlayerList => {
-                game.players = newPlayerList;
-                game.save( err => {
-                    if ( err ) {
-                        console.log( "Error while saving game in change sequence" );
-                    }
-                    res.send( { error: "" } );
-                } );
-            } );
-        } else {
-            res.send( { error: "Error in players count" } );
-            console.error( "Error in players count" );
-        }
-    } );
-} ); //change game room player sequence
-app.get( "/:gameId/pick-player", ( req, res ) => {
-    Game.findById( req.params.gameId, async ( err, game ) => {
-        if ( err ) {
-            console.log( "Error while finding game in pick-player" );
-        }
-        const error = await pickPlayer( req.query.id );
-        if ( err ) {
-            console.log( err );
-            res.send( { error } );
-        } else {
-            res.send( { error: "" } );
-        }
-    } );
-} );//change isPicked parameter of player to true
-app.get( "/:gameId/unpick-player", ( req, res ) => {
-    Game.findById( req.params.gameId, async ( err, game ) => {
-        if ( err ) {
-            console.log( "Error while finding game in unpick player" );
-        }
-        let error = await unpickPlayer( req.query.id );
-        if ( error !== null ) {
-            console.log( error );
-            res.send( { error } );
-        }
-        else {
-            res.send( { error: "" } );
-        }
-    } );
-} );//change isPicked parameter of player to false
-
 app.get( "/:gameId", ( req, res ) => {
     if ( req.params.gameId !== "favicon.ico" ) {
         Game.findById( req.params.gameId, async ( err, game ) => {
@@ -445,39 +209,311 @@ app.get( "/:gameId/:playerId", ( req, res, next ) => {
         next();
     }
 } )//return player page
+app.get( "/:gameId/starter-settings", ( req, res ) => {
+    Game.findById( req.params.gameId, async ( err, game ) => {
+        if ( err ) {
+            console.log( "Error while finding the game in starter-settings" );
+            res.send( "404 Game not found" );
+
+        }
+        if ( game ) {
+            const { players } = await game.populate( "players" ).execPopulate();
+            res.render( "starterSettings", {
+                players: players.length ? players : null,
+                isStartSettingsDone: game.isStartSettingsDone,
+                maxPlayers: players.length >= 6,
+                startSettings: game.startSettings,
+                gameId: game._id
+            } );
+        } else {
+            res.render( "404" );
+        }
+    } );
+} ); //return game room starter settings
+
+//* Creations (room, start settings)
+app.post( "/", ( req, res ) => {
+    let newGame = new Game( {
+        _id: new mongoose.Types.ObjectId()
+    } );
+    newGame.save( err => {
+        if ( err ) {
+            res.json( { error: err } );
+            console.log( err );
+            return;
+        }
+        res.json( newGame._id );
+    } );
+} ); //create new room
+app.post( "/:gameId/starter-settings", ( req, res ) => {
+    Game.findById( req.params.gameId, ( err, game ) => {
+        if ( err ) {
+            console.log( "Error while finding the game in post starter-settings" );
+        }
+        if ( req.body ) {
+            Player.find( { gameId: game._id }, async ( err, players ) => {
+                try {
+                    if ( err ) {
+                        console.log( "Error while finding players in post starter-settings" );
+                        res.send( { error: err } )
+                        return;
+                    }
+                    for ( let i = 0; i < players.length; i++ ) {
+                        if ( i === 0 ) {
+                            players[ i ].isGoing = true;
+                        }
+                        players[ i ].money = req.body.startMoney;
+                        players[ i ].turnsBeforeNewCircle = req.body.minTurnsForCircle;
+                        await players[ i ].save( err => {
+                            if ( err ) {
+                                console.log( "Error while saving player in post starter-settings" );
+                                res.send( { error: err } )
+                                return;
+                            }
+                        } );
+                    }
+                    game.startSettings = {
+                        ...req.body,
+                        maxTime: ( req.body.maxTime * 1000 * 60 ) || 0
+                    };
+                    game.isStartSettingsDone = true;
+                    await game.save( err => {
+                        if ( err ) {
+                            console.log( "Error while saving the game" );
+                            res.send( { error: err } )
+                            return;
+                        }
+                    } );
+                    res.send( { error: "" } );
+                } catch ( err ) {
+                    console.error( err );
+                    res.send( { err } );
+                }
+            } );
+        } else {
+            res.send( { error: "Post of start setting must contain body" } )
+        }
+    } );
+} );//Posts starter settings for game
+
+//* Info
+app.get( "/:gameId/players", ( req, res ) => {
+    Game.findById( req.params.gameId, async ( err, game ) => {
+        if ( err ) {
+            console.log( "Error while finding game in players" );
+        }
+        if ( req.query.id ) {
+            Player.findById( req.query.id, ( err, player ) => {
+                if ( err ) {
+                    console.log( "Error while finding game in players" );
+                }
+                res.json( player );
+            } );
+        } else {
+            try {
+                const { players } = await game.populate( "players" ).execPopulate();
+                if ( players ) {
+                    res.json( { players } );
+                } else {
+                    console.error( "Can`t get players" );
+                    res.send( { error: "Can`t get players" } );
+                }
+            } catch ( error ) {
+                console.error( error );
+                res.send( { error } )
+            }
+        }
+    } );
+} ); //return game room players
+app.get( "/:gameId/movesLeft", ( req, res ) => {
+    Game.findById( req.params.gameId, ( err ) => {
+        if ( err ) {
+            console.log( "Error while finding the game in movesLeft" );
+
+        }
+        if ( req.query.playerId ) {
+            Player.findById( req.query.playerId, ( err, player ) => {
+                if ( err ) {
+                    console.log( "Error while finding the player in movesLeft" );
+                }
+                res.send( player.moves.length.toString() );
+            } );
+        } else {
+            res.json( { error: "Player not Found" } );
+        }
+    } );
+} );
+
+//* End points for start settings
+app.post( "/:gameId/players/change-sequence", ( req, res ) => {
+    Game.findById( req.params.gameId, ( err, game ) => {
+        if ( err ) {
+            console.log( "Error while finding game in change sequence" );
+
+        }
+        if ( game.players.length === req.body.length ) {
+            let newPlayerList = [];
+            let promise = new Promise( ( res ) => {
+                for ( let i = 0; i < req.body.length; i++ ) {
+                    Player.findById( req.body[ i ].id, ( err, player ) => {
+                        if ( err ) {
+                            console.log( "Error while finding player in change sequence" );
+
+                        }
+                        newPlayerList[ i ] = player._id;
+                        if ( i === req.body.length - 1 ) {
+                            res( newPlayerList );
+                        }
+                    } );
+                }
+            } );
+            promise.then( newPlayerList => {
+                game.players = newPlayerList;
+                game.save( err => {
+                    if ( err ) {
+                        console.log( "Error while saving game in change sequence" );
+                    }
+                    res.send( { error: "" } );
+                } );
+            } );
+        } else {
+            res.send( { error: "Error in players count" } );
+            console.error( "Error in players count" );
+        }
+    } );
+} ); //change game room player sequence
+app.get( "/:gameId/players/change-name/:_id", ( req, res ) => {
+    Player.findByIdAndUpdate( req.params._id, { name: req.query.name }, err => {
+        if ( err ) {
+            console.log( "Error while updating player in change name" );
+        }
+        res.end();
+    } );
+} ); //change player name by _id
+app.get( "/:gameId/players/new-player", ( req, res ) => {
+    Game.findById( req.params.gameId, ( err, game ) => {
+        if ( err ) {
+            console.log( "Error while finding game in new player" );
+
+        }
+        let newPlayer = new Player( {
+            _id: new mongoose.Types.ObjectId(),
+            name: req.query.name,
+            gameId: game._id
+        } );
+        game.players.push( newPlayer._id );
+        newPlayer.save( err => {
+            if ( err ) {
+                res.json( { error: "Error while saving player in new player" } );
+            }
+            res.send( newPlayer._id );
+        } );
+        game.save( err => {
+            if ( err ) {
+                console.log( err.message );
+            }
+        } );
+    } );
+} ); //create new player
+app.get( "/:gameId/players/delete-player", ( req, res ) => {
+    Game.findById( req.params.gameId, ( err, game ) => {
+        if ( err ) {
+            console.log( "Error while find game in delete player", err );
+        }
+        game.players = game.players.filter( player => player._id.toString() !== req.query.id.toString() );
+        game.save( err => {
+            if ( err ) {
+                console.log( "Error while saving game in delete", err );
+            }
+        } );
+        Player.findByIdAndDelete( req.query.id, err => {
+            if ( err ) {
+                console.log( "Error while deleting player", err );
+            }
+            if ( game.isStartSettingsDone ) {
+                toAll( wss.getWss().clients, el => el.send( JSON.stringify( {
+                    type: "deletePlayer",
+                    id: playerId
+                } ) ) )
+            }
+            res.end();
+        } );
+    } );
+} ); //delete player by _id
+
+//* Pick actions
+app.get( "/:gameId/pick-player", ( req, res ) => {
+    Game.findById( req.params.gameId, async ( err, game ) => {
+        if ( err ) {
+            console.log( "Error while finding game in pick-player" );
+        }
+        const error = await pickPlayer( req.query.id );
+        if ( err ) {
+            console.log( err );
+            res.send( { error } );
+        } else {
+            res.send( { error: "" } );
+        }
+    } );
+} );//change isPicked parameter of player to true
+app.get( "/:gameId/unpick-player", ( req, res ) => {
+    Game.findById( req.params.gameId, async ( err, game ) => {
+        if ( err ) {
+            console.log( "Error while finding game in unpick player" );
+        }
+        let error = await unpickPlayer( req.query.id );
+        if ( error !== null ) {
+            console.log( error );
+            res.send( { error } );
+        }
+        else {
+            res.send( { error: "" } );
+        }
+    } );
+} );//change isPicked parameter of player to false
+
+//* Player actions
 app.get( "/:gameId/giveTurn", ( req, res ) => {
     Game.findById( req.params.gameId, ( err, game ) => {
         if ( err ) {
             console.log( "Error while finding the game in give turn" );
 
         }
-        Player.findById( req.query.playerId, ( err, player ) => {
+        Player.findOne( { isGoing: true }, ( err, player ) => {
             if ( err ) {
                 console.log( "Error while updating player in give turn" );
             }
-            player.isGoing = false;
-            player.turnsBeforeNewCircle = Math.max( 0, player.turnsBeforeNewCircle - 1 );
-            player.save( err => {
-                if ( err ) {
-                    console.log( "Error while updating player in give turn" );
-                    res.send( { error: err } );
-                    return;
-                }
-                const nextGoing = findNextGoing( game.players.map( _id => _id.toString() ), req.query.playerId );
-
-                Player.findByIdAndUpdate( nextGoing, { isGoing: true }, ( error ) => {
-                    if ( error ) {
+            if ( player.isGoing ) {
+                player.isGoing = false;
+                player.turnsBeforeNewCircle = Math.max( 0, player.turnsBeforeNewCircle - 1 );
+                player.save( async err => {
+                    if ( err ) {
                         console.log( "Error while updating player in give turn" );
-                        res.send( { error } );
+                        res.send( { error: err } );
                         return;
                     }
-                    res.send( { turns: player.turnsBeforeNewCircle, nextGoing } );
+                    const { players } = await game.populate( "players" ).execPopulate();
+                    const nextGoing = findNextGoing( players, req.query.playerId );
+
+                    if ( nextGoing ) {
+                        Player.findByIdAndUpdate( nextGoing, { isGoing: true }, ( error ) => {
+                            if ( error ) {
+                                console.log( "Error while updating player in give turn" );
+                                res.send( { error } );
+                                return;
+                            }
+                            res.send( { turns: player.turnsBeforeNewCircle, nextGoing } );
+                        } );
+                    } else {
+                        res.send( { error: "Can't find going player" } );
+                    }
                 } );
-            } );
+            } else {
+                res.end();
+            }
         } );
     } );
 } );//give turn to next player
-
 app.put( "/:gameId/moneyActions", ( req, res ) => {
     Game.findById( req.params.gameId, ( err, game ) => {
         if ( err ) {
@@ -620,6 +656,51 @@ app.put( "/:gameId/moneyActions", ( req, res ) => {
         );
     } );
 } );//operations with money
+app.put( "/:gameId/players/lost", ( req, res ) => {
+    const { playerId } = req.query;
+    const { gameId } = req.params;
+
+    if ( playerId ) {
+        Game.findById( gameId, async ( err, game ) => {
+            if ( err ) {
+                console.error( err );
+                res.send( { error: err.message } );
+                return;
+            }
+            const { players } = await game.populate( "players" ).execPopulate();
+            if ( players ) {
+                const player = players.find( player => player._id.toString() === playerId );
+                if ( player ) {
+                    player.isLost = true;
+                    player.save( error => {
+                        if ( error ) {
+                            console.error( error );
+                            res.send( { error } );
+                            return;
+                        }
+                        if ( players.filter( player => !player.isLost ).length <= 1 ) {
+                            closeRoom( gameId, {
+                                gameId: gameId,
+                                type: "closeRoom"
+                            } );
+                        }
+                        toAll( wss.getWss().clients, el => el.send( JSON.stringify( {
+                            type: "deletePlayer",
+                            id: playerId
+                        } ) ) )
+                        res.send( { error: "" } );
+                    } )
+                } else {
+                    res.send( { error: "Can`t get player" } )
+                }
+            } else {
+                res.send( { error: "Can`t get players" } )
+            }
+        } )
+    } else {
+        res.send( { error: "You must specify player id" } );
+    }
+} )
 
 app.ws( "/*/*", ws => {
     ws.on( "message", msg => {
@@ -683,12 +764,9 @@ const checkTimeouted = () => {
             for ( const game of games ) {
                 const isMaxTimeGone = game.startSettings.isMaxTimeOn && ( Date.now() - game.createdAt ) >= game.startSettings.maxTime;
                 if ( Date.now() - game.createdAt >= 24 * 60 * 60 * 1000 || game.isGameOver || isMaxTimeGone ) {
-                    const { players } = await game.populate( "players" ).execPopulate();
-                    const winners = findWinner( players );
                     closeRoom( game._id, {
                         gameId: game._id.toString(),
-                        type: "closeRoom",
-                        winners
+                        type: "closeRoom"
                     } );
                 }
             }

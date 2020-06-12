@@ -1,5 +1,6 @@
 #playersMoney.workArea
     for player in players
-        div(class= player.isGoing ? "playerInfo center going" : "playerInfo center" data-id= player._id)
-            span= player.name
-            span.moneyCont(id= `${player._id}money`)= player.money
+        if (!player.isLost)
+            div(class= player.isGoing ? "playerInfo center going" : "playerInfo center" data-id= player._id)
+                span= player.name
+                span.moneyCont(id= `${player._id}money`)= player.money

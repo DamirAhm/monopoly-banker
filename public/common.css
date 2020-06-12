@@ -95,7 +95,8 @@ button {
 }
 
 .negativeBtn,
-.positiveBtn {
+.positiveBtn,
+.neutralBtn {
     transition: 0.3s;
 } 
 
