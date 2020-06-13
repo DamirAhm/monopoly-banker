@@ -163,7 +163,8 @@ app.get( "/:gameId", ( req, res ) => {
                 if ( game.isStartSettingsDone ) {
                     res.render( "pickPlayersPage", {
                         allPicked: players.length === 0,
-                        players
+                        players,
+                        bankerId: game.startSettings.bankerId
                     } );
                 } else {
                     res.send( "Confirm your starter settings" );

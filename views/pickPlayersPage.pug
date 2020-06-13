@@ -1,5 +1,5 @@
 doctype html
-html
+html(data-w=bankerId)
     head
         title Pick players
         meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
@@ -19,7 +19,7 @@ html
                         if (players && players.length > 0)
                             for player in players
                                     if (!player.isPicked && !player.isLost)
-                                        .player.center(id= player.id)= player.name
+                                        div(id= player._id class=`player center ${player._id.toString() == bankerId ? "positiveBtn" : ""}`)= player.name
                 else
                     .title All players is picked
         script(src="https://unpkg.com/axios/dist/axios.min.js")
