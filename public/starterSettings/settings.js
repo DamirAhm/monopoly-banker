@@ -91,9 +91,9 @@ let playerAction = ( player, text ) => {
 
     //confirm new player
     let confirm = ( player, text, e ) => {
-        //action logic
-        if ( player.classList.contains( "add-player" ) ) {
-            if ( player.children[ 0 ].value ) {
+        if ( player.children[ 0 ].value || player.children[ 0 ].value === text ) {
+            //action logic
+            if ( player.classList.contains( "add-player" ) ) {
                 axios.get( concatURL( document.location.origin, gameId, "players", "new-player", `?name=${player.children[ 0 ].value}` ) )
                     .then( ( { data: id } ) => {
                         player.parentNode.id = id;
@@ -124,20 +124,23 @@ let playerAction = ( player, text ) => {
                             deleteName( player, e );
                         } );
                     } );
+
+            } else {
+                axios.get(
+                    concatURL(
+                        document.location.origin,
+                        gameId, "players",
+                        "change-name",
+                        `${player.parentNode.id}?name=${player.children[ 0 ].value}`
+                    )
+                );
             }
+            player.innerHTML = player.children[ 0 ].value || text;
+            player.classList.remove( "changing" );
+            e && e.stopPropagation();
         } else {
-            axios.get(
-                concatURL(
-                    document.location.origin,
-                    gameId, "players",
-                    "change-name",
-                    `${player.parentNode.id}?name=${player.children[ 0 ].value}`
-                )
-            );
+            back( player, text );
         }
-        player.innerHTML = player.children[ 0 ].value || text;
-        player.classList.remove( "changing" );
-        e && e.stopPropagation();
     };
 
     //confirm on Enter

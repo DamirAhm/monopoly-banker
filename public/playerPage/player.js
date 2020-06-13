@@ -609,10 +609,13 @@ document.getElementById( "closeRoom" )?.addEventListener( "click", closeRoom );
 document.getElementById( "gotCircle" )?.addEventListener( "click", gotCircleHandler );
 document.getElementById( "nextPlayer" )?.addEventListener( "click", giveTurn );
 document.getElementById( "pick-player-to-pay" )?.addEventListener( "click", propagationStopper );
+document.getElementById( "menu" )?.addEventListener( "click", propagationStopper );
+document.getElementById( "toggleMenuBtn" )?.addEventListener( "click", propagationStopper );
 document.getElementById( "giveUp" )?.addEventListener( "click", giveUp );
 document.getElementById( "toInitPage" )?.addEventListener( "click", () => document.location = "/" );
 reduceBtn?.addEventListener( "click", openReceiverPickerModal );
-toggleMenuBtn.addEventListener( "click", toggleMenu )
+toggleMenuBtn.addEventListener( "click", toggleMenu );
+document.addEventListener( "click", toggleMenu );
 //give actions to options
 if ( options ) {
     for ( const option of options ) {
