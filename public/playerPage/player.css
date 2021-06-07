@@ -1,461 +1,463 @@
-.center{
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.center {
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
 
 .container {
-    flex-direction: column;
+	flex-direction: column;
 }
 
 .userContent {
-    flex-direction: column;
-    width: 100%;
-    max-width: 400px;
+	flex-direction: column;
+	width: 100%;
+	max-width: 400px;
 }
 
-#playerControls{
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    text-align: center;
-    width: 100%;
+#playerControls {
+	display: flex;
+	align-items: center;
+	flex-direction: column;
+	text-align: center;
+	width: 100%;
 }
 
-.name{
-    font-size: 1.7em;
-    text-align: center;
-    margin-bottom: 30px;
+.name {
+	font-size: 1.7em;
+	text-align: center;
+	margin-bottom: 30px;
 }
 
-.money{
-    margin-bottom: 30px;
-    font-size: 1.3em;
+.money {
+	margin-bottom: 30px;
+	font-size: 1.3em;
 }
 
-.isMyTurn{
-    margin-bottom: 30px;
-    font-size: 1.1em;
-    padding: 7px;
+.isMyTurn {
+	margin-bottom: 30px;
+	font-size: 1.1em;
+	padding: 7px;
 }
 
-.actions{
-    width: 100%;
+.actions {
+	width: 100%;
 }
 
-.moneyBtns>*{
-    color: white;
-    padding: 7px;
+.moneyBtns > * {
+	color: white;
+	padding: 7px;
 }
 
-.moneyBtns{
-    display: flex;
-    justify-content: space-around;
-    margin-bottom: 30px;
+.moneyBtns {
+	display: flex;
+	justify-content: space-around;
+	margin-bottom: 30px;
 }
 
-#minus{
-    background-color: #D72323;
+#minus {
+	background-color: #d72323;
 }
-.btn:hover{
-    /* background-color: #ff0606; */
-    box-shadow: 0 0 10px #545454;
+.btn:hover {
+	/* background-color: #ff0606; */
+	box-shadow: 0 0 10px #545454;
 }
-.btn[disabled]{
-    background-color: var(--gray) !important;
-    color: white;
-    border-color: transparent !important;
+.btn[disabled] {
+	background-color: var(--gray) !important;
+	color: white;
+	border-color: transparent !important;
 }
 .btn[disabled]:hover {
-    box-shadow: none;
+	box-shadow: none;
 }
 
-.actions input{
-    width: 100%;
-    margin-bottom: 20px;
-    text-align: center;
+.actions input {
+	width: 100%;
+	margin-bottom: 20px;
+	text-align: center;
 }
 
-.endTurnBtns{
-    display: flex;
-    justify-content: space-between;
+.endTurnBtns {
+	display: flex;
+	justify-content: space-between;
 }
 
-.endTurnBtns *{
-    padding: 10px;
+.endTurnBtns * {
+	padding: 10px;
 }
 
-#nextPlayer{
-    background-color: #FFFfff;
-    border: 1px solid black;
+#nextPlayer {
+	background-color: #ffffff;
+	border: 1px solid black;
 }
 
-#gotCircle{
-    background-color: #5950FF;
-    color: #fff;
+#gotCircle {
+	background-color: #5950ff;
+	color: #fff;
 }
 
-.player{
-    cursor: pointer;
-    min-width: 205px;
+.player {
+	cursor: pointer;
+	min-width: 205px;
 }
 
-.title{
-    font-size: 1.8em;
+.title {
+	font-size: 1.8em;
 }
 
 .bg-cont {
-    width: 100%;
-    height: 100%;
-    display: none;
-    position: absolute;
-    justify-content: center;
-    align-items: center;
-    background: rgba(0, 0, 0, 0.6);
-    text-align: center;
+	width: 100%;
+	height: 100%;
+	display: none;
+	position: absolute;
+	justify-content: center;
+	align-items: center;
+	background: rgba(0, 0, 0, 0.6);
+	text-align: center;
 }
 
-#pick-player-to-pay{
-    height: 60%;
-    background-color: #fff;
-    display: none;
-    flex-direction: column;
-    padding: 20px;
+#pick-player-to-pay {
+	height: 60%;
+	background-color: #fff;
+	display: none;
+	flex-direction: column;
+	padding: 20px;
 }
 
-#pick-player-to-pay .title{
-    font-size: 1.7em;
+#pick-player-to-pay .title {
+	font-size: 1.7em;
 }
 
-#pick-player-to-pay .player{
-    font-size: 1.7em;
-    padding: 10px;
+#pick-player-to-pay .player {
+	font-size: 1.7em;
+	padding: 10px;
 }
 
 #pick-player-to-pay #bank {
-    border: 1px black dashed;
+	border: 1px black dashed;
 }
 
 #afterLostPrompt {
-    min-width: 400px;
-    background-color: #fff;
-    display: none;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    display: none;
-    padding: 30px;
+	min-width: 400px;
+	background-color: #fff;
+	display: none;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	display: none;
+	padding: 30px;
 }
 #afterLostPrompt .buttons {
-    display: flex;
-    min-width: 60%;
-    justify-content: space-between;
-    margin-top: 30px;
+	display: flex;
+	min-width: 60%;
+	justify-content: space-between;
+	margin-top: 30px;
 }
-#afterLostPrompt .buttons *{
-    border-radius: 5px;
-    padding: 10px;
-    font-size: 1.1rem;
-    text-align: center;
-    cursor: pointer;
+#afterLostPrompt .buttons * {
+	border-radius: 5px;
+	padding: 10px;
+	font-size: 1.1rem;
+	text-align: center;
+	cursor: pointer;
 }
 
 #timer {
-    position: absolute;
-    top: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 1.5rem;
+	position: absolute;
+	top: 30px;
+	left: 50%;
+	transform: translateX(-50%);
+	font-size: 1.5rem;
 }
 
 #isConnected {
-    position: absolute;
-    bottom: 20px;
-    left: 30px;
+	position: absolute;
+	bottom: 20px;
+	left: 30px;
 }
 .not-connected {
-    color: rgba(255,0,0,0.7);
+	color: rgba(255, 0, 0, 0.7);
 }
 .connected {
-    color: rgba(0,255,0,0.7);
+	color: rgba(0, 255, 0, 0.7);
 }
 
-#shareGame{
-    font-size: 2em;
-    position: absolute;
-    top: 30px;
-    right: 30px;
-    cursor: pointer;
+#shareGame {
+	font-size: 2em;
+	position: absolute;
+	top: 30px;
+	right: 30px;
+	cursor: pointer;
 }
 
-.options{
-    display: grid;
-    list-style-type: none;
-    width: 100%;
-    grid-template-columns: repeat(3, 1fr);
-    padding: 0;
-    align-items: center;
-    margin-bottom: 20px;
+.tabs {
+	display: grid;
+	list-style-type: none;
+	width: 100%;
+	grid-template-columns: repeat(3, 1fr);
+	padding: 0;
+	align-items: center;
+	margin-bottom: 20px;
 }
-.option{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 10px 20px;
-    border-right: 1px solid black;
-    box-sizing: border-box;
-    height: 100%;
+.tab {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	padding: 10px 20px;
+	border-right: 1px solid black;
+	box-sizing: border-box;
+	height: 100%;
 }
-.option:last-child{
-    border-right: none;
+.tab:last-child {
+	border-right: none;
 }
-.option:hover{
-    background-color: #d3d3d3;
-    cursor: pointer;
+.tab:hover {
+	background-color: #d3d3d3;
+	cursor: pointer;
 }
 
-.active{
-    background-color: #d3d3d3;
+.active {
+	background-color: #d3d3d3;
 }
 
 #playersMoney,
-#moveLog{
-    display: none;
-    flex-direction: column;
+#moveLog {
+	display: none;
+	flex-direction: column;
 }
 
 .changeMoneyForm {
-    width: 100%;
+	width: 100%;
 }
 
 .moveCont span.target {
-    color: white;
+	color: white;
 }
 
-html[data-isbanker="true"] .playerInfo {
-    cursor: pointer;
+html[data-isbanker='true'] .playerInfo {
+	cursor: pointer;
 }
-.playerInfo{
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    padding: 20px;
-    margin: 5px 0;
-    background-color: #f5ff91;
-    box-sizing: border-box;
+.playerInfo {
+	width: 100%;
+	display: flex;
+	justify-content: space-between;
+	padding: 20px;
+	margin: 5px 0;
+	background-color: #f5ff91;
+	box-sizing: border-box;
 }
 
-#playersMoney{
-    flex-direction: column;
-    align-items: center;
+#playersMoney {
+	flex-direction: column;
+	align-items: center;
 }
 html[data-islost] #playersMoney {
-    display: flex !important;
+	display: flex !important;
 }
 
-.newMoney{
-    text-align: right;
+.newMoney {
+	text-align: right;
 }
 
-form{
-    width: 100%;
+form {
+	width: 100%;
 }
 
-.btnCont{
-    width: 100%;
-    display: flex;
-    justify-content: space-around;
-    margin: 10px 0 5px 0;
-    flex-direction: row-reverse;
+.btnCont {
+	width: 100%;
+	display: flex;
+	justify-content: space-around;
+	margin: 10px 0 5px 0;
+	flex-direction: row-reverse;
 }
-.btnCont > *{
-    padding: 5px 8px;
-    background-color: transparent;
-}
-
-.back{
-    background-color: rgba(255,0,0,0.7);
-}
-.confirm{
-    background-color: rgba(0,255,0,0.7);
+.btnCont > * {
+	padding: 5px 8px;
+	background-color: transparent;
 }
 
-.workArea{
-    height: 444px;
-    width: 90%;
+.back {
+	background-color: rgba(255, 0, 0, 0.7);
+}
+.confirm {
+	background-color: rgba(0, 255, 0, 0.7);
 }
 
-.playerMove{
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-}
-.sndMoveRow{
-    display: flex;
-    justify-content: space-between;
-    margin-top: 10px;
-    margin-bottom: 15px;
-    padding: 15px;
-    align-items: center;
-    position: relative;
-    width: 100%;
-    box-sizing: border-box;
+.workArea {
+	height: 444px;
+	width: 90%;
 }
 
-.count{
-    position: absolute;
-    display: none;
-    padding-left: 5px;
+.playerMove {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+}
+.sndMoveRow {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 10px;
+	margin-bottom: 15px;
+	padding: 15px;
+	align-items: center;
+	position: relative;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.count {
+	position: absolute;
+	display: none;
+	padding-left: 5px;
 }
 
 .delete {
-    cursor: pointer;
-    color: black;
-    margin-left: auto; 
+	cursor: pointer;
+	color: black;
+	margin-left: auto;
 }
 .delete:hover > span {
-    display: inline;
+	display: inline;
 }
 
-
-.going{
-    background-color: rgba(0,255,0,0.7);
+.going {
+	background-color: rgba(0, 255, 0, 0.7);
 }
-.not-going{
-    background-color: rgba(255,0,0,0.7);
+.not-going {
+	background-color: rgba(255, 0, 0, 0.7);
 }
 
 .winner {
-    font-size: 1.4rem;
+	font-size: 1.4rem;
 }
 .winner-name {
-    color: var(--blue);
+	color: var(--blue);
 }
 .winner-money {
-    color: var(--teal);
+	color: var(--teal);
 }
 
 #toggleMenu {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
+	position: absolute;
+	top: 20px;
+	right: 20px;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
 }
 #toggleMenuBtn {
-    padding-bottom: 12px;
+	padding-bottom: 12px;
 }
-#toggleMenuBtn .l1{
-    width: 20px;
-    height: 3px;
-    background-color: #000;
-    border-radius: 5px;
-    position: relative;
-    transition: 0.5s;
+#toggleMenuBtn .l1 {
+	width: 20px;
+	height: 3px;
+	background-color: #000;
+	border-radius: 5px;
+	position: relative;
+	transition: 0.5s;
 }
 #toggleMenuBtn .l2 {
-    width: 20px;
-    height: 3px;
-    content: " ";
-    position: absolute;
-    top: 6px;
-    background-color: #000;
-    border-radius: 5px;
-    transition: 0.5s;
+	width: 20px;
+	height: 3px;
+	content: ' ';
+	position: absolute;
+	top: 6px;
+	background-color: #000;
+	border-radius: 5px;
+	transition: 0.5s;
 }
 #toggleMenuBtn .l3 {
-    width: 20px;
-    height: 3px;
-    content: " ";
-    position: absolute;
-    top: 12px;
-    background-color: #000;
-    border-radius: 5px;
-    transition: 0.5s;
+	width: 20px;
+	height: 3px;
+	content: ' ';
+	position: absolute;
+	top: 12px;
+	background-color: #000;
+	border-radius: 5px;
+	transition: 0.5s;
 }
-#toggleMenu.changed .l1{
-    transform: translateY(6px) rotate(-45deg);
-    transform-origin: center;
+#toggleMenu #toggleMenuCheckbox:checked ~ label .l1 {
+	transform: translateY(6px) rotate(-45deg);
+	transform-origin: center;
 }
-#toggleMenu.changed .l2 {
-    opacity: 0;
+#toggleMenu #toggleMenuCheckbox:checked ~ label .l2 {
+	opacity: 0;
 }
-#toggleMenu.changed .l3 {
-    transform: translateY(-6px) rotate(45deg);
-    transform-origin: center;
+#toggleMenu #toggleMenuCheckbox:checked ~ label .l3 {
+	transform: translateY(-6px) rotate(45deg);
+	transform-origin: center;
 }
 
-#menu {
-    display: none;
-    transition: 0.5s;
-    margin-top: 10px;
+#toggleMenuCheckbox {
+	display: none;
 }
-#toggleMenu.changed #menu {
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
+#menu {
+	display: none;
+	transition: 0.5s;
+	margin-top: 10px;
+}
+#toggleMenu #toggleMenuCheckbox:checked ~ #menu {
+	display: flex;
+	justify-content: center;
+	flex-direction: column;
 }
 #menu * {
-    cursor: pointer;
-    padding: 5px;
-    text-align: center;
-    margin-bottom: 5px;
-    font-size: 1.1rem;
+	cursor: pointer;
+	padding: 5px;
+	text-align: center;
+	margin-bottom: 5px;
+	font-size: 1.1rem;
 }
 @media screen and (max-width: 870px) {
-    #toggleMenu.changed {
-        width: 100vw;
-        height: 100vh;
-        background-color: rgba(0,0,0,0.7);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    #toggleMenuBtn {
-        position: absolute;
-    }
-    #toggleMenu.changed #toggleMenuBtn * {
-        background-color: #fff;
-    }
-    #toggleMenu.changed #menu {
-        background-color: #fff;
-        width: 90%;
-        padding: 20px;
-    }
+	#toggleMenu #toggleMenuCheckbox:checked {
+		width: 100vw;
+		height: 100vh;
+		background-color: rgba(0, 0, 0, 0.7);
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+	#toggleMenuBtn {
+		position: absolute;
+	}
+	#toggleMenu #toggleMenuCheckbox:checked ~ #toggleMenuBtn * {
+		background-color: #fff;
+	}
+	#toggleMenu #toggleMenuCheckbox:checked ~ #menu {
+		background-color: #fff;
+		width: 90%;
+		padding: 20px;
+	}
 
-    #menu * {
-        margin: 10px;
-        padding: 15px;
-    }
+	#menu * {
+		margin: 10px;
+		padding: 15px;
+	}
 }
 
-#changePlayer{
-    cursor: pointer;
+#changePlayer {
+	cursor: pointer;
 }
 #closeRoom {
-    cursor: pointer;
+	cursor: pointer;
 }
 
 @media screen and (max-width: 500px) {
-    .userContent {
-        width: 100%;
-        min-width: 265px;
-    }   
-    #playerControls {
-        width: 90%;
-    }
-    button {
-        font-size: 1rem;
-    }
-    .option {
-        font-size: 0.9rem;
-    }
+	.userContent {
+		width: 100%;
+		min-width: 265px;
+	}
+	#playerControls {
+		width: 90%;
+	}
+	button {
+		font-size: 1rem;
+	}
+	.tab {
+		font-size: 0.9rem;
+	}
 }
 
 @media screen and (max-width: 250px) {
-    #timer{
-        top: 60px;
-    }
+	#timer {
+		top: 60px;
+	}
 }

@@ -2,5 +2,5 @@
     for player in players
         if (!player.isLost)
             div(class= player.isGoing ? "playerInfo center going" : "playerInfo center" data-id= player._id)
-                span= player.name
-                span.moneyCont(id= `${player._id}money`)= player.money
+                span.playerInfo_name= player.name
+                span.playerInfo_money(id= `${player._id}money`)= player.money

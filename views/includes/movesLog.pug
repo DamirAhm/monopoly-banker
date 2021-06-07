@@ -12,7 +12,7 @@ mixin move(moves, player)
         div(class= `sndMoveRow ${player.isGoing ? "going" : "not-going"}`)
             if (player.moves.length === 0)
                 .moveCont
-                    span.type Player didn't done anything
+                    span.type Player haven't done anything
                     span.total
                     span.target
                 span.delete(style= 'display: none') X
@@ -22,7 +22,7 @@ mixin move(moves, player)
                     span.type= typeStrs[lastMove.type]
                     span.total= lastMove.type === "gotCircle" ? startSettings.moneyForCircle : lastMove.total + 'k for '
                     span.target= lastMove.type === "gotCircle" ? "" : lastMove.target === bank ? "bank" : players.find(player => player._id === lastMove.target).name
-                span.delete(style= player.moves.length === 0 && 'display: none') X
+                span.delete X
                     span.count= (player.moves.length - 1)
  
 #moveLog.workArea

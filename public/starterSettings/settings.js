@@ -1,368 +1,585 @@
-let bankerId;
-let gameId = document.querySelector( "html" ).dataset.gameid;
+const playersContainersDOMQuery = '.player-cont:not(.head)';
+const playersDOMQuery = '.player:not(.add-player)';
 
-if ( document.getElementsByClassName( "player-cont" ).length > 1 ) {
-    bankerId = document.getElementsByClassName( "player-cont" )[ 1 ].id;
+const savedSettings = getSavedSettingsFromStorage();
+
+let bankerId = getSavedBankerIdFromStorage();
+
+const initialPlayersContainers = document.querySelectorAll(
+	playersContainersDOMQuery
+);
+if (!bankerId && initialPlayersContainers.length >= 1) {
+	const firstPlayer = initialPlayersContainers[0];
+	if (firstPlayer?.previousSibling)
+		firstPlayer.previousSibling.checked = true;
+	setBankerId(initialPlayersContainers[0].id);
+} else if (bankerId) {
+	const playersContainers = Array.from(initialPlayersContainers);
+	const banker = playersContainers.find((el) => el.id === bankerId);
+
+	if (banker) {
+		banker.children[0].checked = true;
+	}
+}
+
+//? Init saved settings
+for (const key in savedSettings) {
+	const input = document.querySelector(`input[data-name=${key}]`);
+
+	if (input) {
+		if (input.type === 'checkbox') {
+			input.checked = savedSettings[key];
+		} else {
+			input.value = savedSettings[key];
+		}
+	} else {
+		console.warn(`Input with name ${key} from saved settings not found`);
+	}
 }
 
 //* Global elements
-//get player and player container elements
-let players = document.getElementsByClassName( "player" );
-let playersCont = document.getElementsByClassName( "players-cont" )[ 0 ];
-//set change sequence func
-let changeSequenceBtn = document.getElementById( "change-sequence-btn" );
-//button for change player sequence and her bg
-let bgCont = document.getElementsByClassName( "bg-cont" )[ 0 ];
-const blockTogglers = document.getElementsByClassName( "toggleBlock" );
-//blocks that can be blocked
-const togglableBlocks = document.getElementsByClassName( "togglable" );
+const players = Array.from(document.querySelectorAll('.player'));
+const playersContainer = document.querySelector('.players-cont');
+const changeSequenceBtn = document.querySelector('#change-sequence-btn');
+const bgCont = document.querySelector('.bg-cont');
 
-//* Event listeners
-//create new add player btn
-let createAddPlayerBtn = () => {
-    let addPlayerBtn = document.createElement( "button" );
-    addPlayerBtn.classList.add( "player" );
-    addPlayerBtn.classList.add( "add-player" );
-    addPlayerBtn.innerText = "Add player";
-    let addPlayerBtnCont = document.createElement( "div" );
-    addPlayerBtnCont.classList.add( "add-player-cont" );
-    let divx = document.createElement( "div" );
-    let div = document.createElement( "div" );
-    addPlayerBtn.addEventListener( "click", () => {
-        playerAction( addPlayerBtn, addPlayerBtn.innerText );
-    } );
-    addPlayerBtnCont.appendChild( div );
-    addPlayerBtnCont.appendChild( addPlayerBtn );
-    addPlayerBtnCont.appendChild( divx );
-    return addPlayerBtnCont;
-};
-let toggleBlockSetting = ( settingElement, isBlock ) => {
-    if ( isBlock ) {
-        settingElement.classList.add( "blocked" );
-        const inputs = settingElement.querySelectorAll( "input" );
-        for ( const input of inputs ) {
-            input.disabled = true;
-        }
-    } else {
-        settingElement.classList.remove( "blocked" );
-        const inputs = settingElement.querySelectorAll( "input" );
-        for ( const input of inputs ) {
-            input.disabled = false;
-        }
-    }
+const blockTogglers = Array.from(document.querySelectorAll('.toggleBlock'));
+
+function createAddPlayerBtnCont() {
+	const addPlayerBtnCont = document.createElement('div');
+	addPlayerBtnCont.classList.add('add-player-cont');
+
+	const addPlayerBtn = createAddPlayerBtn();
+
+	addPlayerBtnCont.appendChild(addPlayerBtn);
+
+	return addPlayerBtnCont;
 }
-//delete player by id
-function deleteName ( deleter, e ) {
-    let addPlayerBtnCont = createAddPlayerBtn();
-    let parent = deleter.parentNode;
-    let playerId = parent.id;
-    axios.get( concatURL( document.location.origin, gameId, "players", "delete-player", `?id=${parent.id}` ) )
-        .then( () => {
-            const wasBanker = parent.children[ 0 ].checked;
-            parent.remove();
-            if ( document.getElementById( playerId ) ) {
-                deleteName( document.getElementById( playerId ), e );
-            }
-            if ( wasBanker && document.querySelectorAll( ".player-cont:not(.head)" ).length > 0 ) {
-                const newBankerElement = document.querySelectorAll( ".player-cont:not(.head)" )[ 0 ];
-                newBankerElement.children[ 0 ].checked = true;
-                bankerId = newBankerElement.id;
-            } else {
-                bankerId = "";
-            }
-            if ( document.querySelectorAll( ".player-cont:not(.head)" ).length <= 6 && document.getElementsByClassName( "add-player" ).length === 0 ) {
-                playersCont.appendChild( addPlayerBtnCont );
-            }
-        } );
-    e.stopPropagation();
+function createAddPlayerBtn() {
+	const addPlayerBtn = document.createElement('button');
+	addPlayerBtn.classList.add('player', 'add-player');
+	addPlayerBtn.innerText = 'Add player';
+	addPlayerBtn.addEventListener('click', () => {
+		playerAction(addPlayerBtn);
+	});
+
+	return addPlayerBtn;
+}
+//Enables or disables togglable setting
+function setSettingInteractivity(settingElement, isBlocked) {
+	settingElement.classList.toggle('blocked');
+	const inputs = settingElement.querySelectorAll('input');
+	if (isBlocked) {
+		for (const input of inputs) {
+			input.disabled = true;
+		}
+	} else {
+		for (const input of inputs) {
+			input.disabled = false;
+		}
+	}
 }
 //action for add players or change names
-let playerAction = ( player, text ) => {
-    //create new addPlayer button
-    let addPlayerBtnCont = createAddPlayerBtn();
+function playerAction(player) {
+	if (!player.classList.contains('changing')) {
+		const initialText = player.innerText;
+		const isAddPlayerButton = player.classList.contains('add-player');
+		const newPlayer = createNewPlayerElement(isAddPlayerButton);
 
-    //return old name or dont create new player
-    let back = ( player, text ) => {
-        player.classList.remove( "changing" );
-        player.innerHTML = text;
-        player.parentNode.replaceWith( addPlayerBtnCont );
-        return;
-    };
+		player.replaceWith(newPlayer);
 
-    //confirm new player
-    let confirm = ( player, text, e ) => {
-        if ( player.children[ 0 ].value || player.children[ 0 ].value === text ) {
-            //action logic
-            if ( player.classList.contains( "add-player" ) ) {
-                axios.get( concatURL( document.location.origin, gameId, "players", "new-player", `?name=${player.children[ 0 ].value}` ) )
-                    .then( ( { data: id } ) => {
-                        player.parentNode.id = id;
-                        //create new checkbox
-                        let checkbox = document.createElement( "input" );
-                        checkbox.classList.add( "isBanker" );
-                        checkbox.type = "checkbox";
-                        checkbox.addEventListener( "click", () => {
-                            makeBanker( checkbox );
-                        } );
-                        if ( document.querySelectorAll( ".player-cont:not(.head)" ).length === 0 ) {
-                            checkbox.checked = true;
-                            bankerId = player.parentNode.id;
-                        } else {
-                            checkbox.checked = false;
-                        }
-                        player.parentNode.replaceChild( checkbox, player.previousSibling );
-                        if ( document.querySelectorAll( ".player-cont:not(.head)" ).length < 5 && document.getElementsByClassName( "add-player" ).length !== 0 ) {
-                            playersCont.appendChild( addPlayerBtnCont );
-                        }
-                        //change add-player button to player button
-                        player.classList.remove( "add-player" );
-                        player.parentNode.classList.remove( "add-player-cont" );
-                        player.parentNode.classList.add( "player-cont" );
-                        player.nextSibling.classList.add( "delete" );
-                        player.nextSibling.innerText = "x";
-                        player.nextSibling.addEventListener( "click", ( e ) => {
-                            deleteName( player, e );
-                        } );
-                    } );
+		let input = document.createElement('input');
+		input.classList.add('changeName');
 
-            } else {
-                axios.get(
-                    concatURL(
-                        document.location.origin,
-                        gameId, "players",
-                        "change-name",
-                        `${player.parentNode.id}?name=${player.children[ 0 ].value}`
-                    )
-                );
-            }
-            player.innerHTML = player.children[ 0 ].value || text;
-            player.classList.remove( "changing" );
-            e && e.stopPropagation();
-        } else {
-            back( player, text );
-        }
-    };
+		if (isAddPlayerButton) {
+			input.placeholder = initialText;
+		} else {
+			input.value = initialText;
+		}
 
-    //confirm on Enter
-    let handleInput = ( cb ) => ( event ) => {
-        if ( event.key === "Enter" ) {
-            cb();
-        }
-    };
+		input.addEventListener('keypress', (e) => {
+			if (e.key === 'Enter') {
+				e.preventDefault();
+				confirmPlayerAction(newPlayer, initialText);
+			}
+		});
 
-    //set player buttons and give actions for them
-    if ( !player.classList.contains( "changing" ) ) {
-        const newPlayer = document.createElement( "div" );
-        newPlayer.classList.add( "player" );
-        if ( player.classList.contains( "add-player" ) ) {
-            newPlayer.classList.add( "add-player" );
-        }
-        player.replaceWith( newPlayer );
-        newPlayer.classList.add( "changing" );
-        let input = document.createElement( "input" );
-        input.classList.add( "changeName" );
-        input.autofocus = true;
-        if ( text === "Banker name" || text === "Add player" ) {
-            input.placeholder = text;
-        } else {
-            input.value = text;
-        }
-        input.style.display = "table-cell";
-        let confBtn = document.createElement( "button" );
-        input.addEventListener( "keydown", handleInput( () => confirm( newPlayer, text ) ) );
-        input.onsubmit = ( e ) => {
-            confirm( newPlayer, text, e );
-        };
-        confBtn.addEventListener( "click", ( e ) => {
-            if ( newPlayer.children[ 0 ].value !== text ) {
-                confirm( newPlayer, text, e );
-            } else {
-                back( newPlayer, newPlayer.children[ 0 ].value, e );
-            }
-        } );
-        let rejBtn = document.createElement( "button" );
-        rejBtn.addEventListener( "click", ( e ) => {
-            back( newPlayer, text, e );
-        } );
-        let btnCont = document.createElement( "div" );
-        btnCont.classList.add( "btn-cont" );
-        rejBtn.innerText = "Back";
-        rejBtn.id = "reject";
-        rejBtn.className = "negativeBtn";
-        confBtn.innerText = "Confirm";
-        confBtn.id = "confirm";
-        confBtn.className = "positiveBtn";
-        btnCont.appendChild( rejBtn );
-        btnCont.appendChild( confBtn );
-        newPlayer.appendChild( input );
-        newPlayer.appendChild( btnCont );
-        input.focus();
-    }
-};
-//change sequence of players' turns
-let changeSequence = () => {
-    if ( document.querySelectorAll( ".player-cont:not(.head)" ).length > 1 ) {
-        let newSequence = [];
-        let addToQueue = ( elem ) => {
-            const parent = elem.parentElement;
-            newSequence.push( elem );
-            if ( parent.children.length <= 1 ) {
-                close();
-            }
-            elem.remove();
-            parent.children[ 0 ].focus();
-        };
+		const btnCont = createConfirmButtons(
+			function onConfirm(e) {
+				e.stopPropagation();
+				confirmPlayerAction(newPlayer, initialText);
+			},
+			function onReject(e) {
+				e.stopPropagation();
+				const itIsCreation = isAddPlayerButton;
+				if (itIsCreation) {
+					backFromCreation(newPlayer, initialText);
+				} else {
+					backFromChangingName(newPlayer, initialText);
+				}
+			}
+		);
 
-        //close change sequnce window
-        let close = () => {
-            let newSequenceData = [];
-            let players = document.querySelectorAll( ".player-cont:not(.head)" );
-            for ( let i = 0; i < players.length; i++ ) {
-                players[ i ].children[ 1 ].innerText = newSequence[ i ].innerText;
-                players[ i ].id = newSequence[ i ].id;
-                players[ i ].children[ 0 ].checked = players[ i ].id === bankerId;
-                newSequenceData.push( {
-                    id: newSequence[ i ].id,
-                    name: newSequence[ i ].innerText
-                } );
-            }
+		newPlayer.appendChild(input);
+		newPlayer.appendChild(btnCont);
 
-            axios.post( "./players/change-sequence", newSequenceData );
-            bgCont.style.display = "none";
-        };
+		input.focus();
+	}
+}
 
-        //create player pickers from players
-        const players = document.querySelectorAll( ".player-cont:not(.head)" );
-        let playersElems = [];
-        players.forEach( ( { id, children } ) => {
-            let elem = document.createElement( "button" );
-            elem.innerText = children[ 1 ].innerText;
-            elem.id = id;
-            elem.classList.add( "player" );
-            elem.addEventListener( "click", () => {
-                addToQueue( elem );
-            } );
-            playersElems.push( elem );
-        } );
-        playersElems.forEach( e => {
-            bgCont.querySelector( ".change-sequence-players" ).appendChild( e );
-        } );
+//Makes player element from addButton element
+function makePlayerContainerFromAddButton(player) {
+	player.parentNode.classList.add('player-cont');
+	player.parentNode.classList.remove('add-player-cont');
 
-        bgCont.style.display = "flex";
-        playersElems[ 0 ].focus();
-    }
-};
-//go to standart settings
-let reset = () => {
-    const settingElements = document.getElementsByClassName( "setting" );
+	player.classList.remove('add-player');
 
-    for ( const settingElement of settingElements ) {
-        const valueInput = settingElement.querySelector( "input.value:not([type='checkbox'])" );
-        const checkboxInput = settingElement.querySelector( "input.value[type='checkbox']" );
-        if ( valueInput && valueInput.dataset.default && valueInput.value ) {
-            valueInput.value = valueInput.dataset.default;
-        }
-        if ( checkboxInput && checkboxInput.dataset.default && checkboxInput.value ) {
-            checkboxInput.checked = checkboxInput.dataset.default === "true";
-        }
-    }
-    for ( const block of togglableBlocks ) {
-        toggleBlockSetting( block, true )
-    }
-};
-//set create game action
-let create = () => {
-    if ( document.getElementsByClassName( "player-cont" ).length >= 2 ) {
-        if ( bankerId.trim() !== "" || document.querySelectorAll( ".player-cont input:checked" ).length === 1 ) {
-            let players = document.getElementsByClassName( "player-cont" );
-            let bankerId;
-            for ( let i = 0; i < players.length; i++ ) {
-                if ( players[ i ].children[ 0 ].checked ) {
-                    bankerId = players[ i ].id;
-                    break;
-                }
-            };
-            const startSettings = { bankerId };
-            const settingElements = document.getElementsByClassName( "setting" );
+	const checkbox = createBankerCheckbox();
+	const playersAmount = document.querySelectorAll(
+		playersContainersDOMQuery
+	).length;
 
-            for ( const settingElement of settingElements ) {
-                const valueInput = settingElement.querySelector( "input.value:not([type='checkbox'])" );
-                const checkboxInput = settingElement.querySelector( "input.value[type='checkbox']" );
-                if ( valueInput && valueInput.dataset.name && valueInput.value ) {
-                    startSettings[ valueInput.dataset.name ] = valueInput.value;
-                }
-                if ( checkboxInput && checkboxInput.dataset.name ) {
-                    startSettings[ checkboxInput.dataset.name ] = checkboxInput.checked;
-                }
-            }
+	if (playersAmount === 1) {
+		checkbox.checked = true;
+		setBankerId(player.parentNode.id);
+	}
+	checkbox.addEventListener('change', () => {
+		changeBanker(checkbox);
+	});
+	player.before(checkbox);
 
-            axios.post( concatURL( document.location.origin, document.location.pathname ), startSettings ).then( () => {
-                document.location = ( `./` );
-            } );
-        } else {
-            appendNotification( "You should pick banker", "warn" );
-        }
-    } else {
-        appendNotification( "Minimal players count is 2", "warn" );
-    }
-};
-//change game banker
-let makeBanker = ( playerCheckbox ) => {
-    //set isBanker checkbox
-    let checkBoxes = document.getElementsByClassName( "isBanker" );
-    for ( let i = 0; i < checkBoxes.length; i++ ) {
-        checkBoxes[ i ].checked = false;
-    }
-    playerCheckbox.checked = true;
-    bankerId = playerCheckbox.parentElement.id;
-};
-let closeChangeSequence = () => {
-    bgCont.style.display = "none";
-    document.getElementsByClassName( "change-sequence-players" )[ 0 ].innerHTML = "";
+	const deleteButton = createDeleteButton((e) => {
+		e.stopPropagation();
+
+		let parent = e.target.parentNode;
+		if (parent) {
+			let playerId = parent.id;
+
+			deletePlayer(playerId);
+		}
+	});
+	player.after(deleteButton);
+}
+function createDeleteButton(handler) {
+	const deleteButton = document.createElement('button');
+	deleteButton.innerText = 'x';
+	deleteButton.classList.add('delete');
+	deleteButton.addEventListener('click', handler);
+
+	return deleteButton;
+}
+
+async function confirmPlayerAction(player, initialText) {
+	const inputValue = player.querySelector('input').value.trim();
+
+	const players = Array.from(document.querySelectorAll(playersDOMQuery));
+
+	if (players.some((player) => player.innerText === inputValue)) {
+		appendNotification(
+			'You trying to create player with name that already in use'
+		);
+		return;
+	}
+
+	if (inputValue !== '') {
+		let res;
+		if (player.classList.contains('add-player')) {
+			res = await createPlayer(player);
+		} else {
+			res = await changeName(player.parentNode.id, inputValue);
+		}
+
+		if (res.error) {
+			appendNotification(res.error);
+		} else {
+			player.innerHTML = inputValue || initialText;
+			player.classList.remove('changing');
+			player.addEventListener('click', () => {
+				playerAction(player);
+			});
+		}
+	} else {
+		appendNotification('You are trying to create player with empty name');
+		return;
+	}
+}
+function backFromCreation(player, text) {
+	const addPlayerBtnCont = createAddPlayerBtnCont();
+
+	player.classList.remove('changing');
+	player.innerHTML = text;
+	player.parentNode.replaceWith(addPlayerBtnCont);
+}
+function backFromChangingName(player, text) {
+	player.classList.remove('changing');
+	player.innerHTML = text;
+	player.addEventListener('click', () => playerAction(player));
+}
+
+//? Element creation functions
+function createBankerCheckbox() {
+	let checkbox = document.createElement('input');
+	checkbox.classList.add('isBanker');
+	checkbox.type = 'checkbox';
+	checkbox.addEventListener('click', () => {
+		changeBanker(checkbox);
+	});
+
+	return checkbox;
+}
+function createConfirmButtons(onConfirm, onReject) {
+	let confirmBtn = createButton('Confirm', onConfirm, {
+		classes: ['positiveBtn'],
+		id: 'confirm',
+		type: 'submit',
+	});
+	let rejectBtn = createButton('Back', onReject, {
+		classes: ['negativeBtn'],
+		id: 'reject',
+	});
+
+	let btnCont = document.createElement('div');
+	btnCont.classList.add('btn-cont');
+
+	btnCont.appendChild(rejectBtn);
+	btnCont.appendChild(confirmBtn);
+
+	return btnCont;
+}
+function createNewPlayerElement(isAddPlayerButton) {
+	const newPlayer = document.createElement('div');
+	newPlayer.classList.add('player');
+	if (isAddPlayerButton) {
+		newPlayer.classList.add('add-player');
+	}
+	newPlayer.classList.add('changing');
+
+	return newPlayer;
+}
+
+//? Api wrappers
+async function createPlayer(player) {
+	const inputValue = player.querySelector('input').value.trim();
+
+	const res = await addPlayer(inputValue);
+
+	if (!res.error) {
+		player.parentNode.id = res;
+
+		const playersAmount = document.querySelectorAll(
+			playersContainersDOMQuery
+		).length;
+
+		if (
+			playersAmount < 5 &&
+			document.querySelectorAll('.add-player').length !== 0
+		) {
+			let addPlayerBtnCont = createAddPlayerBtnCont();
+			playersContainer.appendChild(addPlayerBtnCont);
+		}
+
+		makePlayerContainerFromAddButton(player);
+	}
+	return res;
+}
+async function addPlayer(name) {
+	const response = await axios.post(
+		concatURL(document.location.origin, gameId, 'players'),
+		{
+			name,
+		}
+	);
+
+	return response.data;
+}
+async function changeName(playerId, newName) {
+	const res = await axios.put(
+		concatURL(document.location.origin, gameId, 'players'),
+		{
+			playerId,
+			newName,
+		}
+	);
+
+	return res.data;
+}
+function deletePlayer(playerId) {
+	let addPlayerBtnCont = createAddPlayerBtnCont();
+
+	axios
+		.delete(concatURL(document.location.origin, gameId, 'players'), {
+			data: { playerId },
+		})
+		.then(() => {
+			const parent = document.getElementById(playerId);
+			const wasBanker = parent.children[0].checked;
+			parent.remove();
+
+			const playersContainers = document.querySelectorAll(
+				playersContainersDOMQuery
+			);
+			if (wasBanker) {
+				if (playersContainers.length > 0) {
+					const newBankerElement = playersContainers[0];
+					newBankerElement.children[0].checked = true;
+					setBankerId(newBankerElement.id);
+				} else {
+					setBankerId(undefined);
+				}
+			}
+
+			if (
+				playersContainers.length <= 6 &&
+				document.querySelectorAll('.add-player').length === 0
+			) {
+				playersContainer.appendChild(addPlayerBtnCont);
+			}
+		});
+}
+
+function initSequenceChange() {
+	if (document.querySelectorAll('.player-cont:not(.head)').length > 1) {
+		const newSequence = [];
+
+		//create player pickers from players
+		const players = document.querySelectorAll('.player-cont:not(.head)');
+		let playersElems = [];
+
+		players.forEach(({ id, children }) => {
+			let elem = document.createElement('button');
+			elem.innerText = children[1].innerText;
+			elem.id = id;
+			elem.classList.add('player');
+			elem.addEventListener('click', () => {
+				const parent = elem.parentElement;
+
+				newSequence.push(elem);
+				elem.remove();
+
+				if (parent && parent.children.length === 0) {
+					confirmSequenceChanges(newSequence);
+				}
+			});
+			playersElems.push(elem);
+		});
+
+		const changeSequencePlayersCont = bgCont.querySelector(
+			'.change-sequence-players'
+		);
+		changeSequencePlayersCont?.append(...playersElems);
+
+		bgCont.style.display = 'flex';
+	} else {
+		appendNotification(
+			'You can`t change sequence with less than 2 players',
+			'warn'
+		);
+	}
+}
+function confirmSequenceChanges(newSequence) {
+	const newSequenceData = [];
+	const players = document.querySelectorAll('.player-cont:not(.head)');
+	for (let i = 0; i < players.length; i++) {
+		players[i].children[1].innerText = newSequence[i].innerText;
+		players[i].id = newSequence[i].id;
+		players[i].children[0].checked = players[i].id === bankerId;
+		newSequenceData.push({
+			id: newSequence[i].id,
+			name: newSequence[i].innerText,
+		});
+	}
+
+	axios.post('./players/change-sequence', newSequenceData);
+	bgCont.style.display = 'none';
+}
+function stopSequenceChanging() {
+	bgCont.style.display = 'none';
+	document.querySelector('.change-sequence-players').innerHTML = '';
+}
+
+function resetSettings() {
+	const settingElements = document.querySelectorAll('.setting');
+
+	for (const settingElement of settingElements) {
+		const valueInput = settingElement.querySelector(
+			"input.value:not([type='checkbox'])"
+		);
+		const checkboxInput = settingElement.querySelector(
+			"input.value[type='checkbox']"
+		);
+		if (valueInput && valueInput.dataset.default && valueInput.value) {
+			valueInput.value = valueInput.dataset.default;
+		}
+		if (
+			checkboxInput &&
+			checkboxInput.dataset.default &&
+			checkboxInput.value
+		) {
+			checkboxInput.checked = checkboxInput.dataset.default === 'true';
+		}
+	}
+
+	for (const blockToggler of blockTogglers) {
+		const togglableBlock = document.querySelector(blockToggler.dataset.to);
+		setSettingInteractivity(
+			togglableBlock,
+			blockToggler.dataset.default === 'true'
+		);
+	}
+}
+function createRoom() {
+	if (document.querySelectorAll('.player-cont').length >= 2) {
+		if (
+			bankerId.trim() !== '' ||
+			document.querySelectorAll('.player-cont input:checked').length === 1
+		) {
+			const startSettings = { bankerId };
+			const settingElements = Array.from(
+				document.querySelectorAll('.setting')
+			);
+
+			for (const settingElement of settingElements) {
+				const valueInput = settingElement.querySelector(
+					"input.value:not([type='checkbox'])"
+				);
+
+				if (valueInput && valueInput.dataset.name && valueInput.value) {
+					startSettings[valueInput.dataset.name] = valueInput.value;
+				}
+
+				const checkboxInput = settingElement.querySelector(
+					"input.value[type='checkbox']"
+				);
+				if (checkboxInput && checkboxInput.dataset.name) {
+					startSettings[checkboxInput.dataset.name] =
+						checkboxInput.checked;
+				}
+			}
+
+			axios
+				.post(
+					concatURL(
+						document.location.origin,
+						document.location.pathname
+					),
+					startSettings
+				)
+				.then(() => {
+					document.location.assign(`/${gameId}`);
+				});
+		} else {
+			appendNotification('You should pick one banker', 'warn');
+		}
+	} else {
+		appendNotification('Minimal players count is 2', 'warn');
+	}
+}
+
+function changeBanker(playerCheckbox) {
+	//set isBanker checkbox
+
+	let checkBoxes = document.querySelectorAll('.isBanker');
+	for (let i = 0; i < checkBoxes.length; i++) {
+		checkBoxes[i].checked = false;
+	}
+	playerCheckbox.checked = true;
+	setBankerId(playerCheckbox.parentElement.id);
 }
 
 //* Add event listeners
-//set add-player button (да да да костылиииии)
-let addPlayerBtn = document.getElementsByClassName( "add-player" )[ 0 ];
-if ( addPlayerBtn ) {
-    addPlayerBtn.addEventListener( "click", () => {
-        playerAction( addPlayerBtn, "Add player" );
-    } );
-}
+//set add-player button
+let addPlayerBtn = document.querySelector('.add-player');
+addPlayerBtn.addEventListener('click', () => {
+	playerAction(addPlayerBtn);
+});
 //add actions to player buttons
-for ( const player of players ) {
-    player.addEventListener( "click", () => {
-        playerAction( player, player.innerText );
-    } );
-    if ( [ ...players ].indexOf( player ) === 0 && !player.classList.contains( "add-player" ) ) {
-        player.previousSibling.checked = true;
-    }
-    if ( player.parentNode.classList.contains( "player-cont" ) ) {
-        player.nextSibling.addEventListener( "click", ( e ) => {
-            deleteName( player, e );
-        } );
-    }
+for (const player of players) {
+	player.addEventListener('click', () => {
+		playerAction(player);
+	});
+
+	if (player.parentNode.classList.contains('player-cont')) {
+		player.nextSibling?.addEventListener('click', (e) => {
+			e.stopPropagation();
+
+			const parent = e.target.parentNode;
+			if (parent) {
+				let playerId = parent.id;
+
+				deletePlayer(playerId);
+			}
+		});
+		player.previousSibling?.addEventListener('change', (e) => {
+			changeBanker(e.target);
+		});
+	}
 }
 //add action to change sequence btn
-changeSequenceBtn.addEventListener( "click", changeSequence );
-bgCont.addEventListener( "click", closeChangeSequence );
-document.getElementById( "closeChangeSequence" ).addEventListener( "click", closeChangeSequence );
-document.getElementsByClassName( "change-sequence-cont" )[ 0 ].addEventListener( "click", e => e.stopPropagation() );
+changeSequenceBtn?.addEventListener('click', initSequenceChange);
+bgCont?.addEventListener('click', stopSequenceChanging);
+document
+	.querySelector('#closeChangeSequence')
+	?.addEventListener('click', stopSequenceChanging);
+document
+	.querySelector('.change-sequence-cont')
+	?.addEventListener('click', (e) => e.stopPropagation());
 //set reset button
-document.getElementById( "reset" ).addEventListener( "click", reset );
+document.querySelector('#reset')?.addEventListener('click', resetSettings);
 //set create button
-document.getElementById( "next" ).addEventListener( "click", create );
-//give action to checkboxes
-const checkBoxes = document.getElementsByClassName( "isBanker" );
-for ( let i = 0; i < checkBoxes.length; i++ ) {
-    checkBoxes[ i ].addEventListener( "change", () => {
-        makeBanker( checkBoxes[ i ] );
-    } );
+document.querySelector('#next')?.addEventListener('click', createRoom);
+
+const settingsInputs = Array.from(document.querySelectorAll('.settings input'));
+for (const input of settingsInputs) {
+	input.addEventListener('change', (e) => {
+		if (input.type === 'checkbox') {
+			saveSettingsToStorage({
+				[input.dataset.name]: e.target.checked,
+			});
+		} else {
+			saveSettingsToStorage({
+				[input.dataset.name]: e.target.value,
+			});
+		}
+	});
 }
+
 //give actions to options
-for ( const toggler of blockTogglers ) {
-    toggler.addEventListener( "change", ( e ) => {
-        const elementToToggle = document.querySelector( e.target.dataset.to );
-        toggleBlockSetting( elementToToggle, !e.target.checked );
-    } );
+for (const toggler of Array.from(blockTogglers)) {
+	if (toggler.checked) {
+		const elementToToggle = document.querySelector(toggler.dataset.to);
+		setSettingInteractivity(elementToToggle, false);
+	}
+	toggler.addEventListener('change', (e) => {
+		const elementToToggle = document.querySelector(e.target.dataset.to);
+		setSettingInteractivity(elementToToggle, !e.target.checked);
+	});
+}
+
+function getSavedSettingsFromStorage() {
+	try {
+		const settingsString = localStorage.getItem('settings');
+
+		if (settingsString) {
+			const settings = JSON.parse(settingsString);
+
+			return settings;
+		}
+
+		return {};
+	} catch (e) {
+		console.log(e);
+	}
+}
+function saveSettingsToStorage(updates) {
+	const settings = getSavedSettingsFromStorage();
+	const updatedSettings = Object.assign(settings, updates);
+
+	localStorage.setItem('settings', JSON.stringify(updatedSettings));
+}
+function getSavedBankerIdFromStorage() {
+	return localStorage.getItem('bankerId');
+}
+function setBankerId(newId) {
+	bankerId = newId;
+	localStorage.setItem('bankerId', newId);
 }

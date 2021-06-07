@@ -1,131 +1,132 @@
 * {
-    font-family: "Roboto", sans-serif;
-    padding: 0;
-    margin: 0;
-    border: none;
+	font-family: "Roboto", sans-serif;
+	padding: 0;
+	margin: 0;
+	border: none;
 }
 
 :root {
-    --blue: #007bff;
-    --indigo: #6610f2;
-    --purple: #6f42c1;
-    --pink: #e83e8c;
-    --red: #dc3545;
-    --orange: #fd7e14;
-    --yellow: #ffc107;
-    --green: #28a745;
-    --teal: #20c997;
-    --cyan: #17a2b8;
-    --white: #fff;
-    --gray: #6c757d;
-    --gray-dark: #343a40;
-    --primary: #007bff;
-    --secondary: #6c757d;
-    --success: #28a745;
-    --info: #17a2b8;
-    --warning: #ffc107;
-    --danger: #dc3545;
-    --light: #f8f9fa;
-    --dark: #343a40;
+	--blue: #007bff;
+	--indigo: #6610f2;
+	--purple: #6f42c1;
+	--pink: #e83e8c;
+	--red: #dc3545;
+	--orange: #fd7e14;
+	--yellow: #ffc107;
+	--green: #28a745;
+	--teal: #20c997;
+	--cyan: #17a2b8;
+	--white: #fff;
+	--gray: #6c757d;
+	--gray-dark: #343a40;
+	--primary: #007bff;
+	--secondary: #6c757d;
+	--success: #28a745;
+	--info: #17a2b8;
+	--warning: #ffc107;
+	--danger: #dc3545;
+	--light: #f8f9fa;
+	--dark: #343a40;
 }
 
 input {
-    border: 1px solid black;
-    border-radius: 5px;
-    padding: 5px;
-    box-sizing: border-box;
+	border: 1px solid black;
+	border-radius: 5px;
+	padding: 5px;
+	box-sizing: border-box;
 }
 
 button {
-    font-size: 1.1rem;
-    border-radius: 5px;
-    border: 1px solid transparent;
+	font-size: 1.1rem;
+	border-radius: 5px;
+	border: 1px solid transparent;
 }
 
 .container,
 .bg-cont {
-    height: 100vh;
-    max-height: 100vh;
-    overflow: hidden;
+	height: 100vh;
+	max-height: 100vh;
+	overflow: hidden;
 }
 
 .center {
-    justify-self: center;
-    align-self: center;
+	justify-self: center;
+	align-self: center;
 }
 
 .notification {
-    position: absolute;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    min-width: 150px;
-    max-width: 300px;
-    padding: 15px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 10px;
+	position: absolute;
+	top: 10px;
+	left: 50%;
+	transform: translateX(-50%);
+	min-width: 150px;
+	max-width: 300px;
+	padding: 15px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border-radius: 10px;
+	color: white;
 }
 
 .notification.error {
-    background-color: var(--danger);
+	background-color: var(--danger);
 }
 
 .notification.warn {
-    background-color: var(--warning);
+	background-color: var(--warning);
 }
 
 .notification.info {
-    background-color: var(--blue);
+	background-color: var(--blue);
 }
 
 .notification.success {
-    background-color: var(--teal);
+	background-color: var(--teal);
 }
 
 .notification-remove {
-    position: absolute;
-    top: 0;
-    right: 5px;
-    color: white;
-    font-size: 1.2rem;
-    vertical-align: top;
-    cursor: pointer;
+	position: absolute;
+	top: 0;
+	right: 5px;
+	color: white;
+	font-size: 1.2rem;
+	vertical-align: top;
+	cursor: pointer;
 }
 
 .negativeBtn,
 .positiveBtn,
 .neutralBtn {
-    transition: 0.3s;
-} 
+	transition: 0.3s;
+}
 
 .positiveBtn {
-    background-color: white;
-    color: var(--green) !important;
-    border: 1px solid var(--green);
+	background-color: white;
+	color: var(--green) !important;
+	border: 1px solid var(--green);
 }
 .positiveBtn:hover {
-    color: white !important;
-    background-color: var(--green);
+	color: white !important;
+	background-color: var(--green);
 }
 
 .negativeBtn {
-    background-color: white;
-    color: var(--red) !important;
-    border: 1px solid var(--red);
+	background-color: white;
+	color: var(--red) !important;
+	border: 1px solid var(--red);
 }
 .negativeBtn:hover {
-    color: white !important;
-    background-color: var(--red);
+	color: white !important;
+	background-color: var(--red);
 }
 
 .neutralBtn {
-    background-color: white;
-    color: var(--gray) !important;
-    border: 1px solid var(--gray);
+	background-color: white;
+	color: var(--gray) !important;
+	border: 1px solid var(--gray);
 }
 .neutralBtn:hover {
-    color: white !important;
-    background-color: var(--gray);
+	color: white !important;
+	background-color: var(--gray);
 }

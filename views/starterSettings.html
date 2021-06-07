@@ -1,70 +1,115 @@
 <!DOCTYPE html>
 <html>
-<head><title>Starter settings</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link rel="stylesheet" href="../../public/starterSettings/settings.css">
-</head>
-<body>
-<div class="container center">
-    <div class="col-lg-9 col-sm-12 grid-container">
-        <div class="players">
-            <div class="banker">Banker
-                <div class="banker-cont">
-                    <div></div>
-                    <div class="banker-name player">Banker name</div>
-                    <div></div>
-                </div>
-            </div>
-            <div class="players-cont">Players
-                <div class="add-player-cont">
-                    <div></div>
-                    <div class="add-player player">Add player</div>
-                    <div></div>
-                </div>
-            </div>
-            <div class="end-line"><p class="maxP center">Max 5 players*</p>
-                <button id="change-sequence-btn">Change sequence</button>
-            </div>
-        </div>
-        <div class="settings-buttons">
-            <div class="settings"><h3>Settings</h3>
-                <div class="setting money"><p>Start money</p>
-                    <p class="equal">=</p>
-                    <div class="input"><input class="texti" value="15000" type="number" id="startMoneyIn">
-                        <p>k</p></div>
-                </div>
-                <div class="setting moneyFS"><p>Money for circle</p>
-                    <p class="equal">=</p>
-                    <div class="input"><input class="texti" value="2000" type="number" id="circleMoney">
-                        <p>k</p></div>
-                </div>
-                <div class="setting time-on">
-                    <p>Turn on maximal time</p>
-                    <label class="switch"><input type="checkbox" id="turn-on"><span
-                        class="slider round"></span></label></div>
-                <div class="setting time blocked" id="timeOnCont"><p>Max time</p>
-                    <p class="equal">=</p>
-                    <div class="input"><input class="texti" value="0" type="number" id="maxTime">
-                        <p>m</p></div>
-                </div>
-            </div>
-            <div class="buttons center">
-                <button id="reset">Reset settings</button>
-                <button id="next">Create</button>
-            </div>
-        </div>
-    </div>
-    <div class="bg-cont">
-        <div class="col-lg-2 col-sm-12 col-md-4 change-sequence-cont">
-            <div class="title">Choose players by circle</div>
-            <div class="change-sequence-players"></div>
-        </div>
-    </div>
-</div>
-<script src="../../public/starterSettings/settings.js"></script>
-<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-<script src="../../public/ravnyator.js"></script>
-</body>
+	<head>
+		<title>Starter settings</title>
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1, shrink-to-fit=no"
+		/>
+		<link
+			rel="stylesheet"
+			href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+			integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+			crossorigin="anonymous"
+		/>
+		<link
+			rel="stylesheet"
+			href="../../public/starterSettings/settings.css"
+		/>
+	</head>
+	<body>
+		<div class="container center">
+			<div class="col-lg-9 col-sm-12 grid-container">
+				<div class="players">
+					<div class="banker">
+						Banker
+						<div class="banker-cont">
+							<div></div>
+							<div class="banker-name player">Banker name</div>
+							<div></div>
+						</div>
+					</div>
+					<div class="players-cont">
+						Players
+						<div class="add-player-cont">
+							<div></div>
+							<div class="add-player player">Add player</div>
+							<div></div>
+						</div>
+					</div>
+					<div class="end-line">
+						<p class="maxP center">Max 5 players*</p>
+						<button id="change-sequence-btn">
+							Change sequence
+						</button>
+					</div>
+				</div>
+				<div class="settings-buttons">
+					<div class="settings">
+						<h3>Settings</h3>
+						<div class="setting money">
+							<p>Start money</p>
+							<p class="equal">=</p>
+							<div class="input">
+								<input
+									class="texti"
+									value="15000"
+									type="number"
+									id="startMoneyIn"
+								/>
+								<p>k</p>
+							</div>
+						</div>
+						<div class="setting moneyFS">
+							<p>Money for circle</p>
+							<p class="equal">=</p>
+							<div class="input">
+								<input
+									class="texti"
+									value="2000"
+									type="number"
+									id="circleMoney"
+								/>
+								<p>k</p>
+							</div>
+						</div>
+						<div class="setting time-on">
+							<p>Turn on maximal time</p>
+							<label class="switch"
+								><input type="checkbox" id="turn-on" /><span
+									class="slider round"
+								></span
+							></label>
+						</div>
+						<div class="setting time blocked" id="timeOnCont">
+							<p>Max time</p>
+							<p class="equal">=</p>
+							<div class="input">
+								<input
+									class="texti"
+									value="0"
+									type="number"
+									id="maxTime"
+								/>
+								<p>m</p>
+							</div>
+						</div>
+					</div>
+					<div class="buttons center">
+						<button id="reset">Reset settings</button>
+						<button id="next">Create</button>
+					</div>
+				</div>
+			</div>
+			<div class="bg-cont">
+				<div class="col-lg-2 col-sm-12 col-md-4 change-sequence-cont">
+					<div class="title">Choose players by circle</div>
+					<div class="change-sequence-players"></div>
+				</div>
+			</div>
+		</div>
+		<script src="../../public/starterSettings/settings.js"></script>
+		<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+		<script src="../../public/ravnyator.js"></script>
+	</body>
 </html>

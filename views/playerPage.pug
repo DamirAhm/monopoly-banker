@@ -1,5 +1,5 @@
 doctype html
-html(data-isbanker=isBanker.toString() data-gameId=gameId data-playerId=user.id data-startSettings= startSettings data-isLost= user.isLost)
+html
     head
         title= user.name
         meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
@@ -9,20 +9,20 @@ html(data-isbanker=isBanker.toString() data-gameId=gameId data-playerId=user.id 
             rel="stylesheet"
             href="../public/playerPage/player.css"
         )
-    body
+    body(data-startSettings=startSettings)
         .container.center
             div(style="visibility: hidden").userContent.center
                 if(!user.isLost)
                     if(isBanker)
                         header
-                            ul.options
-                                li#yourControlsBtn.option.active   Your controls
-                                li#otherPlayersBtn.option   Players money
-                                li#moveLogBtn.option   Move logs
+                            ul.tabs
+                                li(data-to='playerControls')#yourControlsBtn.tab.active   Your controls
+                                li(data-to='playersMoney')#otherPlayersBtn.tab   Players money
+                                li(data-to='moveLog')#moveLogBtn.tab   Move logs
                     include includes/playerControls
-                include includes/playersMoney
-                if (isBanker)
-                    include includes/movesLog
+                    include includes/playersMoney
+                    if (isBanker)
+                        include includes/movesLog
 
             h1(style="visibility: hidden").message This user is already picked   
             if(!user.isLost)
@@ -40,12 +40,16 @@ html(data-isbanker=isBanker.toString() data-gameId=gameId data-playerId=user.id 
                             #keepWatching.positiveBtn Keep watching    
 
             #toggleMenu     
-                #toggleMenuBtn     
-                    .l.l1
-                    .l.l2
-                    .l.l3
+                input#toggleMenuCheckbox(
+                    type="checkbox"
+                )
+                label(for="toggleMenuCheckbox")
+                    #toggleMenuBtn     
+                        .l.l1
+                        .l.l2
+                        .l.l3
                 #menu
-                    #toInitPage.neutralBtn.menuItem Leave room 
+                    a(href='/')#toInitPage.neutralBtn.menuItem Leave room 
                     if(!user.isLost)
                         #changePlayer.neutralBtn.menuItem Change player
                         #giveUp.neutralBtn.menuItem Give up
@@ -56,7 +60,16 @@ html(data-isbanker=isBanker.toString() data-gameId=gameId data-playerId=user.id 
                 #timer= startSettings.maxTime
     
             #isConnected(class="not-connected") You are not connected
-    script= `let turnsBeforeNewCircle = ${turnsBeforeCircle};`
+    script. 
+        let turnsBeforeNewCircle = #{turnsBeforeCircle};
+        const gameId = '#{gameId}';
+        const playerId = '#{user.id}';
+        const isBanker = #{isBanker};
+        const startSettings = JSON.parse(document.body.dataset.startsettings);
+        const isLost = #{user.isLost};
+        const createdAt = Date.parse('#{createdAt}');
+        let isGoing = #{isGoing};
     script(src="https://kit.fontawesome.com/9ef32952ff.js")
     script(src="https://unpkg.com/axios/dist/axios.min.js")
     script(src="../public/playerPage/player.js")
+    script(src="../public/playerPage/eventListeners.js")

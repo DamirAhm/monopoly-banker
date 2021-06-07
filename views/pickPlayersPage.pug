@@ -11,7 +11,7 @@ html(data-w=bankerId)
         include includes/linkCommon
     body
         .container.center
-            span#url Копировать ссылку на игру
+            span#url Copy game link
             .center.content
                 if !allPicked
                     .title Pick your name
@@ -19,7 +19,11 @@ html(data-w=bankerId)
                         if (players && players.length > 0)
                             for player in players
                                     if (!player.isPicked && !player.isLost)
-                                        div(id= player._id class=`player center ${player._id.toString() == bankerId ? "positiveBtn" : ""}`)= player.name
+                                        a(
+                                            href=`/${player.gameId}/${player._id}`
+                                            id= player._id 
+                                            class=`player center ${player._id.toString() == bankerId ? "positiveBtn" : ""}`
+                                        )= player.name
                 else
                     .title All players is picked
         script(src="https://unpkg.com/axios/dist/axios.min.js")

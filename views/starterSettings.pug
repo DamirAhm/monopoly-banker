@@ -21,17 +21,13 @@ html(data-gameid= gameId)
                         if players
                             for i in players
                                 div(id = i.id).player-cont
-                                    input(disabled = isStartSettingsDone type = "checkbox" checked = startSettings.bankerId == i.id data-bankerId=startSettings.bankerId data-id=i.id).isBanker
+                                    input(disabled = isStartSettingsDone  checked = startSettings.bankerId==i.id type = "checkbox" data-id = i.id).isBanker
                                     .player= i.name
                                     if !isStartSettingsDone
                                         button.delete x
-                                    else
-                                        div
                         if !maxPlayers && !isStartSettingsDone
                             .add-player-cont
-                                div
                                 button.add-player.player Add player
-                                div
                     if !isStartSettingsDone
                         .end-line
                             p.maxP.center Max 6 players*
@@ -57,11 +53,11 @@ html(data-gameid= gameId)
                         .setting.isMaxTimeOn
                             p Turn on time limit?
                             div.input
-                                input.value.toggleBlock(data-default= "false" data-name= "isMaxTimeOn" type= "checkbox" data-to=".maxTime" checked= startSettings.isMaxTimeOn disabled= isStartSettingsDone)#isMaxTimeOn
+                                input.value.toggleBlock(data-default= "false" data-name= "isMaxTimeOn" data-to=".maxTime" type= "checkbox" checked= startSettings.isMaxTimeOn disabled= isStartSettingsDone)#isMaxTimeOn
                         .setting.maxTime.togglable(class= (!startSettings.isMaxTimeOn && "blocked"))
                             p Time limit
                             div.input
-                                input.value.texti(data-default= "1" data-name= "maxTime" type= "number" min="0" value= startSettings.maxTime disabled)#isMaxTimeOn
+                                input.value.texti(data-default= "0" data-name= "maxTime" type= "number" min="0" value= startSettings.maxTime disabled)#isMaxTimeOn
                                 pre= " min"
                     if !isStartSettingsDone
                         .buttons.center
@@ -74,5 +70,7 @@ html(data-gameid= gameId)
                         div.change-sequence-players
                         button#closeChangeSequence.negativeBtn Close
         if !isStartSettingsDone
+            script(type="text/javascript").
+                const gameId = `#{gameId}`;
             script(src="../../public/starterSettings/settings.js")
             script(src="https://unpkg.com/axios/dist/axios.min.js")
