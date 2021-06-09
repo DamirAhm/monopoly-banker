@@ -2,12 +2,12 @@ const playersContainersDOMQuery = '.player-cont:not(.head)';
 const playersDOMQuery = '.player:not(.add-player)';
 
 const savedSettings = getSavedSettingsFromStorage();
-
 let bankerId = getSavedBankerIdFromStorage();
 
 const initialPlayersContainers = document.querySelectorAll(
 	playersContainersDOMQuery
 );
+
 if (!bankerId && initialPlayersContainers.length >= 1) {
 	const firstPlayer = initialPlayersContainers[0];
 	if (firstPlayer?.previousSibling)

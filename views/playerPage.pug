@@ -19,10 +19,10 @@ html
                                 li(data-to='playerControls')#yourControlsBtn.tab.active   Your controls
                                 li(data-to='playersMoney')#otherPlayersBtn.tab   Players money
                                 li(data-to='moveLog')#moveLogBtn.tab   Move logs
-                    include includes/playerControls
-                    include includes/playersMoney
+                    include includes/playerPage/playerControls
+                    include includes/playerPage/playersMoney
                     if (isBanker)
-                        include includes/movesLog
+                        include includes/playerPage/movesLog
 
             h1(style="visibility: hidden").message This user is already picked   
             if(!user.isLost)

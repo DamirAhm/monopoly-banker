@@ -1,0 +1,31 @@
+.settings-buttons
+    .settings
+        h3 Settings
+        .setting.money
+            p Start money
+            div.input
+                input.value.texti(data-default= "15000" data-name= "startMoney" value=startSettings.startMoney || "15000" type="number" min="0" disabled = isStartSettingsDone)#startMoneyIn
+                pre= " k"
+        .setting.moneyFS
+            p Money for circle
+            div.input
+                input.value.texti(data-default= "2000" data-name= "moneyForCircle" value= startSettings.moneyForCircle || "2000" type="number" min="0" disabled = isStartSettingsDone)#circleMoney
+                pre= " k"
+        .setting.minTurnsForCircle
+            p Min turns for circle
+            div.input
+                input.value.texti(data-default= "4" data-name= "minTurnsForCicle" value= startSettings.minTurnsForCircle || "4" type="number" min="0" disabled = isStartSettingsDone)#minTurns
+                pre= " turns"
+        .setting.isMaxTimeOn
+            p Turn on time limit?
+            div.input
+                input.value.toggleBlock(data-default= "false" data-name= "isMaxTimeOn" data-to=".maxTime" type= "checkbox" checked= startSettings.isMaxTimeOn disabled= isStartSettingsDone)#isMaxTimeOn
+        .setting.maxTime.togglable(class= (!startSettings.isMaxTimeOn && "blocked"))
+            p Time limit
+            div.input
+                input.value.texti(data-default= "0" data-name= "maxTime" type= "number" min="0" value= startSettings.maxTime disabled)#isMaxTimeOn
+                pre= " min"
+    if !isStartSettingsDone
+        .buttons.center
+            button#reset.negativeBtn Standard settings
+            button#next.positiveBtn Create
