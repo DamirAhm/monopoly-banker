@@ -4,6 +4,7 @@ const playersToPick = Array.from(pickPlayer?.querySelectorAll('.player') || []);
 const playersMoves = Array.from(document.getElementsByClassName('playerMove'));
 const playersInfos = Array.from(document.getElementsByClassName('playerInfo'));
 
+const moneyForm = document.getElementById('moneyForm');
 const reduceBtn = document.getElementById('minus');
 const changePlayerBtn = document.getElementById('changePlayer');
 const closeRoomBtn = document.getElementById('closeRoom');
@@ -24,12 +25,19 @@ toggleMenuBtn?.addEventListener('click', propagationStopper);
 giveUpBtn?.addEventListener('click', giveUp);
 reduceBtn?.addEventListener('click', openReceiverPickerModal);
 bgCont?.addEventListener('click', closeModal);
+moneyForm?.addEventListener('submit', (e) => {
+	e.preventDefault();
+	openReceiverPickerModal();
+});
 
-//give actions to options
+//give actions to tabs
 if (tabs) {
-	for (const option of tabs) {
-		option.addEventListener('click', (e) => {
-			tabAction(e);
+	for (const tab of tabs) {
+		tab.addEventListener('click', (e) => {
+			//How tf dom events work????
+			if (e.target?.parentNode.dataset.to) {
+				tabAction(e.target?.parentNode.dataset.to);
+			}
 		});
 	}
 }
@@ -49,4 +57,9 @@ if (isBanker) {
 		for (const playerInfo of playersInfos) {
 			playerInfo.addEventListener('click', changePlayerMoney);
 		}
+}
+
+const pageHash = document.location.hash.slice(1);
+if (pageHash.length > 0) {
+	tabAction(pageHash);
 }

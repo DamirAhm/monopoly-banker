@@ -67,16 +67,24 @@ function giveUp() {
 		});
 }
 
-function tabAction(e) {
-	const tab = e.target;
+function tabAction(workAreaName) {
+	const tab = document.querySelector(`.tab[data-to=${workAreaName}]`);
 
-	document.querySelector('.active')?.classList.remove('active');
-	tab.classList.add('active');
+	if (tab) {
+		const activeTab = document.querySelector('.active');
+		activeTab?.classList.remove('active');
+		tab.classList.add('active');
 
+		changeWorkArea(workAreaName);
+	} else {
+		throw new Error(`Can't find tab with name ${workAreaName}`);
+	}
+}
+function changeWorkArea(newAreaName) {
 	const workAreas = Array.from(document.querySelectorAll('.workArea'));
 	workAreas.forEach((el) => (el.style.display = 'none'));
 
-	const workAreaToOpen = document.getElementById(tab.dataset.to);
+	const workAreaToOpen = document.getElementById(newAreaName);
 	if (workAreaToOpen !== null) workAreaToOpen.style.display = 'flex';
 }
 

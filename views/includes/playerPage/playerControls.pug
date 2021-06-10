@@ -5,10 +5,11 @@
         .money= "Money = "
             span#money= user.money
     .actions
-        .moneyInput
-            input(type="number" placeholder="Сумма" disabled= !isGoing min="0")#input
-        .moneyBtns
-            button( disabled = (!isGoing) )#minus.btn Give money
+        form#moneyForm
+            .moneyInput
+                input(type="number" placeholder="Сумма" disabled= !isGoing min="0")#input
+            .moneyBtns
+                button(type="submit" disabled = (!isGoing) )#minus.btn Give money
         .endTurnBtns
             button( disabled = (!isGoing || turnsBeforeCircle != 0) )#gotCircle.btn Got circle
             button( disabled = !isGoing )#nextPlayer.btn Give turn

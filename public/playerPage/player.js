@@ -123,7 +123,7 @@ function showMessage(...msgs) {
 //? Modals
 //opens a choose player monitor
 function openReceiverPickerModal() {
-	const moneyAmount = Number(moneyInput?.nodeValue);
+	const moneyAmount = Number(moneyInput?.value);
 	const playerMoney = Number(moneySpan?.innerText);
 
 	if (moneyAmount > 0) {
@@ -351,15 +351,13 @@ function onCloseRoom(data) {
 
 function onCirclePassed(data) {
 	if (isBanker) {
-		if (moneySpan) {
-			let moneySpan = document.getElementById(data.from + 'money');
-			const oldMoneyAmount = Number(moneySpan);
+		let receiverMoneySpan = document.getElementById(data.from + 'money');
+		if (receiverMoneySpan) {
 			const moneyDiff = data.undo
 				? -parseInt(startSettings.moneyForCircle)
-				: +parseInt(startSettings.moneyForCircle);
-			const newMoneyAmount = oldMoneyAmount + moneyDiff;
+				: parseInt(startSettings.moneyForCircle);
 
-			moneySpan.innerText = newMoneyAmount.toString();
+			updateMoneySpanValue(receiverMoneySpan, moneyDiff);
 		}
 
 		const playerMoves = Array.from(
@@ -385,12 +383,8 @@ function onCirclePassed(data) {
 		}
 
 		if (moneySpan) {
-			const oldMoneyAmount = Number(moneySpan.innerText);
-			const newMoneyAmount =
-				oldMoneyAmount - parseInt(startSettings.moneyForCircle);
-
 			turnsBeforeNewCircle = 0;
-			moneySpan.innerText = newMoneyAmount.toString();
+			updateMoneySpanValue(moneySpan, startSettings.moneyForCircle);
 		}
 	}
 }
@@ -441,7 +435,7 @@ function onGiveMoney(data) {
 	}
 }
 function updateMoneySpanValue(moneySpan, diff) {
-	const oldMoneyAmount = Number(moneySpan.innerText);
+	const oldMoneyAmount = parseInt(moneySpan.innerText);
 	const newMoneyAmount = oldMoneyAmount + Number(diff);
 
 	moneySpan.innerText = newMoneyAmount.toString();

@@ -9,16 +9,19 @@ html
             rel="stylesheet"
             href="../public/playerPage/player.css"
         )
-    body(data-startSettings=startSettings)
+    body(data-startSettings=startSettings data-players=players)
         .container.center
             div(style="visibility: hidden").userContent.center
                 if(!user.isLost)
                     if(isBanker)
                         header
                             ul.tabs
-                                li(data-to='playerControls')#yourControlsBtn.tab.active   Your controls
-                                li(data-to='playersMoney')#otherPlayersBtn.tab   Players money
-                                li(data-to='moveLog')#moveLogBtn.tab   Move logs
+                                li(data-to='playerControls')#yourControlsBtn.tab.active   
+                                    a(href='#playerControls') Your controls
+                                li(data-to='playersMoney')#otherPlayersBtn.tab   
+                                    a(href='#playersMoney') Players money
+                                li(data-to='moveLog')#moveLogBtn.tab   
+                                    a(href='#moveLog') Move logs
                     include includes/playerPage/playerControls
                     include includes/playerPage/playersMoney
                     if (isBanker)
@@ -28,7 +31,7 @@ html
             if(!user.isLost)
                 .bg-cont
                     #pick-player-to-pay.col-lg-3.col-md-6.col-sm-12
-                        .title For who?
+                        .title To who?
                         .player(id= "bank") Bank
                         for player in players 
                             if (player._id !== user._id && !player.isLost)
@@ -69,6 +72,7 @@ html
         const isLost = #{user.isLost};
         const createdAt = Date.parse('#{createdAt}');
         let isGoing = #{isGoing};
+        const players = JSON.parse(document.body.dataset.players);
 
     script(src="https://kit.fontawesome.com/9ef32952ff.js")
     script(src="https://unpkg.com/axios/dist/axios.min.js")
