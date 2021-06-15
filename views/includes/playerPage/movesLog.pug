@@ -23,9 +23,8 @@ mixin move(moves, player)
                     span.type= typeStrs[lastMove.type]
                     span.total= lastMove.total + 'k for '
                     span.target= lastMove.for === 'bank' ? "Bank" : players.find(player => player._id == lastMove.for).name
-            if (player.moves.length > 0)
-                span.delete X
-                    span.count= player.moves.length - 1
+            span.delete(style="display: " + (moves.length > 0 ? 'block' : 'none') ) X
+                span.count= player.moves.length - 1
  
 #moveLog.workArea
     for player in players
