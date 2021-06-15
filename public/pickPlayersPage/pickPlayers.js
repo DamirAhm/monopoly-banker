@@ -52,7 +52,6 @@ const addPlayerToList = (playerData) => {
 	let player = document.createElement('div');
 	player.classList.add('player', 'center');
 	player.innerText = playerData.name;
-	player.addEventListener('click', onPlayerPick);
 
-	document.getElementById('playersCont').appendChild(player);
+	document.getElementById('players-cont').appendChild(player);
 };
