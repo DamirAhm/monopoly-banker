@@ -364,6 +364,8 @@ function onPickConfirmed() {
 	isInitialized = true;
 }
 function onCloseRoom(data) {
+	console.log(data);
+
 	if (data.gameId && data.gameId === gameId && data.winners) {
 		showMessage('Your game has ended', createWinnerMsg(data.winners || []));
 

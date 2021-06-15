@@ -42,8 +42,6 @@ module.exports = (wss) => {
 								) {
 									const { gameId } = playerConnections[ws];
 									if (gameId) {
-										await closeRoom(gameId, data, wss);
-
 										const players = await Player.find({
 											gameId,
 										});
@@ -57,6 +55,8 @@ module.exports = (wss) => {
 												})
 											)
 										);
+
+										await closeRoom(gameId);
 									}
 								}
 								break;
