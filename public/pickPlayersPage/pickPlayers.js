@@ -18,38 +18,6 @@ ws.onopen = () => {
 	);
 };
 
-let onPlayerPick = (playerId) => {
-	if (playerId) {
-		axios
-			.get(
-				concatURL(
-					document.location.origin,
-					document.location.pathname,
-					'players',
-					`?id=${playerId}`
-				)
-			)
-			.then((res) => {
-				if (!res.data.error) {
-					if (res.data.isPicked) {
-						e.preventDefault();
-						appendNotification('This player is already picked');
-					} else {
-						document.location.assign(
-							concatURL(
-								document.location.origin,
-								document.location.pathname,
-								playerId
-							)
-						);
-					}
-				} else {
-					appendNotification(res.data.error);
-				}
-			});
-	}
-};
-
 const copy = async (str) => {
 	return navigator.clipboard.writeText(str);
 };
@@ -88,13 +56,3 @@ const addPlayerToList = (playerData) => {
 
 	document.getElementById('playersCont').appendChild(player);
 };
-
-//* give event listeners
-urlSpan?.addEventListener('click', (e) => {
-	e.target.classList.add('blink');
-	setTimeout(() => e.target.classList.remove('blink'), 1000);
-	copy(document.location.href);
-});
-for (const player of players) {
-	player.addEventListener('click', () => onPlayerPick(player.id));
-}
