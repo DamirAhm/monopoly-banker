@@ -228,12 +228,18 @@ function createBankerCheckbox() {
 	return checkbox;
 }
 function createConfirmButtons(onConfirm, onReject) {
-	let confirmBtn = createButton('Confirm', onConfirm, {
+	const withDisable = (fn) => (e) => {
+		confirmBtn.disabled = true;
+		rejectBtn.disabled = true;
+		fn(e);
+	};
+
+	let confirmBtn = createButton('Confirm', withDisable(onConfirm), {
 		classes: ['positiveBtn'],
 		id: 'confirm',
 		type: 'submit',
 	});
-	let rejectBtn = createButton('Back', onReject, {
+	let rejectBtn = createButton('Back', withDisable(onReject), {
 		classes: ['negativeBtn'],
 		id: 'reject',
 	});

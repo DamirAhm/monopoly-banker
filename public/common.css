@@ -130,3 +130,13 @@ button {
 	color: white !important;
 	background-color: var(--gray);
 }
+
+button[disabled] {
+	background-color: var(--gray) !important;
+	color: white !important;
+	border-color: transparent !important;
+}
+
+button[disabled]:hover {
+	box-shadow: none;
+}
