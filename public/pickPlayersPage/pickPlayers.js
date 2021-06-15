@@ -18,7 +18,7 @@ ws.onopen = () => {
 	);
 };
 
-const copy = async (str) => {
+const copy = (str) => {
 	return navigator.clipboard.writeText(str);
 };
 

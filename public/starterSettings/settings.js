@@ -170,37 +170,47 @@ function createDeleteButton(handler) {
 }
 
 async function confirmPlayerAction(player, initialText) {
-	const inputValue = player.querySelector('input').value.trim();
+	try {
+		const inputValue = player.querySelector('input').value.trim();
 
-	const players = Array.from(document.querySelectorAll(playersDOMQuery));
+		const players = Array.from(document.querySelectorAll(playersDOMQuery));
 
-	if (players.some((player) => player.innerText === inputValue)) {
-		appendNotification(
-			'You trying to create player with name that already in use'
-		);
-		return;
-	}
-
-	if (inputValue !== '') {
-		let res;
-		if (player.classList.contains('add-player')) {
-			res = await createPlayer(player);
-		} else {
-			res = await changeName(player.parentNode.id, inputValue);
+		if (players.some((player) => player.innerText === inputValue)) {
+			appendNotification(
+				'You trying to create player with name that already in use'
+			);
+			return;
 		}
 
-		if (res.error) {
-			appendNotification(res.error);
+		if (inputValue !== '') {
+			let res;
+			if (player.classList.contains('add-player')) {
+				res = await createPlayer(player);
+			} else {
+				res = await changeName(player.parentNode.id, inputValue);
+			}
+
+			if (res.error) {
+				appendNotification(res.error);
+			} else {
+				player.innerHTML = inputValue || initialText;
+				player.classList.remove('changing');
+				player.addEventListener('click', () => {
+					playerAction(player);
+				});
+			}
 		} else {
-			player.innerHTML = inputValue || initialText;
-			player.classList.remove('changing');
-			player.addEventListener('click', () => {
-				playerAction(player);
-			});
+			appendNotification(
+				'You are trying to create player with empty name'
+			);
+			return;
 		}
-	} else {
-		appendNotification('You are trying to create player with empty name');
-		return;
+	} catch (err) {
+		if (err instanceof Error) {
+			appendNotification(err.message);
+		} else {
+			appendNotification('Unknown error occurred');
+		}
 	}
 }
 function backFromCreation(player, text) {
@@ -265,49 +275,73 @@ function createNewPlayerElement(isAddPlayerButton) {
 
 //? Api wrappers
 async function createPlayer(player) {
-	const inputValue = player.querySelector('input').value.trim();
+	try {
+		const inputValue = player.querySelector('input').value.trim();
 
-	const res = await addPlayer(inputValue);
+		const res = await addPlayer(inputValue);
 
-	if (!res.error) {
-		player.parentNode.id = res;
+		if (!res.error) {
+			player.parentNode.id = res;
 
-		const playersAmount = document.querySelectorAll(
-			playersContainersDOMQuery
-		).length;
+			const playersAmount = document.querySelectorAll(
+				playersContainersDOMQuery
+			).length;
 
-		if (
-			playersAmount < 5 &&
-			document.querySelectorAll('.add-player').length !== 0
-		) {
-			let addPlayerBtnCont = createAddPlayerBtnCont();
-			playersContainer.appendChild(addPlayerBtnCont);
+			if (
+				playersAmount < 5 &&
+				document.querySelectorAll('.add-player').length !== 0
+			) {
+				let addPlayerBtnCont = createAddPlayerBtnCont();
+				playersContainer.appendChild(addPlayerBtnCont);
+			}
+
+			makePlayerContainerFromAddButton(player);
 		}
-
-		makePlayerContainerFromAddButton(player);
+		return res;
+	} catch (err) {
+		if (err instanceof Error) {
+			appendNotification(err.message);
+		} else {
+			appendNotification('Unknown error occurred');
+		}
 	}
-	return res;
 }
 async function addPlayer(name) {
-	const response = await axios.post(
-		concatURL(document.location.origin, gameId, 'players'),
-		{
-			name,
-		}
-	);
+	try {
+		const response = await axios.post(
+			concatURL(document.location.origin, gameId, 'players'),
+			{
+				name,
+			}
+		);
 
-	return response.data;
+		return response.data;
+	} catch (err) {
+		if (err instanceof Error) {
+			appendNotification(err.message);
+		} else {
+			appendNotification('Unknown error occurred');
+		}
+	}
 }
 async function changeName(playerId, newName) {
-	const res = await axios.put(
-		concatURL(document.location.origin, gameId, 'players'),
-		{
-			playerId,
-			newName,
-		}
-	);
+	try {
+		const res = await axios.put(
+			concatURL(document.location.origin, gameId, 'players'),
+			{
+				playerId,
+				newName,
+			}
+		);
 
-	return res.data;
+		return res.data;
+	} catch (err) {
+		if (err instanceof Error) {
+			appendNotification(err.message);
+		} else {
+			appendNotification('Unknown error occurred');
+		}
+	}
 }
 function deletePlayer(playerId) {
 	let addPlayerBtnCont = createAddPlayerBtnCont();

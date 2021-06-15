@@ -3,7 +3,7 @@ const { toAll } = require('./sockets');
 
 //@ts-check
 module.exports.pickPlayer = async (id, wss) => {
-	return await Player.findById(id, (err, player) => {
+	return Player.findById(id, (err, player) => {
 		if (err) {
 			console.log('Error while finding player in pick-player');
 		}
@@ -34,7 +34,7 @@ module.exports.pickPlayer = async (id, wss) => {
 	});
 };
 module.exports.unpickPlayer = async (id, wss) => {
-	return await Player.findById(id, (err, player) => {
+	return Player.findById(id, (err, player) => {
 		if (err) {
 			console.log('Error while finding player in unpick player');
 		}

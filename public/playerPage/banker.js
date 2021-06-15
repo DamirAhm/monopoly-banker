@@ -181,22 +181,30 @@ function getPlayerIdFromMoneySpan(moneySpan) {
 	return moneySpan.id.split('money')[0];
 }
 async function sendMoneyUpdate({ delta, receiverId, playerId }) {
-	const action = {
-		total: delta,
-		for: receiverId,
-		from: playerId,
-		undo: false,
-		bankerMove: true,
-	};
-	sendToSocket({
-		type: 'giveMoney',
-		...action,
-	});
+	try {
+		const action = {
+			total: delta,
+			for: receiverId,
+			from: playerId,
+			undo: false,
+			bankerMove: true,
+		};
+		sendToSocket({
+			type: 'giveMoney',
+			...action,
+		});
 
-	return axios.put(`${originUrl}/moneyActions`, {
-		type: 'receive',
-		...action,
-	});
+		return axios.put(`${originUrl}/moneyActions`, {
+			type: 'receive',
+			...action,
+		});
+	} catch (err) {
+		if (err instanceof Error) {
+			appendNotification(err.message);
+		} else {
+			appendNotification('Unknown error occurred');
+		}
+	}
 }
 function rejectMoneyUpdate(playerInfoContainer, oldPlayerInfoElement) {
 	playerInfoContainer.replaceWith(oldPlayerInfoElement);
@@ -204,38 +212,56 @@ function rejectMoneyUpdate(playerInfoContainer, oldPlayerInfoElement) {
 
 //* Players' moves page
 async function changeMovesCount(moveCont) {
-	if (moveCont && moveCont.nextSibling) {
-		let id = moveCont.parentElement.parentElement.dataset.id;
-		let countElement = moveCont.nextSibling.querySelector('.count');
+	try {
+		if (moveCont && moveCont.nextSibling) {
+			let id = moveCont.parentElement.parentElement.dataset.id;
+			let countElement = moveCont.nextSibling.querySelector('.count');
 
-		const res = await axios.get(`${originUrl}/movesLeft?playerId=${id}`);
+			const res = await axios.get(
+				`${originUrl}/movesLeft?playerId=${id}`
+			);
 
-		if (!res.data.error) {
-			let movesLeft = Math.max(0, res.data - 1);
+			if (!res.data.error) {
+				let movesLeft = Math.max(0, res.data - 1);
 
-			countElement.innerText =
-				movesLeft !== 0
-					? movesLeft +
-					  (movesLeft === 1 ? ' move more' : ' moves more')
-					: 'No more moves';
+				countElement.innerText =
+					movesLeft !== 0
+						? movesLeft +
+						  (movesLeft === 1 ? ' move more' : ' moves more')
+						: 'No more moves';
+			} else {
+				appendNotification(res.data.error);
+			}
+		}
+	} catch (err) {
+		if (err instanceof Error) {
+			appendNotification(err.message);
 		} else {
-			appendNotification(res.data.error);
+			appendNotification('Unknown error occurred');
 		}
 	}
 }
 async function undoMove(move, playerMove) {
-	const res = await axios.put(
-		`${originUrl}/moneyActions?playerId=${playerId}`,
-		{
-			...move,
-			undo: true,
+	try {
+		const res = await axios.put(
+			`${originUrl}/moneyActions?playerId=${playerId}`,
+			{
+				...move,
+				undo: true,
+			}
+		);
+
+		updateMove(playerMove, res.data);
+		changeMovesCount(playerMove.querySelector('.moveCont'));
+
+		sendToSocket({ ...move, undo: true });
+	} catch (err) {
+		if (err instanceof Error) {
+			appendNotification(err.message);
+		} else {
+			appendNotification('Unknown error occurred');
 		}
-	);
-
-	updateMove(playerMove, res.data);
-	changeMovesCount(playerMove.querySelector('.moveCont'));
-
-	sendToSocket({ ...move, undo: true });
+	}
 }
 function updateMove(playerMoveCont, move) {
 	if (!move.error && !move.undo) {

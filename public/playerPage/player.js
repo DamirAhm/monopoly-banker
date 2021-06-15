@@ -207,100 +207,126 @@ function createWinnerMsg(players) {
 
 //* Player page
 async function gotCircleHandler() {
-	if (turnsBeforeNewCircle === 0) {
-		let action = {
-			type: 'gotCircle',
-			from: playerId,
-			undo: false,
-		};
+	try {
+		if (turnsBeforeNewCircle === 0) {
+			let action = {
+				type: 'gotCircle',
+				from: playerId,
+				undo: false,
+			};
 
-		const res = await axios.put(
-			concatURL(
-				document.location.origin,
-				gameId,
-				'moneyActions',
-				`?playerId=${playerId}`
-			),
-			action
-		);
+			const res = await axios.put(
+				concatURL(
+					document.location.origin,
+					gameId,
+					'moneyActions',
+					`?playerId=${playerId}`
+				),
+				action
+			);
 
-		if (res.data.error) {
-			appendNotification(res.data.error);
+			if (res.data.error) {
+				appendNotification(res.data.error);
+			} else {
+				sendToSocket(action);
+				giveTurn();
+
+				moneySpan.innerText = res.data;
+				turnsBeforeNewCircle = 1;
+			}
 		} else {
-			sendToSocket(action);
-			giveTurn();
-
-			moneySpan.innerText = res.data;
-			turnsBeforeNewCircle = 1;
+			appendNotification('Calm down you get circles too fast', 'warn');
 		}
-	} else {
-		appendNotification('Calm down you get circles too fast', 'warn');
+	} catch (err) {
+		if (err instanceof Error) {
+			appendNotification(err.message);
+		} else {
+			appendNotification('Unknown error occurred');
+		}
 	}
 }
 async function giveTurn() {
-	const res = await axios.get(
-		concatURL(
-			document.location.origin,
-			gameId,
-			'giveTurn',
-			`?playerId=${playerId}`
-		)
-	);
+	try {
+		const res = await axios.get(
+			concatURL(
+				document.location.origin,
+				gameId,
+				'giveTurn',
+				`?playerId=${playerId}`
+			)
+		);
 
-	if (!res.data.error && res.data.nextGoing) {
-		turnsBeforeNewCircle = res.data.turns;
+		if (!res.data.error && res.data.nextGoing) {
+			turnsBeforeNewCircle = res.data.turns;
 
-		if (turnsBeforeNewCircle > 0) {
-			if (document.getElementById('gotCircle'))
-				document.getElementById('gotCircle').disabled = true;
+			if (turnsBeforeNewCircle > 0) {
+				if (document.getElementById('gotCircle'))
+					document.getElementById('gotCircle').disabled = true;
+			} else {
+				if (document.getElementById('gotCircle'))
+					document.getElementById('gotCircle').disabled = false;
+			}
+
+			sendToSocket({
+				type: 'giveTurn',
+				id: res.data.nextGoing,
+			});
+
+			changeIsGoing(false);
 		} else {
-			if (document.getElementById('gotCircle'))
-				document.getElementById('gotCircle').disabled = false;
+			appendNotification(
+				res.data.error || "Can't find next going player"
+			);
 		}
-
-		sendToSocket({
-			type: 'giveTurn',
-			id: res.data.nextGoing,
-		});
-
-		changeIsGoing(false);
-	} else {
-		appendNotification(res.data.error || "Can't find next going player");
+	} catch (err) {
+		if (err instanceof Error) {
+			appendNotification(err.message);
+		} else {
+			appendNotification('Unknown error occurred');
+		}
 	}
 }
 async function onReceiverPick(e) {
-	let moneyAmount = moneyInput.value;
-	moneyInput.value = '';
+	try {
+		let moneyAmount = moneyInput.value;
+		moneyInput.value = '';
 
-	bgCont.style.display = 'none';
-	document.getElementById('pick-player-to-pay').style.display = 'none';
+		bgCont.style.display = 'none';
+		document.getElementById('pick-player-to-pay').style.display = 'none';
 
-	const res = await axios.put(
-		`${originUrl}/moneyActions?playerId=${playerId}`,
-		{
-			type: 'giveMoney',
-			total: +moneyAmount,
-			for: e.target.id,
-			undo: false,
-			from: playerId,
+		const res = await axios.put(
+			`${originUrl}/moneyActions?playerId=${playerId}`,
+			{
+				type: 'giveMoney',
+				total: +moneyAmount,
+				for: e.target.id,
+				undo: false,
+				from: playerId,
+			}
+		);
+
+		if (!res.data.error) {
+			sendToSocket({
+				type: 'giveMoney',
+				for: e.target.id,
+				total: +moneyAmount,
+				from: playerId,
+				undo: false,
+			});
+
+			moneySpan.innerText = res.data;
+		} else {
+			appendNotification(res.data.error);
 		}
-	);
 
-	if (!res.data.error) {
-		sendToSocket({
-			type: 'giveMoney',
-			for: e.target.id,
-			total: +moneyAmount,
-			from: playerId,
-			undo: false,
-		});
-
-		moneySpan.innerText = res.data;
-	} else {
-		appendNotification(res.data.error);
+		bgCont?.removeEventListener('click', closeModal);
+	} catch (err) {
+		if (err instanceof Error) {
+			appendNotification(err.message);
+		} else {
+			appendNotification('Unknown error occurred');
+		}
 	}
-
-	bgCont?.removeEventListener('click', closeModal);
 }
 
 //* Timer stuff
@@ -477,47 +503,63 @@ function onGiveTurn(data) {
 }
 
 async function initializeUserInterface() {
-	const playerOnPage = await getPlayerOnPage();
+	try {
+		const playerOnPage = await getPlayerOnPage();
 
-	if (playerOnPage) {
-		const messageSpan = document.querySelector('.message');
-		const userContentElement = document.querySelector('.userContent');
+		if (playerOnPage) {
+			const messageSpan = document.querySelector('.message');
+			const userContentElement = document.querySelector('.userContent');
 
-		if (messageSpan && userContentElement) {
-			if (playerOnPage.isPicked && !isInitialized) {
-				messageSpan.style.visibility = 'visible';
-				userContentElement.remove();
-			} else {
-				messageSpan.remove();
-				userContentElement.style.visibility = 'visible';
+			if (messageSpan && userContentElement) {
+				if (playerOnPage.isPicked && !isInitialized) {
+					messageSpan.style.visibility = 'visible';
+					userContentElement.remove();
+				} else {
+					messageSpan.remove();
+					userContentElement.style.visibility = 'visible';
+				}
+				return;
 			}
-			return;
+		}
+
+		appendNotification(
+			'On this page occurred unknown error, you will be automatically returned to pick page after 5 seconds'
+		);
+		setTimeout(() => {
+			document.location.assign(`/${gameId}`);
+		}, 5000);
+	} catch (err) {
+		if (err instanceof Error) {
+			appendNotification(err.message);
+		} else {
+			appendNotification('Unknown error occurred');
 		}
 	}
-
-	appendNotification(
-		'On this page occurred unknown error, you will be automatically returned to pick page after 5 seconds'
-	);
-	setTimeout(() => {
-		document.location.assign(`/${gameId}`);
-	}, 5000);
 }
 async function getPlayerOnPage() {
-	const queryParams = new URLSearchParams({ id: playerId }).toString();
-	const res = await axios.get(
-		concatURL(
-			document.location.origin,
-			gameId,
-			'players',
-			`?${queryParams}`
-		)
-	);
+	try {
+		const queryParams = new URLSearchParams({ id: playerId }).toString();
+		const res = await axios.get(
+			concatURL(
+				document.location.origin,
+				gameId,
+				'players',
+				`?${queryParams}`
+			)
+		);
 
-	if (res.error) {
-		appendNotification(res.error);
+		if (res.error) {
+			appendNotification(res.error);
+		}
+
+		return res.data;
+	} catch (err) {
+		if (err instanceof Error) {
+			appendNotification(err.message);
+		} else {
+			appendNotification('Unknown error occurred');
+		}
 	}
-
-	return res.data;
 }
 
 //* Init app
