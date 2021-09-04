@@ -229,7 +229,6 @@ async function gotCircleHandler() {
 				appendNotification(res.data.error);
 			} else {
 				sendToSocket(action);
-				giveTurn();
 
 				moneySpan.innerText = res.data;
 				turnsBeforeNewCircle = 1;
